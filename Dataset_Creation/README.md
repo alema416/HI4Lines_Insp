@@ -1,8 +1,17 @@
 # Dataset Creation Process
 This is the first step in the HI4Lines_Insp application: The Dataset Creation Process
 
+## First Step: download original IDID dataset
 
-## Run *python3 og2yolo.py --det_size <det_size> --class_size <class_size>*
+```
+wget https://publicstorageaccnt.blob.core.windows.net/idid/Train_IDID_V1.2.zip
+unzip Train_IDID_V1.2.zip -d ididv12
+```
+## Second Step: run the conversion code
+ 
+```
+python3 og2yolo.py --det_size <det_size> --class_size <class_size>
+```
 *og2yolo.py* handles the following:
 
 * parses the original IDID dataset
