@@ -14,6 +14,30 @@ by an optuna experiment running off a postgreSQL database in the network. Note: 
 
 ![YOLO on EPRI-dataset](https://github.com/user-attachments/assets/ce918f12-e20e-452b-bf0a-22385f2001d7)
 
+**For the training devices**: Clone our repo and install hailo docker at both devices. Then set up shared (mounted) directory and for each `device<i>`:
+
+for the clients:
+
+```
+tmux new-session -A -s device<i>_client
+cd ./HI4Lines_Insp/Hyperparameter_Tuning/
+conda activate myenv
+python3 main_fmfp_optuna.py
+```
+
+for the servers:
+
+```
+tmux new-session -A -s device<i>_server
+cd ./HI4Lines_Insp/Hyperparameter_Tuning/
+sudo ./hailo_ai_sw_suite_docker_run.sh --resume
+cd /local/HI4Lines_Insp/Hyperparameter_Tuning/hailo_src/
+python3 server.py
+```
+
+**For the edge device**: follow the steps outlined in the README.md located at the Inference directory 
+
+
 ## Second Step: object detector
 
 Here the process is more straightforward. 
