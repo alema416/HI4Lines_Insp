@@ -1,7 +1,8 @@
-# Classifier Training/Hardware Aware Hyperparameter Tuning Process
+# Training/Hardware Aware Hyperparameter Tuning Process
 
-This is the second step in the HI4Lines_Insp application: Classifier Training/Hardware Aware Hyperparameter Tuning Process
+This is the second step in the HI4Lines_Insp application: Training/Hardware Aware Hyperparameter Tuning Process
 
+## First Step: classifier
 Our goal is to acquire a classifier which includes reliable failure prediction by confidence calibration. For this, we utilize as a starting point the code by this paper: https://github.com/Impression2805/FMFP 
 And to select the best model we use the AUGRC metric as defined here : https://github.com/ENSTA-U2IS-AI/torch-uncertainty/blob/main/torch_uncertainty/metrics/classification/risk_coverage.py
 
@@ -12,3 +13,16 @@ We utilize 2 GPU-powered systems which train the model with different hyperparam
 by an optuna experiment running off a postgreSQL database in the network. Note: more computational nodes can be added as needed. The procedure is clearly outlined by the following diagram:
 
 ![YOLO on EPRI-dataset](https://github.com/user-attachments/assets/ce918f12-e20e-452b-bf0a-22385f2001d7)
+
+## Second Step: object detector
+
+Here the process is more straightforward. 
+
+For L-ML we will utilize the full resolution of the offloaded samples so we train a joint detector and classifier:
+```
+yolo task=detect mode=train model=yolov8l.pt data=./data_m1.yaml epochs=300 imgsz=1280 plots=True patience=20 batch=16 cache=True project=new_labels_models name=yolov8l
+```
+for S-ML we train a smaller object detector with one class: insulator for using as a source of cropped insulators for the classifier:
+```
+yolo task=detect mode=train model=yolo11n.pt data=./data_m1.yaml epochs=300 imgsz=1280 plots=True patience=20 batch=16 cache=True project=new_labels_models name=yolov8l
+```
