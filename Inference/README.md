@@ -1,4 +1,4 @@
-### Inference
+# Inference
 
 This is the third step in the HI4Lines_Insp application: Inference
 
