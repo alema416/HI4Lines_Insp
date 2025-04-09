@@ -1,5 +1,9 @@
 # HI4Lines_Insp
+
 Hierarchical Inference for Power Lines Inspection
+
+![image](https://github.com/user-attachments/assets/80c2dbd1-43da-4402-987e-30a17e18db5e)
+
 
 Description
 
