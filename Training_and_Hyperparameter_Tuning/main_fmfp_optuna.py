@@ -4,7 +4,6 @@ import distutils
 import requests
 import gc
 import threading
-from cuda_check import clear_and_print
 try:
     from distutils.version import LooseVersion
 except ImportError:
@@ -59,7 +58,6 @@ from model import vgg
 from model import mobilenet
 from model import efficientnet
 from model import mobnew
-import time
 from model import wrn
 from model import convmixer
 from utils import data as dataset
@@ -114,21 +112,23 @@ class Counter(dict):
 #default='./output_lp_earlier_flat/', default=4, 
 parser = argparse.ArgumentParser(description='Rethinking CC for FP')
 parser.add_argument('--epochs', default=200, type=int, help='Total number of epochs to run')
+parser.add_argument('--port', default=5000, type=int, help='port')
 parser.add_argument('--plot', default=5, type=int, help='')
 parser.add_argument('--model', default='resnet18', type=str, help='Models name to use [res110, dense, wrn, cmixer, efficientnet, mobilenet, vgg]')
+parser.add_argument('--save_path', default='resnet18', type=str, help='save path')
+parser.add_argument('--data_path', default='resnet18', type=str, help='data path')
 parser.add_argument('--method', default='fmfp', type=str, help='[sam, swa, fmfp]')
 parser.add_argument('--rank_weight', default=1.0, type=float, help='Rank loss weight')
 parser.add_argument('--gpu', default='0', type=str, help='GPU id to use')
 parser.add_argument('--print-freq', '-p', default=72, type=int, metavar='N', help='print frequency (default: 10)')
-
 
 args = parser.parse_args()
 
 def objective(trial):
     server1 = True
     server2 = not server1
-    batch_size = 16 if 'server2' else 16
-    save_path = '/home/amax/machairas/FMFP-edge-idid/hailo_src/haht_augrc_resnet_18_no_ES/' if server1 else '/home/apel/machairas/HAILO/shared_with_docker/haht_augrc_resnet_18_no_ES/'
+    batch_size = 16
+    save_path = args.save_path #'/home/amax/machairas/FMFP-edge-idid/hailo_src/haht_augrc_resnet_18_no_ES/' if server1 else '/home/apel/machairas/HAILO/shared_with_docker/haht_augrc_resnet_18_no_ES/'
     base_lr = trial.suggest_loguniform('lr', 1e-3, 1e-1) 
     
     method = 'fmfp' 
@@ -151,7 +151,7 @@ def objective(trial):
     if not os.path.exists(save_path):
         os.makedirs(save_path)
     writer = SummaryWriter(log_dir=save_path)
-    dataset_path = '/home/amax/machairas/FMFP-edge-idid/yolo_m2_class_square_JOIN_224/' if server1 else '/home/apel/machairas/pipeline/tutorials/docker/classification/out/yolo_m2_class_square_JOIN_224/'
+    dataset_path = args.data_path #'/home/amax/machairas/FMFP-edge-idid/yolo_m2_class_square_JOIN_224/' if server1 else '/home/apel/machairas/pipeline/tutorials/docker/classification/out/yolo_m2_class_square_JOIN_224/'
     train_loader, valid_loader, test_loader = custom_data.get_loader_local(dataset_path, batch_size=batch_size, input_size=224)
 
     num_class = 2      
@@ -229,7 +229,6 @@ def objective(trial):
         
             #best_model_state = swa_model.state_dict()  # Save best state
                
-    start_time = time.time()
     epoch = args.epochs
          
     writer.add_scalar('Params/initial_lr', base_lr, epoch)
@@ -282,20 +281,17 @@ def objective(trial):
     writer.add_scalar('final_Metrics/test_aurc', aurc, epoch)                
     writer.add_scalar('final_Metrics/test_eaurc', eaurc, epoch)
     writer.add_scalar('final_Metrics/test_augrc', augrc, epoch)
-    end_time = time.time()
-    print(f"model post-processing took: {((end_time - start_time)/60):.1f} min")
     
     ccc = 0
     while ccc < 10:
         try:
-            port = 5000 if server1 else 5001
+            port = args.port #5000 if server1 else 5001
             response = requests.post(f"http://localhost:{port}/validate", json={"run_id": RUN_ID})
             response.raise_for_status()
             break
         except requests.RequestException as e:
             print(e)
             print(f"================ERROR #{ccc}================")
-            time.sleep(60)
             ccc += 1
             continue
     result = response.json()
@@ -316,8 +312,6 @@ def objective(trial):
     print(acc_hw_val)
     print(acc_emu)
     
-    end_time = time.time()
-    print(f"model hardware check took: {((end_time - start_time)/60):.1f} min")
     
     writer.add_scalar('final_Metrics/train_augrc_hw', augrc_hw_train, epoch)
     writer.add_scalar('final_Metrics/train_acc_hw', acc_hw_train, epoch)
@@ -339,13 +333,9 @@ def objective(trial):
     
 
 def main():
-    #pruner=optuna.pruners.MedianPruner(
-    #    n_startup_trials=5, n_warmup_steps=30, interval_steps=10
-    #)
-    #study = optuna.load_study(study_name = "optimally_seperated_fmfp_model_hardware_aware", pruner=pruner, storage="sqlite:///example_haht.db")
-    #study.optimize(objective, n_trials=30, n_jobs=3)
-    storage = "postgresql://amax:Apel1234%40%23@192.168.188.201/optuna_db"
-    study = optuna.create_study(direction='minimize', load_if_exists=True, study_name = "optimally_seperated_fmfp_model_hardware_aware_augrc_quantized", storage=storage) #"sqlite:///haht_augrc_quant_no_ES.db")
+    study_name = input('study_name: ')
+    storage = '' # (sensitive)
+    study = optuna.create_study(direction='minimize', load_if_exists=True, study_name = study_name, storage=storage) #"sqlite:///haht_augrc_quant_no_ES.db")
     print(f"Sampler is {study.sampler.__class__.__name__}")
     study.optimize(objective, n_trials=400, n_jobs=1)
 

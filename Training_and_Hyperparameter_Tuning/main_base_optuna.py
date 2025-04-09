@@ -1,7 +1,6 @@
 import torch
 import gc
 import distutils
-import time
 import optuna
 from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
 try:
@@ -108,6 +107,7 @@ class Counter(dict):
 
 
 parser = argparse.ArgumentParser(description='Rethinking CC for FP')
+parser.add_argument('--port', default=5000, type=int, help='port')
 parser.add_argument('--epochs', default=200, type=int, help='Total number of epochs to run')
 parser.add_argument('--plot', default=5, type=int, help='')
 parser.add_argument('--model', default='resnet18', type=str, help='Models name to use [res110, dense, wrn, cmixer, efficientnet, mobilenet, vgg]')
@@ -116,6 +116,8 @@ parser.add_argument('--rank_weight', default=1.0, type=float, help='Rank loss we
 parser.add_argument('--gpu', default='0', type=str, help='GPU id to use')
 parser.add_argument('--print-freq', '-p', default=72, type=int, metavar='N', help='print frequency (default: 10)')
 parser.add_argument('--cwd_weight', default=0.1, type=float, help='Training time tempscaling')
+parser.add_argument('--save_path', default='resnet18', type=str, help='save path')
+parser.add_argument('--data_path', default='resnet18', type=str, help='data path')
 parser.add_argument('--batch_size', default=16, type=int, help='Batch size for training')
 args = parser.parse_args()
 
@@ -129,8 +131,8 @@ def objective(trial):
     custom_weight_decay = trial.suggest_loguniform('weight_decay', 1e-5, 1e-3)  
     custom_momentum = trial.suggest_uniform('momentum', 0.85, 0.99)
 
-    save_path = '/home/amax/machairas/FMFP-edge-idid/hailo_src/haht_augrc_resnet_18_baseline_augrc_2/' if server1 else '/home/apel/machairas/HAILO/shared_with_docker/haht_augrc_resnet_18_baseline/'
-    batch_size = 16 if 'server2' else 16
+    save_path = args.save_path #'/home/amax/machairas/FMFP-edge-idid/hailo_src/haht_augrc_resnet_18_baseline_augrc_2/' if server1 else '/home/apel/machairas/HAILO/shared_with_docker/haht_augrc_resnet_18_baseline/'
+    batch_size = 16
 
     data = 'idid_cropped'
     classnumber = 2
@@ -146,7 +148,7 @@ def objective(trial):
     if not os.path.exists(save_path):
         os.makedirs(save_path)
     writer = SummaryWriter(log_dir=save_path)
-    dataset_path = '/home/amax/machairas/FMFP-edge-idid/yolo_m2_class_square_JOIN_224/' if server1 else '/home/apel/machairas/pipeline/tutorials/docker/classification/out/yolo_m2_class_square_JOIN_224/'
+    dataset_path = args.data_path #'/home/amax/machairas/FMFP-edge-idid/yolo_m2_class_square_JOIN_224/' if server1 else '/home/apel/machairas/pipeline/tutorials/docker/classification/out/yolo_m2_class_square_JOIN_224/'
 
     train_loader, valid_loader, test_loader = custom_data.get_loader_local(dataset_path, batch_size=batch_size, input_size=224)
     num_class = 2
@@ -251,14 +253,13 @@ def objective(trial):
     ccc = 0
     while ccc < 10:
         try:
-            port = 5000 if server1 else 5001
+            port = args.port #5000 if server1 else 5001
             response = requests.post(f"http://localhost:{port}/validate", json={"run_id": RUN_ID})
             response.raise_for_status()
             break
         except requests.RequestException as e:
             print(e)
             print(f"================ERROR #{ccc}================")
-            #time.sleep(60)
             ccc += 1
             continue
     result = response.json()
@@ -279,8 +280,7 @@ def objective(trial):
     print(acc_hw_val)
     print(acc_emu)
     
-    #end_time = time.time()
-    #print(f"model hardware check took: {((end_time - start_time)/60):.1f} min")
+
     
     writer.add_scalar('final_Metrics/train_augrc_hw', augrc_hw_train, epoch)
     writer.add_scalar('final_Metrics/train_acc_hw', acc_hw_train, epoch)
@@ -301,8 +301,10 @@ def objective(trial):
     return float(augrc_hw_val)
     
 def main():
-    storage = 'sqlite:///baseline_resnet18_optimize_augrc_hw2232d.db'
-    study = optuna.create_study(direction='minimize', study_name = "baseline1", storage=storage)
+    storage_name = input('storage_name: ')
+    study_name = input('study_name: ')
+    storage = f'sqlite:///{storage_name}.db'
+    study = optuna.create_study(direction='minimize', load_if_exists=True, study_name = study_name, storage=storage)
     print(f"Sampler is {study.sampler.__class__.__name__}")
     study.optimize(objective, n_trials=50, n_jobs=1)
 
