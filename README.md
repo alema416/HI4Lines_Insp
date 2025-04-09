@@ -21,3 +21,4 @@ Abstract: Abstract
 * add python enviroments and docker instructions
 * make the code device agnostic (replace paths and IP addresses with argparse)
 * differentiate *persample metrics* and *global metrics*
+* yaml for yolo detection only vs detection+classification 
