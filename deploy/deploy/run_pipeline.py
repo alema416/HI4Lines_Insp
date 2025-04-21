@@ -41,4 +41,5 @@ def validate():
     return jsonify(results)
 
 if __name__ == '__main__':
-    app.run(host='192.168.2.53', port=5005)
+    ip = input('IP address: ') #192.168.2.53
+    app.run(host=ip, port=5005)

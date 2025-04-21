@@ -1,10 +1,3 @@
-#
-# detection_eval.py: object detection models evaluator
-#
-# Copyright DeGirum Corporation 2024
-# All rights reserved
-#
-
 import json, os, degirum as dg, numpy as np
 from typing import List, Optional
 from pycocotools.coco import COCO

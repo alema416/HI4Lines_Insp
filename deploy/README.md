@@ -2,6 +2,17 @@
 
 This is the third step in the HI4Lines_Insp application: Inference
 
+
+## INFERENCE AS PART OF THE CLASSIFIER OPTIMIZATION PIPELINE:
+* server_raspi.py         receives a hef model and returns HW accuracy and AUGRC for train/val/test sets.
+
+## INFERENCE AS PART OF THE INFERENCE PIPELINE EVALUATION:
+* pipeline.py             defines the compound model and runs inference 
+* run_pipeline.py         initiates the pipeline for specific threshold and split.
+
+
+
+
 ## Classifier Inference for Hardware Aware Optimization
 
 With the client(s) training model instances and the servers pending to compile, the only part remaining is getting the relevant metrics from the edge device.
@@ -32,3 +43,4 @@ To run/evaluate the whole pipeline (detection+classification) per sample with re
 python3 evpers.py
 ```
 The evaluation code utilizes the following repo: https://github.com/sanchit2843/object_detection_metrics_calculation
+

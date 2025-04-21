@@ -13,7 +13,7 @@ def validate():
     
     scripts = []
     if os.path.exists(LOCK_FILE):
-	      return jsonify({"error": 'device locked'}), 400
+        return jsonify({"error": 'device locked'}), 400
     with open(LOCK_FILE, 'w') as lock_file:
         lock_file.write("locked")
     try:
@@ -32,7 +32,6 @@ def validate():
         with open(file_path, 'wb') as f:
             f.write(file_content)
         print(f"File {file_path} received and saved.")
-
     
     for j in ['class_eval', 'metric']:
         scripts.append({"file": f"{j}.py", "args": ["--model", 'weekend_0']})
@@ -86,7 +85,6 @@ def validate():
                 if len(parts) > 1:
                     acc_hw_train = parts[1].strip().split()[0]
             
-            
             keyword = "SPECIAL_PRINTaccval"
             specific_line = next((line for line in result.stdout.splitlines() if keyword in line), None)
             
@@ -112,4 +110,5 @@ def validate():
     return jsonify({'acc_hw_train': acc_hw_train, 'augrc_hw_train': augrc_hw_train, 'acc_hw_val': acc_hw_val, 'augrc_hw_val': augrc_hw_val, 'acc_hw_test': acc_hw_test, 'augrc_hw_test': augrc_hw_test}), 200
 
 if __name__ == '__main__':
-    app.run(host='192.168.2.6', port=5001)
+    ip = input('IP address: ') #192.168.2.6
+    app.run(host=ip, port=5001)
