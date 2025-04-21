@@ -112,7 +112,7 @@ parser.add_argument('--gpu', default='0', type=str, help='GPU id to use')
 parser.add_argument('--print-freq', '-p', default=72, type=int, metavar='N', help='print frequency (default: 10)')
 parser.add_argument('--cwd_weight', default=0.1, type=float, help='Training time tempscaling')
 parser.add_argument('--save_path', default='resnet18', type=str, help='save path')
-parser.add_argument('--data_path', default='/home/alema416/dev/work/HI4Lines_Insp/HI4Lines_Insp/data/processed/IDID_cropped_224', type=str, help='data path')
+parser.add_argument('--data_path', default='../data/processed/IDID_cropped_224', type=str, help='data path')
 parser.add_argument('--batch_size', default=16, type=int, help='Batch size for training')
 args = parser.parse_args()
 
