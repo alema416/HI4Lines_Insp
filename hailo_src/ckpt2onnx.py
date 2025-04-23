@@ -3,6 +3,7 @@ from model import resnet18_custom
 from model import resnet18
 from collections import OrderedDict
 import argparse
+import os
 
 parser = argparse.ArgumentParser(description='Rethinking CC for FP')
 parser.add_argument('--run_id', required=True, type=int, help='')
@@ -11,7 +12,7 @@ args = parser.parse_args()
 
 device = torch.device("cpu")
 num_class = 2
-    
+onnx_dir = './'
 model_dict = {"num_classes": num_class}
 
 ours = True
@@ -40,7 +41,7 @@ model.eval()
 inp = [torch.randn((1, 3, 224, 224), requires_grad=False)]
 
 model(*inp)
-onnx_path = f'./{model_name}.onnx'
+onnx_path = os.path.join(onnx_dir, f'{model_name}.onnx')
 
 torch.onnx.export(model, tuple(inp), onnx_path,
                   export_params=True,

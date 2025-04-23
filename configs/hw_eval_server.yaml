@@ -1,0 +1,4 @@
+server:
+  upload_dir: './models/temporal_optimization_model/'
+  temp_model_flnm: 'temporal_optimization_model.hef'
+  lock_file: './LOCK_FILE.txt'

@@ -4,18 +4,15 @@ from pprint import pprint
 import class_eval_sec
 import argparse
 
-#default='./output_lp_earlier_flat/', default=4, 
-parser = argparse.ArgumentParser(description='Rethinking CC for FP')
+with initialize(config_path="../../configs/"):
+    cfg = compose(config_name="hw_classifier")  # exp1.yaml with defaults key
 
-parser.add_argument('--model', default='resnet_v1_18_custom_code', type=str, help='model name')
-args = parser.parse_args()
-
-model_name = args.model
+model_name = cfg.classifier.modelname
 
 model = dg.load_model(
     model_name=model_name,
     inference_host_address='@local',
-    zoo_url="/home/amax/GitHub/hailo_examples/models/"
+    zoo_url= cfg.classifer.model_zoo_dir
 )
 
 evaluator_tr = class_eval_sec.ImageClassificationModelEvaluator(
@@ -38,11 +35,11 @@ evaluator_te = class_eval_sec.ImageClassificationModelEvaluator(
 )
 
 print(f'WORKING ON: train set')
-results_train = evaluator_tr.evaluate('./assets/classification_train_set/', None, -1)
+results_train = evaluator_tr.evaluate(cfg.classifier.train_set_dir, None, -1)
 print(f'WORKING ON: val set')
-results_eval = evaluator_v.evaluate('./assets/classification_eval_set/', None, -1)
+results_eval = evaluator_v.evaluate(cfg.classifier.val_set_dir, None, -1)
 print(f'WORKING ON: test set')
-results_test = evaluator_te.evaluate('./assets/classification_test_set/', None, -1)
+results_test = evaluator_te.evaluate(cfg.classifier.test_set_dir, None, -1)
 
 print(f'train_set top1 acc: {results_train[0][0]:.5f}%')
 print(f'validation_set top1 acc: {results_eval[0][0]:.5f}%')

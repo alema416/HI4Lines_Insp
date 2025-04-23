@@ -4,12 +4,16 @@ from datetime import datetime
 import subprocess
 import base64
 import os
+from hydra import initialize, compose
 
 app = Flask(__name__)
 @app.route('/validate', methods=['POST'])
 def validate():
-    UPLOAD_FOLDER = './models/temporal_optimization_model_dir/'
-    LOCK_FILE = './LOCK_FILE.txt'
+    with initialize(config_path="../../configs/"):
+        cfg = compose(config_name="hw_eval_server")  # exp1.yaml with defaults key
+
+    UPLOAD_FOLDER = cfg.server.upload_dir
+    LOCK_FILE = cfg.server.lock_file
     
     scripts = []
     if os.path.exists(LOCK_FILE):
@@ -24,18 +28,16 @@ def validate():
         
     except Exception as e:
         return jsonify({"error": str(e)}), 400
-    
 
     if encoded_file:
         file_content = base64.b64decode(encoded_file)
-        file_path = os.path.join(UPLOAD_FOLDER, 'weekend_0.hef')
+        file_path = os.path.join(UPLOAD_FOLDER, cdf.server.temp_model_flnm)
         with open(file_path, 'wb') as f:
             f.write(file_content)
         print(f"File {file_path} received and saved.")
 
-    
     for j in ['class_eval', 'metric']:
-        scripts.append({"file": f"{j}.py", "args": ["--model", 'weekend_0']})
+        scripts.append({"file": f"{j}.py", "args": ["--model", cdf.server.temp_model_flnm]})
     
     augrc_hw_train = None
     acc_hw_train = None

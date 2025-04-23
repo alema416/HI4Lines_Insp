@@ -8,7 +8,7 @@ import base64
 import requests
 app = Flask(__name__)
 
-EXP_PATH = './haht_augrc_resnet_18_baseline_augrc_2'
+EXP_PATH = # path for the 0,1,2... directories that containt model state dictionaries
 
 @app.route('/validate', methods=['POST'])
 
@@ -22,6 +22,7 @@ def validate():
     for j in ['ckpt2onnx', 'parser', 'optimizer']:
         scripts.append({"file": f"{j}.py", "args": ["--pathh", EXP_PATH, "--run_id", str(run_id)]})
     scripts.append({"file": f"compiler.py", "args": ["--pathh", EXP_PATH, "--run_id", str(run_id)]})
+    
     augrc_emu = None
     acc_emu = None
     

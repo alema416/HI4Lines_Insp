@@ -198,13 +198,15 @@ def visualize_results(images, images_path, split, scores=None, inf_labels=None, 
 # -------------
 # load HAR file and prepare dataset
 # -------------
-
+har_dir = './'
+onnx_dir = './'
+quantized_har_dir = './'
 model_name = f'model_{args.run_id}'
 onnx_model_name = model_name
 
 print(onnx_model_name)
 
-hailo_model_har_name = f"./{onnx_model_name}_hailo_model.har"
+hailo_model_har_name = os.path.join(har_dir, f"{onnx_model_name}_hailo_model.har")
 
 assert os.path.isfile(hailo_model_har_name), "Please provide valid path for HAR file"
 runner = ClientRunner(har=hailo_model_har_name)
@@ -306,7 +308,7 @@ with open(csv_path, 'a', newline='') as csvfile:
 # -------------
 
 
-quantized_model_har_path = f"{model_name}_quantized_model.har"
+quantized_model_har_path = os.path.join(quantized_har_dir, f"{model_name}_quantized_model.har")
 runner.save_har(quantized_model_har_path)
 
 for split in ['val']:

@@ -1,0 +1,5 @@
+classifier:
+  model_zoo_dir: "/home/amax/GitHub/hailo_examples/models/"
+  train_set_dir: './assets/classification_train_set/'
+  val_set_dir: './assets/classification_val_set/'
+  test_set_dir: './assets/classification_test_set/'

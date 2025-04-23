@@ -3,7 +3,7 @@ import tensorflow as tf
 from IPython.display import SVG
 import subprocess
 import argparse
-
+import os
 # import the ClientRunner class from the hailo_sdk_client package
 from hailo_sdk_client import ClientRunner
 
@@ -12,12 +12,14 @@ parser.add_argument('--run_id', required=True, type=int, help='')
 parser.add_argument('--pathh', required=True, type=str, help='')
 args = parser.parse_args()
 
+onnx_dir = './'
+har_dir = './'
 chosen_hw_arch = "hailo8"
 model_name = f'model_{args.run_id}'
 
 #onnx_model_name = input('name')
 onnx_model_name = model_name #model_name.split('.')[0]
-onnx_path = f'./{model_name}.onnx'
+onnx_path = os.path.join(onnx_dir, f'{model_name}.onnx')
 
 runner = ClientRunner(hw_arch=chosen_hw_arch)
 hn, npz = runner.translate_onnx_model(
@@ -26,7 +28,7 @@ hn, npz = runner.translate_onnx_model(
     net_input_shapes={"input.1": [1, 3, 224, 224]},
 )
 
-hailo_model_har_name = f"./{onnx_model_name}_hailo_model.har"
+hailo_model_har_name = os.path.join(har_dir, f"{onnx_model_name}_hailo_model.har")
 runner.save_har(hailo_model_har_name)
 
 subprocess.run(['hailo', 'visualizer', f'{hailo_model_har_name}', '--no-browser'], check=True)
