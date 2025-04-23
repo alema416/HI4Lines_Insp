@@ -61,7 +61,7 @@ description_too
 
 # HI4Lines_Insp
 
-Hierarchical Inference for Power Lines Inspection
+End-to-End MLOps Pipeline for Trustworthy Power-Lines-Inspection
 
 ![image](https://github.com/user-attachments/assets/80c2dbd1-43da-4402-987e-30a17e18db5e)
 
@@ -78,7 +78,9 @@ Abstract: Abstract
 
 * differentiate *persample metrics* and *global metrics* (steamline pipeline infererence results)
 
-## 1 - Setup Data Science Module
+## Server 
+
+### Setup Data Science Module
 
 git clone repo
 cd repo
@@ -86,28 +88,41 @@ cd repo
 Install virtualenv & download data via:
 
 ```
-make
-make 
+make create_environment
+make requirements
+make data
 ```
 
-## 2 - Setup Quantizer/Emulator
+
+### Setup Quantizer/Emulator
 
 * git clone repo
 * Install HAILO AI SW Suite via the instructions: https://hailo.ai/developer-zone/documentation/hailo-sw-suite-2024-07/?sp_referrer=suite%2Fsuite_install.html#docker-installation
-* and in the dockerfile replace this: readonly SHARED_DIR=<repo_dir>
-and this                  -v ${SHARED_DIR}/:/local/${SHARED_DIR}:rw \
-(lines 16 and 226)
+* and in the dockerfile replace this: 
 
-flask
-torchmetrics
-hydra-core
+```
+readonly SHARED_DIR=<repo_dir>
+```
 
+(line 16)
+
+And this: 
+
+```
+-v ${SHARED_DIR}/:/local/${SHARED_DIR}:rw \
+```
+
+(line 226)
+
+```
 cd hailo_src
 sudo chmod -R a+w ..
-ckpt2onnx and parser ok
+python3 server.py
+```
 
+## Raspberry Pi
 
-## 3 - Edge Device Setup
+### Setup Edge Device
 
 Install virtualenv & download data via:
 
@@ -116,7 +131,3 @@ cd repo/deploy
 
 Install virtualenv & download data via:
 
-```
-make
-make 
-```

@@ -1,0 +1,6 @@
+pip
+python-dotenv
+flask
+torchmetrics
+hydra-core
+-e .
