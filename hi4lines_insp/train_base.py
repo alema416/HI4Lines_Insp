@@ -100,7 +100,7 @@ class focal_loss(nn.Module):
         return loss
 
 
-def train(loader, model, criterion, criterion_ranking, optimizer, epoch, history, args, classnumber):
+def train(loader, model, criterion, criterion_ranking, optimizer, epoch, history, plot, method, rank_weight, classnumber):
     batch_time = utils.AverageMeter()
     data_time = utils.AverageMeter()
     total_losses = utils.AverageMeter()
@@ -113,32 +113,32 @@ def train(loader, model, criterion, criterion_ranking, optimizer, epoch, history
 
     for i, (input, target, idx, _) in enumerate(loader):
         data_time.update(time.time() - end)
-        if args.method == 'Baseline':
+        if method == 'Baseline':
             input, target = input.to(device), target.long().to(device)
             output = model(input)
             loss = criterion(output, target)
-        elif args.method == 'L1':
+        elif method == 'L1':
             input, target = input.to(device), target.long().to(device)
             output = model(input)
             norm_loss = 0.01*output.abs().sum(dim=1).mean()
             loss = criterion(output, target) + norm_loss
-        elif args.method == 'Mixup':
+        elif method == 'Mixup':
             input, target = input.to(device), target.long().to(device)
             input, target_a, target_b, lam = mixup_data(input, target)
             output = model(input)
             loss = mixup_criterion(criterion, output, target_a, target_b, lam)
-        elif args.method == 'LS':
+        elif method == 'LS':
             input, target = input.to(device), target.long().to(device)
             output = model(input)
             loss = criterion_ls(output, target)
-        elif args.method == 'focal':
+        elif method == 'focal':
             input, target = input.to(device), target.long().to(device)
             output = model(input)
             if epoch < 10:
                 loss = criterion(output, target)
             else:
                 loss = focal_criterion(output, target)
-        elif args.method == 'CRL':
+        elif method == 'CRL':
             input, target = input.to(device), target.long().to(device)
             output = model(input)
             conf = F.softmax(output, dim=1)
@@ -155,7 +155,7 @@ def train(loader, model, criterion, criterion_ranking, optimizer, epoch, history
 
             ranking_loss = criterion_ranking(rank_input1,rank_input2,rank_target)
             cls_loss = criterion(output, target)
-            ranking_loss = args.rank_weight * ranking_loss
+            ranking_loss = rank_weight * ranking_loss
             loss = cls_loss + ranking_loss
         #print('before optimizer')
         optimizer.zero_grad()
@@ -186,14 +186,14 @@ def train(loader, model, criterion, criterion_ranking, optimizer, epoch, history
 
         batch_time.update(time.time() - end)
         end = time.time()
-        if i % args.print_freq == 0:
+        if i % plot == 0:
             print('Epoch: [{0}][{1}/{2}]\t'
                 'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
                 'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
                 'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
                 'Prec {top1.val:.2f}% ({top1.avg:.2f}%)'.format(epoch, i, len(loader), batch_time=batch_time, data_time=data_time, loss=total_losses,top1=top1))
-        if args.method == 'CRL':
+        if method == 'CRL':
             history.correctness_update(idx, correct, output)
-    if args.method == 'CRL':
+    if method == 'CRL':
         history.max_correctness_update(epoch)
     return total_losses.avg, top1.avg

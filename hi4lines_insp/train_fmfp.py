@@ -11,7 +11,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
 
-def train(loader, model, criterion, criterion_ranking, optimizer, epoch, history, args, method):
+def train(loader, model, criterion, criterion_ranking, optimizer, epoch, history, plot, method):
     batch_time = utils.AverageMeter()
     data_time = utils.AverageMeter()
     total_losses = utils.AverageMeter()
@@ -45,7 +45,7 @@ def train(loader, model, criterion, criterion_ranking, optimizer, epoch, history
         # measure elapsed time
         batch_time.update(time.time() - end)
         end = time.time()
-        if i % args.print_freq == 0:
+        if i % plot == 0:
             print('Epoch: [{0}][{1}/{2}]\t'
            'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
            'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'

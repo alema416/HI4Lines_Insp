@@ -67,7 +67,7 @@ import custom_data as custom_data
 from torch.optim.swa_utils import AveragedModel, SWALR
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from utils.sam import SAM
-
+from hydra import initialize, compose
 def validate(loader, model, criterion):
     model.eval()
     total_loss = 0.0
@@ -106,51 +106,45 @@ class Counter(dict):
     def __missing__(self, key):
         return None
 
-parser = argparse.ArgumentParser(description='Rethinking CC for FP')
-parser.add_argument('--epochs', default=200, type=int, help='Total number of epochs to run')
-parser.add_argument('--port', default=5000, type=int, help='port')
-parser.add_argument('--plot', default=5, type=int, help='')
-parser.add_argument('--model', default='resnet18', type=str, help='Models name to use [res110, dense, wrn, cmixer, efficientnet, mobilenet, vgg]')
-parser.add_argument('--save_path', default='resnet18', type=str, help='save path')
-parser.add_argument('--data_path', default='../data/processed/IDID_cropped_224', type=str, help='data path')
-parser.add_argument('--method', default='fmfp', type=str, help='[sam, swa, fmfp]')
-parser.add_argument('--rank_weight', default=1.0, type=float, help='Rank loss weight')
-parser.add_argument('--gpu', default='0', type=str, help='GPU id to use')
-parser.add_argument('--print-freq', '-p', default=72, type=int, metavar='N', help='print frequency (default: 10)')
-
-args = parser.parse_args()
-
 def objective(trial):
+    #cfg = OmegaConf.load("../configs/fmfp.yaml")
+    with initialize(config_path="../configs/"):
+        cfg = compose(config_name="fmfp")  # exp1.yaml with defaults key
+    print(cfg)
     server1 = True
     server2 = not server1
-    batch_size = 16
-    save_path = args.save_path
-    base_lr = trial.suggest_loguniform('lr', 1e-3, 1e-1) 
+    epochs = cfg.training.epochs
+    plot = cfg.training.validate_freq
+    batch_size = cfg.training.batch_size 
+    port = cfg.training.port
+    save_path = cfg.training.save_path
+    base_lr = trial.suggest_loguniform('lr', cfg.training.base_lr_low, cfg.training.base_lr_high)
     
     method = 'fmfp' 
-    swa_start = trial.suggest_int("swa_start", 65, 150)
+    swa_start = trial.suggest_int("swa_start", cfg.fmfp.swa_start_low, cfg.fmfp.swa_start_high)
     
-    custom_weight_decay = trial.suggest_loguniform('weight_decay', 1e-5, 1e-3)  
-    custom_momentum = trial.suggest_uniform('momentum', 0.85, 0.99) 
-    swa_lr = trial.suggest_loguniform('swa_lr', 1e-3, 1e-1) 
+    custom_weight_decay = trial.suggest_loguniform('weight_decay', cfg.training.weight_decay_low, cfg.training.weight_decay_high) 
+    custom_momentum = trial.suggest_uniform('momentum', cfg.training.momentum_low, cfg.training.momentum_high) 
+    swa_lr = trial.suggest_loguniform('swa_lr', cfg.fmfp.swa_lr_low, cfg.fmfp.swa_lr_high) 
 
     data = 'idid_cropped'
-    classnumber = 2
-    input_size = 224
+    classnumber = cfg.training.classnumber
+    input_size = cfg.training.input_size
     
-    os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
+    os.environ['CUDA_VISIBLE_DEVICES'] = cfg.training.gpu
     cudnn.benchmark = True
 
     save_path = os.path.join(save_path, f'{trial.number}')
     RUN_ID = trial.number
-    run_name = f'{args.model}_{method}_{input_size}_{swa_start}_{args.epochs}'
+    modelname = cfg.training.model_name
+    run_name = f'{modelname}_{method}_{input_size}_{swa_start}_{epochs}'
     if not os.path.exists(save_path):
         os.makedirs(save_path)
     writer = SummaryWriter(log_dir=save_path)
-    dataset_path = args.data_path
-    train_loader, valid_loader, test_loader = custom_data.get_loader_local(dataset_path, batch_size=batch_size, input_size=224)
-
-    num_class = 2      
+    dataset_path = cfg.training.data_path
+    train_loader, valid_loader, test_loader = custom_data.get_loader_local(dataset_path, batch_size=batch_size, input_size=cfg.training.input_size)
+    
+    num_class = cfg.training.classnumber  
     model_dict = { "num_classes": num_class }
     
     print(100 * '#')
@@ -177,9 +171,11 @@ def objective(trial):
     best_model_state = None
     best_model_epoch = None
     validation_lock = threading.Lock()
-    for epoch in range(1, args.epochs + 1):
+    args = None
+    
+    for epoch in range(1, epochs + 1):
         train_loss, train_acc  = train_fmfp.train(train_loader, \
-                                                  model, cls_criterion, ranking_criterion, optimizer, epoch, correctness_history, args, method)
+                                                  model, cls_criterion, ranking_criterion, optimizer, epoch, correctness_history, plot, method)
         
         if epoch > swa_start:
             swa_model.update_parameters(model)
@@ -191,12 +187,12 @@ def objective(trial):
         writer.add_scalar('Accuracy/Train', train_acc, epoch)
 
         # save model
-        if epoch == args.epochs:
+        if epoch == epochs:
             torch.save(model.state_dict(), os.path.join(save_path, 'model.pth'))
         # finish train
 
         # calc measure
-        if epoch % args.plot == 0:
+        if epoch % plot == 0:
             print(f"{'#'*50} validating... {50*'#'}")
             val_loss, val_acc = validate(valid_loader, model, cls_criterion)
             trial.report(val_loss, step=epoch)
@@ -222,7 +218,7 @@ def objective(trial):
         
             #best_model_state = swa_model.state_dict()  # Save best state
                
-    epoch = args.epochs
+    epoch = epochs
          
     writer.add_scalar('Params/initial_lr', base_lr, epoch)
     writer.add_scalar('Params/weight_decay', custom_weight_decay, epoch)
@@ -278,7 +274,6 @@ def objective(trial):
     ccc = 0
     while ccc < 10:
         try:
-            port = args.port #5000 if server1 else 5001
             response = requests.post(f"http://localhost:{port}/validate", json={"run_id": RUN_ID})
             response.raise_for_status()
             break

@@ -58,6 +58,7 @@ from utils import metrics
 from utils import utils
 import train_base
 import custom_data as custom_data
+from hydra import initialize, compose
 
 rlimit = resource.getrlimit(resource.RLIMIT_NOFILE)
 resource.setrlimit(resource.RLIMIT_NOFILE, (2048, rlimit[1]))
@@ -100,53 +101,45 @@ class Counter(dict):
     def __missing__(self, key):
         return None
 
-
-parser = argparse.ArgumentParser(description='Rethinking CC for FP')
-parser.add_argument('--port', default=5000, type=int, help='port')
-parser.add_argument('--epochs', default=200, type=int, help='Total number of epochs to run')
-parser.add_argument('--plot', default=5, type=int, help='')
-parser.add_argument('--model', default='resnet18', type=str, help='Models name to use [res110, dense, wrn, cmixer, efficientnet, mobilenet, vgg]')
-parser.add_argument('--method', default='Baseline', type=str, help='[Baseline, Mixup, LS, L1, focal, CRL]')
-parser.add_argument('--rank_weight', default=1.0, type=float, help='Rank loss weight')
-parser.add_argument('--gpu', default='0', type=str, help='GPU id to use')
-parser.add_argument('--print-freq', '-p', default=72, type=int, metavar='N', help='print frequency (default: 10)')
-parser.add_argument('--cwd_weight', default=0.1, type=float, help='Training time tempscaling')
-parser.add_argument('--save_path', default='resnet18', type=str, help='save path')
-parser.add_argument('--data_path', default='../data/processed/IDID_cropped_224', type=str, help='data path')
-parser.add_argument('--batch_size', default=16, type=int, help='Batch size for training')
-args = parser.parse_args()
-
 def objective(trial):
+    with initialize(config_path="../configs/"):
+        cfg = compose(config_name="base")  # exp1.yaml with defaults key
+    print(cfg)
+
     server1 = True
     server2 = not server1
-    
-    base_lr = trial.suggest_loguniform('lr', 1e-3, 1e-1) 
+    epochs = cfg.training.epochs
+    plot = cfg.training.validate_freq
+    rank_weight = cfg.training.rank_weight
+    port = cfg.training.port
+    base_lr = trial.suggest_loguniform('lr', cfg.training.base_lr_low, cfg.training.base_lr_high) 
     lr_strat = [80, 130, 170]
-    lr_factor = 0.1  # Learning rate decrease factor
-    custom_weight_decay = trial.suggest_loguniform('weight_decay', 1e-5, 1e-3)  
-    custom_momentum = trial.suggest_uniform('momentum', 0.85, 0.99)
+    lr_factor =  cfg.training.lr_factor # Learning rate decrease factor
+    custom_weight_decay = trial.suggest_loguniform('weight_decay', cfg.training.weight_decay_low, cfg.training.weight_decay_high)  
+    custom_momentum = trial.suggest_uniform('momentum', cfg.training.momentum_low, cfg.training.momentum_high)
 
-    save_path = args.save_path
-    batch_size = 16
+    save_path = cfg.training.save_path
+    batch_size = cfg.training.batch_size
 
     data = 'idid_cropped'
-    classnumber = 2
-    input_size = 224
-    os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
+    classnumber = cfg.training.classnumber
+    input_size = cfg.training.input_size
+    os.environ['CUDA_VISIBLE_DEVICES'] = cfg.training.gpu
     cudnn.benchmark = True
 
     save_path = os.path.join(save_path, f'{trial.number}')
     RUN_ID = trial.number
-    method = 'baseline'
-    run_name = f'{args.model}_{method}_{input_size}_{args.epochs}'
+    method = 'Baseline'
+    modelname = cfg.training.model_name
+    run_name = f'{modelname}_{method}_{input_size}_{epochs}'
 
     if not os.path.exists(save_path):
         os.makedirs(save_path)
     writer = SummaryWriter(log_dir=save_path)
-    dataset_path = args.data_path
+    dataset_path = cfg.training.data_path
 
     train_loader, valid_loader, test_loader = custom_data.get_loader_local(dataset_path, batch_size=batch_size, input_size=224)
-    num_class = 2
+    num_class = cfg.training.classnumber
     
     model_dict = {"num_classes": num_class}
     print(100*'#')
@@ -159,9 +152,9 @@ def objective(trial):
 
     correctness_history = crl_utils.History(len(train_loader.dataset))
     ranking_criterion = nn.MarginRankingLoss(margin=0.0).to(device)
-
+    args = None
     # start Train
-    for epoch in range(1, args.epochs + 1):
+    for epoch in range(1, epochs + 1):
         
         train_loss, train_acc = train_base.train(train_loader,
                     model,
@@ -170,20 +163,20 @@ def objective(trial):
                     optimizer,
                     epoch,
                     correctness_history,
-                    args, classnumber)
+                    plot, method, rank_weight, classnumber)
         scheduler.step()
         
         writer.add_scalar('Loss/Train', train_loss, epoch)
         writer.add_scalar('Accuracy/Train', train_acc, epoch)
 
         # save model
-        if epoch == args.epochs:
+        if epoch == epochs:
             torch.save(model.state_dict(),
                         os.path.join(save_path, 'model.pth'))
         # finish train
 
         # calc measure
-        if epoch % args.plot == 0:
+        if epoch % plot == 0:
             print(f"{'#'*50} validating... {50*'#'}")
             val_loss, val_acc = validate(valid_loader, model, cls_criterion)
             writer.add_scalar('Loss/Validation', val_loss, epoch)
@@ -202,12 +195,12 @@ def objective(trial):
             writer.add_scalar('Metrics/eaurc', eaurc, epoch)
             writer.add_scalar('Metrics/augrc', augrc, epoch)
 
-    writer.add_scalar('Params/initial_lr', base_lr, args.epochs)
-    writer.add_scalar('Params/lr_factor', lr_factor, args.epochs)
-    writer.add_scalar('Params/weight_decay', custom_weight_decay, args.epochs)
-    writer.add_scalar('Params/momentum', custom_momentum, args.epochs)
-    writer.add_scalar('Params/trial_number', trial.number, args.epochs)
-    epoch = args.epochs
+    writer.add_scalar('Params/initial_lr', base_lr, epochs)
+    writer.add_scalar('Params/lr_factor', lr_factor, epochs)
+    writer.add_scalar('Params/weight_decay', custom_weight_decay, epochs)
+    writer.add_scalar('Params/momentum', custom_momentum, epochs)
+    writer.add_scalar('Params/trial_number', trial.number, epochs)
+    epoch = epochs
     torch.save(model.state_dict(), os.path.join(save_path, 'model.pth'))
     
     acc, auroc, aupr_success, aupr, fpr, tnr, aurc, eaurc, augrc = metrics.calc_metrics(args, train_loader, model, cls_criterion, save_path, 'train') 
@@ -248,7 +241,6 @@ def objective(trial):
     ccc = 0
     while ccc < 10:
         try:
-            port = args.port #5000 if server1 else 5001
             response = requests.post(f"http://localhost:{port}/validate", json={"run_id": RUN_ID})
             response.raise_for_status()
             break

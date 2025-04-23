@@ -1,0 +1,8 @@
+defaults:
+  - base.yaml
+
+fmfp:
+  swa_start_low: 65
+  swa_start_high: 150 
+  swa_lr_low: 1e-3
+  swa_lr_high: 1e-1 
