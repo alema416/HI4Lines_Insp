@@ -1,0 +1,3 @@
+optimizer:
+  classifier_data_path: '../data/processed/IDID_cropped_224'
+  all_path: '../data/interim/IDID_cropped_224'

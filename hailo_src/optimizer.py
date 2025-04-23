@@ -16,6 +16,8 @@ from matplotlib import pyplot as plt
 from PIL import Image
 from tensorflow.python.eager.context import eager_mode
 from hailo_sdk_client import ClientRunner, InferenceContext
+from hydra import initialize, compose
+
 matplotlib.use("Agg")
 
 parser = argparse.ArgumentParser(description='Rethinking CC for FP')
@@ -23,6 +25,10 @@ parser.add_argument('--run_id', required=True, type=int, help='')
 parser.add_argument('--pathh', required=True, type=str, help='')
 args = parser.parse_args()
 
+with initialize(config_path="../configs/"):
+    cfg = compose(config_name="optimizer")  # exp1.yaml with defaults key
+valall_path = os.path.join(cfg.optimizer.all_path, 'val', 'all')
+trainall_path = os.path.join(cfg.optimizer.all_path, 'train', 'all')
 
 # -----------------------------------------
 # CUSTOM (degirum used closed-source softmax
@@ -89,6 +95,8 @@ def mynorm(data):
 
 def visualize_results(images, images_path, split, scores=None, inf_labels=None, place=None):
     images_list = sorted([img_name for img_name in os.listdir(images_path) if os.path.splitext(img_name)[1] == ".jpg"])
+    broken_path = os.path.join(cfg.optimizer.classifier_data_path, split, 'broken')
+    healthy_path = os.path.join(cfg.optimizer.classifier_data_path, split, 'healthy')
 
     success_confidences = []
     error_confidences = []
@@ -108,7 +116,7 @@ def visualize_results(images, images_path, split, scores=None, inf_labels=None, 
     list_softmax = []
     #list_logit = []
     labels = []
-    with open(os.path.join('./', f'per_sample_{place}_{split}.csv'), 'w', newline='') as csvfile:
+    with open(os.path.join(quantized_har_dir, f'per_sample_{place}_{split}.csv'), 'w', newline='') as csvfile:
         csv_writer = csv.writer(csvfile)
     # Write a header row (optional)
         csv_writer.writerow(['File Name', 'Predicted Label', \
@@ -118,9 +126,9 @@ def visualize_results(images, images_path, split, scores=None, inf_labels=None, 
             total_samples += 1
 
             real_label = None
-            if os.path.isfile(os.path.join(f'./yolo_m2_class_square_JOIN_224/{split}/broken', images_list[img_idx])):
+            if os.path.isfile(os.path.join(broken_path, images_list[img_idx])):
                 real_label = 'broken' 
-            elif os.path.isfile(os.path.join(f'./yolo_m2_class_square_JOIN_224/{split}/healthy', images_list[img_idx])):
+            elif os.path.isfile(os.path.join(healthy_path, images_list[img_idx])):
                 real_label = 'healthy'
             else:
                 print('==================ERROR==================')
@@ -198,9 +206,10 @@ def visualize_results(images, images_path, split, scores=None, inf_labels=None, 
 # -------------
 # load HAR file and prepare dataset
 # -------------
-har_dir = './'
-onnx_dir = './'
-quantized_har_dir = './'
+onnx_dir = f'../models/exp_name/{args.run_id}'
+har_dir = f'../models/exp_name/{args.run_id}'
+quantized_har_dir = f'../models/exp_name/{args.run_id}'
+
 model_name = f'model_{args.run_id}'
 onnx_model_name = model_name
 
@@ -212,7 +221,7 @@ assert os.path.isfile(hailo_model_har_name), "Please provide valid path for HAR 
 runner = ClientRunner(har=hailo_model_har_name)
 
 
-images_path = './yolo_m2_class_square_JOIN_224/val/all'
+images_path = valall_path
 images_list = [img_name for img_name in os.listdir(images_path) if os.path.splitext(img_name)[1] == ".jpg"]
 
 
@@ -235,7 +244,7 @@ with runner.infer_context(InferenceContext.SDK_NATIVE) as ctx:
     native_res = runner.infer(ctx, image_dataset_normalized[:, :, :, :])
 
 native_scores, native_labels = postproc(native_res)
-aaa = visualize_results(image_dataset[:, :, :, :], './yolo_m2_class_square_JOIN_224/val/all', 'val', native_scores, native_labels, place='native')
+aaa = visualize_results(image_dataset[:, :, :, :], valall_path, 'val', native_scores, native_labels, place='native')
 
 model_script_lines = [
     "normalization1 = normalization([128.68140225, 117.6060306, 109.43819699999999 ], [46.829990099999996, 48.069616499999995,  50.7004974])\n",
@@ -254,13 +263,13 @@ with runner.infer_context(InferenceContext.SDK_FP_OPTIMIZED) as ctx:
     modified_res = runner.infer(ctx, image_dataset[:, :, :, :])
 
 modified_scores, modified_labels = postproc(modified_res)
-aaa = visualize_results(image_dataset[:, :, :, :], './yolo_m2_class_square_JOIN_224/val/all', 'val', modified_scores, modified_labels, place='optimized')
+aaa = visualize_results(image_dataset[:, :, :, :], valall_path, 'val', modified_scores, modified_labels, place='optimized')
 
 # -------------
 # calibrate model using train set
 # -------------
 
-images_path_c = './yolo_m2_class_square_JOIN_224/train/all'
+images_path_c = trainall_path
 images_list = [img_name for img_name in os.listdir(images_path_c) if os.path.splitext(img_name)[1] == ".jpg"]
 
 
@@ -290,14 +299,14 @@ with runner.infer_context(InferenceContext.SDK_QUANTIZED) as ctx:
 quantized_scores, quantized_labels = postproc(quantized_res)
 
 
-csv_path = './total.csv'
+csv_path = os.path.join(quantized_har_dir, 'total.csv')
 file_exists = os.path.isfile(csv_path)
 with open(csv_path, 'a', newline='') as csvfile:
     csv_writer = csv.writer(csvfile)
     # Write a header row (optional)
     if not file_exists:
         csv_writer.writerow(['run_id', 'acc', 'auroc', 'aupr_success', 'aupr', 'fpr', 'tpr', 'aurc', 'eaurc', 'augrc'])
-    aaa = visualize_results(image_dataset[:, :, :, :], './yolo_m2_class_square_JOIN_224/val/all', 'val', quantized_scores, quantized_labels, place='quantized')
+    aaa = visualize_results(image_dataset[:, :, :, :], valall_path, 'val', quantized_scores, quantized_labels, place='quantized')
     akadu = [args.run_id]
     for ii in aaa:
         akadu.append(ii)
@@ -314,7 +323,7 @@ runner.save_har(quantized_model_har_path)
 for split in ['val']:
     for place in ['native', 'optimized', 'quantized']:
         expected_cols = {'Confidence (%)', 'correct'}
-        df = pd.read_csv(f'./per_sample_{place}_{split}.csv')
+        df = pd.read_csv(os.path.join(quantized_har_dir, f'per_sample_{place}_{split}.csv'))
         if not expected_cols.issubset(df.columns):
             print(f"CSV file {csv_file} does not have the expected columns.")
         
@@ -329,5 +338,5 @@ for split in ['val']:
         plt.ylabel("Density")
         plt.title("Confidence Distribution - {csv_file}")
         plt.legend()
-        plt.savefig(f'fmfp_{place}_{split}_plot_{args.run_id}.png')
+        plt.savefig(os.path.join(quantized_har_dir, f'fmfp_{place}_{split}_plot_{args.run_id}.png'))
         plt.close()

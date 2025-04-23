@@ -99,10 +99,11 @@ and this                  -v ${SHARED_DIR}/:/local/${SHARED_DIR}:rw \
 (lines 16 and 226)
 
 flask
+torchmetrics
+hydra-core
 
 cd hailo_src
-(hailo_virtualenv) hailo@alema416-ideapad:/local/home/alema416/dev/work/HI4Lines_Insp/hailo_src$ sudo chmod a+w .
-
+sudo chmod -R a+w ..
 ckpt2onnx and parser ok
 
 
