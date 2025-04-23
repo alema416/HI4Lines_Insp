@@ -1,10 +1,12 @@
 import degirum as dg
 import degirum_tools
 from pprint import pprint
-import classification_eval
+import class_eval_sec
 import argparse
 
-parser = argparse.ArgumentParser(description='Classifier Evaluation')
+#default='./output_lp_earlier_flat/', default=4, 
+parser = argparse.ArgumentParser(description='Rethinking CC for FP')
+
 parser.add_argument('--model', default='resnet_v1_18_custom_code', type=str, help='model name')
 args = parser.parse_args()
 
@@ -16,21 +18,19 @@ model = dg.load_model(
     zoo_url="/home/amax/GitHub/hailo_examples/models/"
 )
 
-evaluator_tr = classification_eval.ImageClassificationModelEvaluator(
+evaluator_tr = class_eval_sec.ImageClassificationModelEvaluator(
     model,
     show_progress=False, split='train',
     top_k=[1],  # Evaluate top-1 and top-5 accuracy
     foldermap={0: "broken", 1: "healthy"}  # Mapping class IDs to folders
 )
-
-evaluator_v = classification_eval.ImageClassificationModelEvaluator(
+evaluator_v = class_eval_sec.ImageClassificationModelEvaluator(
     model,
     show_progress=False, split='val',
     top_k=[1],  # Evaluate top-1 and top-5 accuracy
     foldermap={0: "broken", 1: "healthy"}  # Mapping class IDs to folders
 )
-
-evaluator_te = classification_eval.ImageClassificationModelEvaluator(
+evaluator_te = class_eval_sec.ImageClassificationModelEvaluator(
     model,
     show_progress=False, split='test',
     top_k=[1],  # Evaluate top-1 and top-5 accuracy

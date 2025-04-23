@@ -14,7 +14,7 @@ def validate():
     split = data.get('split')
     print(f'received threshold: {threshold}')
     
-    script = {"file": f"pipeline_1.py", "args": ["--THRES", str(threshold), "--SPLIT", split]}
+    script = {"file": f"inference_pipeline.py", "args": ["--THRES", str(threshold), "--SPLIT", split]}
     
     command = ["python", script["file"]] + script["args"]
     results = {}
@@ -41,5 +41,4 @@ def validate():
     return jsonify(results)
 
 if __name__ == '__main__':
-    ip = input('IP address: ') #192.168.2.53
-    app.run(host=ip, port=5005)
+    app.run(host='192.168.2.53', port=5005)

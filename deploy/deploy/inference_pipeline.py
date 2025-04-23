@@ -120,17 +120,3 @@ std = np.std(arr)
 print(f"Mean: {mean:.4f}")
 print(f"Standard Deviation: {std:.4f}")
 logging.info(f'{THRES}: offloaded {offloaded} out of {total_images} images')
-
-
-# run inference on video stream
-'''
-inference_results = degirum_tools.predict_stream(crop_model, video_source)
-
-# display inference results
-# Press 'x' or 'q' to stop
-with degirum_tools.Display("Faces and Gender") as display:
-    for inference_result in inference_results:
-        #display.show(inference_result)
-        #time.sleep(2)
-        print(inference_result.results)
-'''

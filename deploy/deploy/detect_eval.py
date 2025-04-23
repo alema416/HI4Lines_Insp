@@ -1,7 +1,7 @@
 import degirum as dg
 import degirum_tools
 from pprint import pprint
-import detection_eval
+import detection_eval_src
 
 model_name = 'yolov11n_vanilla_simplified'
 
@@ -11,7 +11,7 @@ model = dg.load_model(
     zoo_url="/home/amax/GitHub/hailo_examples/models/"
 )
 
-evaluator = detection_eval.ObjectDetectionModelEvaluator(
+evaluator = detection_eval_src.ObjectDetectionModelEvaluator(
     model,
     show_progress=False,
     classmap={0: 0, 1: 1},  
