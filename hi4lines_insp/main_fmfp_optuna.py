@@ -140,7 +140,11 @@ def objective(trial):
     run_name = f'{modelname}_{method}_{input_size}_{swa_start}_{epochs}'
     if not os.path.exists(save_path):
         os.makedirs(save_path)
-    writer = SummaryWriter(log_dir=save_path)
+        os.makedirs(os.path.join(save_path, 'logs'))
+        os.makedirs(os.path.join(save_path, 'model_state_dict'))
+
+    writer = SummaryWriter(log_dir=os.path.join(save_path, 'logs'))
+
     dataset_path = cfg.training.data_path
     train_loader, valid_loader, test_loader = custom_data.get_loader_local(dataset_path, batch_size=batch_size, input_size=cfg.training.input_size)
     
@@ -188,7 +192,8 @@ def objective(trial):
 
         # save model
         if epoch == epochs:
-            torch.save(model.state_dict(), os.path.join(save_path, 'model.pth'))
+            torch.save(model.state_dict(), os.path.join(save_path, 'model_state_dict', 'model.pth'))
+
         # finish train
 
         # calc measure
@@ -233,7 +238,8 @@ def objective(trial):
     print('after update')
     model = swa_model.to(device)
     print('model loaded!!')
-    torch.save(model.state_dict(), os.path.join(save_path, 'model.pth'))
+    torch.save(model.state_dict(), os.path.join(save_path, 'model_state_dict', 'model.pth'))
+
     print('model saved!!')
     acc, auroc, aupr_success, aupr, fpr, tnr, aurc, eaurc, augrc = metrics.calc_metrics(args, train_loader, model, cls_criterion, save_path, 'train') 
     
@@ -274,7 +280,7 @@ def objective(trial):
     ccc = 0
     while ccc < 10:
         try:
-            response = requests.post(f"http://localhost:{port}/validate", json={"run_id": RUN_ID})
+            response = requests.post(f"http://{cfg.training.hailo_ip}:{port}/validate", json={"run_id": RUN_ID})
             response.raise_for_status()
             break
         except requests.RequestException as e:

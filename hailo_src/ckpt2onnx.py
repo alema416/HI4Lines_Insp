@@ -4,6 +4,7 @@ from model import resnet18
 from collections import OrderedDict
 import argparse
 import os
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 parser = argparse.ArgumentParser(description='Rethinking CC for FP')
 parser.add_argument('--run_id', required=True, type=int, help='')
@@ -12,18 +13,19 @@ args = parser.parse_args()
 
 device = torch.device("cpu")
 num_class = 2
-onnx_dir = './'
+
+onnx_dir = f'../models/exp_name/{args.run_id}'
 model_dict = {"num_classes": num_class}
 
 ours = True
 
 if ours:
-  model = resnet18.ResNet18(num_classes=2).cuda()
+  model = resnet18.ResNet18(num_classes=2).to(device)
 else:
-  model = resnet18_custom.resnet18().cuda()
+  model = resnet18_custom.resnet18().to(device)
 
 model_name = f'model_{args.run_id}'
-model_path = f'{args.pathh}/{args.run_id}/model.pth'
+model_path = f'{args.pathh}/{args.run_id}/model_state_dict/model.pth'
 
 state_dict_fmfp = torch.load(model_path, map_location=device)
 

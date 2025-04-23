@@ -1,5 +1,6 @@
 training:
   base_lr_low: 1e-3
+  hailo_ip: '192.168.1.6'
   base_lr_high: 1e-1
   lr_factor: 0.1
   weight_decay_low: 1e-5  
@@ -14,7 +15,7 @@ training:
   classnumber: 2
   input_size: 224
   data_path: '../data/processed/IDID_cropped_224'
-  save_path: 'resnet18'
+  save_path: '../models/exp_name'
   model_name: 'resnet18'
   print_freq: 72 
   port: 5000

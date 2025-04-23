@@ -7,6 +7,8 @@ import csv
 import os
 from utils.nmetr import AUGRC
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 def calc_metrics(args, loader, model, criterion, DATA_DIR, split):
     acc, softmax, correct, logit, conf_correct, conf_wrong, ece_correct, ece_wrong, nll_correct, nll_wrong, labels = get_metric_values(args, loader, model, criterion, DATA_DIR, split)
     # aurc, eaurc
@@ -172,7 +174,7 @@ def get_metric_values_normal(args, loader, model, criterion, DATA_DIR, split):
         conf = []
         correct = []
         
-        with open(os.path.join(DATA_DIR, f'per_sample_{split}.csv'), 'w', newline='') as csvfile:
+        with open(os.path.join(DATA_DIR, 'logs', f'per_sample_{split}.csv'), 'w', newline='') as csvfile:
             csv_writer = csv.writer(csvfile)
         # Write a header row (optional)
             csv_writer.writerow(['File Name', 'Predicted Label', \
@@ -180,11 +182,11 @@ def get_metric_values_normal(args, loader, model, criterion, DATA_DIR, split):
 
             with torch.no_grad():
                 for input, target, idx, file_names in loader:
-                    input = input.cuda()
-                    target = target.long().cuda()
+                    input = input.to(device)
+                    target = target.long().to(device)
                     output = model(input)
 
-                    loss = criterion(output, target).cuda()
+                    loss = criterion(output, target).to(device)
                     logits_list.append(output.detach().cpu())
                     labels_list.append(target.cpu())
                     total_loss += loss.mean().item()
@@ -267,11 +269,11 @@ def get_metric_values_fast(args, loader, model, criterion, DATA_DIR, split):
 
         with torch.no_grad():
             for input, target, idx, file_names in loader:
-                input = input.cuda()
-                target = target.long().cuda()
+                input = input.to(device)
+                target = target.long().to(device)
                 output = model(input)
 
-                loss = criterion(output, target).cuda()
+                loss = criterion(output, target).to(device)
                 logits_list.append(output.detach().cpu())
                 labels_list.append(target.cpu())
                 total_loss += loss.mean().item()
@@ -370,5 +372,5 @@ class ECELoss(nn.Module):
         return ece
 
 
-ece_criterion = ECELoss().cuda()
-nll_criterion = nn.CrossEntropyLoss().cuda()
+ece_criterion = ECELoss().to(device)
+nll_criterion = nn.CrossEntropyLoss().to(device)

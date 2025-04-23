@@ -74,12 +74,48 @@ Citation
 
 Abstract: Abstract
 
-
-
 **TODO**
 
-* add the server inference results *howto*
-* add python enviroments and docker instructions
-* make the code device agnostic (replace paths and IP addresses with argparse)
-* differentiate *persample metrics* and *global metrics*
-* yaml for yolo detection only vs detection+classification 
+* differentiate *persample metrics* and *global metrics* (steamline pipeline infererence results)
+
+## 1 - Setup Data Science Module
+
+git clone repo
+cd repo
+
+Install virtualenv & download data via:
+
+```
+make
+make 
+```
+
+## 2 - Setup Quantizer/Emulator
+
+* git clone repo
+* Install HAILO AI SW Suite via the instructions: https://hailo.ai/developer-zone/documentation/hailo-sw-suite-2024-07/?sp_referrer=suite%2Fsuite_install.html#docker-installation
+* and in the dockerfile replace this: readonly SHARED_DIR=<repo_dir>
+and this                  -v ${SHARED_DIR}/:/local/${SHARED_DIR}:rw \
+(lines 16 and 226)
+
+flask
+
+cd hailo_src
+(hailo_virtualenv) hailo@alema416-ideapad:/local/home/alema416/dev/work/HI4Lines_Insp/hailo_src$ sudo chmod a+w .
+
+ckpt2onnx and parser ok
+
+
+## 3 - Edge Device Setup
+
+Install virtualenv & download data via:
+
+git clone repo
+cd repo/deploy
+
+Install virtualenv & download data via:
+
+```
+make
+make 
+```

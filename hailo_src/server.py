@@ -8,7 +8,7 @@ import base64
 import requests
 app = Flask(__name__)
 
-EXP_PATH = # path for the 0,1,2... directories that containt model state dictionaries
+EXP_PATH = '../models/exp_name' 
 
 @app.route('/validate', methods=['POST'])
 
@@ -62,10 +62,10 @@ def validate():
     print(f'emulator acc: {acc_emu}')
     # Define the server URL (change if running on a different host)
     
-    SERVER_URL = "http://192.168.2.6:5001/validate"  # Update with actual server address 
-    
+    SERVER_URL = "http://192.168.1.9:5001/validate"  # Update with actual server address 
+    hef_dir = './'
     # File to send 
-    FILE_PATH = f'./model_{run_id}.hef'  # Change this to your actual file path
+    FILE_PATH = os.path.join(hef_dir, f'model_{run_id}.hef')  # Change this to your actual file path
     
     # Open the file in binary mode and send it
     res = 400

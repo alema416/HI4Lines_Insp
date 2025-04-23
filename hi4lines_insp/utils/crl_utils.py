@@ -2,6 +2,8 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 # rank target entropy
 def negative_entropy(data, normalize=False, max_value=None):
     softmax = F.softmax(data, dim=1)
@@ -60,9 +62,9 @@ class History(object):
         less = np.array(target1 < target2, dtype='float') * (-1)
 
         target = greater + less
-        target = torch.from_numpy(target).float().cuda()
+        target = torch.from_numpy(target).float().to(device)()
         # calc margin
         margin = abs(target1 - target2)
-        margin = torch.from_numpy(margin).float().cuda()
+        margin = torch.from_numpy(margin).float().to(device)()
 
         return target, margin

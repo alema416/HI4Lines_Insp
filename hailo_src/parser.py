@@ -12,8 +12,8 @@ parser.add_argument('--run_id', required=True, type=int, help='')
 parser.add_argument('--pathh', required=True, type=str, help='')
 args = parser.parse_args()
 
-onnx_dir = './'
-har_dir = './'
+onnx_dir = f'../models/exp_name/{args.run_id}'
+har_dir = f'../models/exp_name/{args.run_id}'
 chosen_hw_arch = "hailo8"
 model_name = f'model_{args.run_id}'
 
@@ -31,5 +31,5 @@ hn, npz = runner.translate_onnx_model(
 hailo_model_har_name = os.path.join(har_dir, f"{onnx_model_name}_hailo_model.har")
 runner.save_har(hailo_model_har_name)
 
-subprocess.run(['hailo', 'visualizer', f'{hailo_model_har_name}', '--no-browser'], check=True)
-SVG(f"{onnx_model_name}.svg")
+#subprocess.run(['hailo', 'visualizer', f'{hailo_model_har_name}', '--no-browser'], check=True)
+#SVG(f"{onnx_model_name}.svg")
