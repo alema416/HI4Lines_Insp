@@ -22,7 +22,6 @@ matplotlib.use("Agg")
 
 parser = argparse.ArgumentParser(description='Rethinking CC for FP')
 parser.add_argument('--run_id', required=True, type=int, help='')
-parser.add_argument('--pathh', required=True, type=str, help='')
 args = parser.parse_args()
 
 with initialize(config_path="../configs/"):
@@ -206,6 +205,8 @@ def visualize_results(images, images_path, split, scores=None, inf_labels=None, 
 # -------------
 # load HAR file and prepare dataset
 # -------------
+exp_name = cfg.optimizer.exp_name
+
 onnx_dir = f'../models/{exp_name}/{args.run_id}'
 har_dir = f'../models/{exp_name}/{args.run_id}'
 quantized_har_dir = f'../models/{exp_name}/{args.run_id}'

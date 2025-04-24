@@ -24,8 +24,8 @@ def validate():
     print(f'received run_id {run_id}')
     
     for j in ['ckpt2onnx', 'parser', 'optimizer']:
-        scripts.append({"file": f"{j}.py", "args": ["--pathh", EXP_PATH, "--run_id", str(run_id)]})
-    scripts.append({"file": f"compiler.py", "args": ["--pathh", EXP_PATH, "--run_id", str(run_id)]})
+        scripts.append({"file": f"{j}.py", "args": ["--run_id", str(run_id)]})
+    scripts.append({"file": f"compiler.py", "args": ["--run_id", str(run_id)]})
     
     augrc_emu = None
     acc_emu = None

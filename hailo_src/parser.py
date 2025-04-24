@@ -6,14 +6,19 @@ import argparse
 import os
 # import the ClientRunner class from the hailo_sdk_client package
 from hailo_sdk_client import ClientRunner
+from hydra import initialize, compose
+
+with initialize(config_path="../configs/"):
+    cfg = compose(config_name="optimizer")  # exp1.yaml with defaults key
+
+exp_name = cfg.optimizer.exp_name
 
 parser = argparse.ArgumentParser(description='Rethinking CC for FP')
 parser.add_argument('--run_id', required=True, type=int, help='')
-parser.add_argument('--pathh', required=True, type=str, help='')
 args = parser.parse_args()
 
-onnx_dir = f'../models/exp_name/{args.run_id}'
-har_dir = f'../models/exp_name/{args.run_id}'
+onnx_dir = f'../models/{exp_name}/{args.run_id}'
+har_dir = f'../models/{exp_name}/{args.run_id}'
 chosen_hw_arch = "hailo8"
 model_name = f'model_{args.run_id}'
 

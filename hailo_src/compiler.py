@@ -2,10 +2,15 @@ from hailo_sdk_client import ClientRunner
 import argparse
 import subprocess
 import os
+from hydra import initialize, compose
+
+with initialize(config_path="../configs/"):
+    cfg = compose(config_name="optimizer")  # exp1.yaml with defaults key
+
+exp_name = cfg.optimizer.exp_name
 
 parser = argparse.ArgumentParser(description='Rethinking CC for FP')
 parser.add_argument('--run_id', required=True, type=int, help='')
-parser.add_argument('--pathh', required=True, type=str, help='')
 args = parser.parse_args()
 
 hef_dir = f'../models/{exp_name}/{args.run_id}'
