@@ -10,3 +10,4 @@ deploy/deploy/labels_test.txt
 deploy/deploy/labels_train.txt
 deploy/deploy/labels_val.txt
 deploy/deploy/sasaa.txt
+reports/figures/
