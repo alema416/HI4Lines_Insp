@@ -27,9 +27,8 @@ def validate():
         scripts.append({"file": f"{j}.py", "args": ["--run_id", str(run_id)]})
     scripts.append({"file": f"compiler.py", "args": ["--run_id", str(run_id)]})
     
-    augrc_emu = None
-    acc_emu = None
-    
+    augrc_emu = 0.0
+    acc_emu = 9999.999
     for script in scripts:
         command = ["python", script["file"]] + script["args"]
         start_time = time.time()
@@ -60,14 +59,13 @@ def validate():
             print(f"Error running {script['file']}:")
             print(e.stderr)
         
-        print(f'done in {((time.time() - start_time)/60):.1f} min')
-    
+        print(f'done in {((time.time() - start_time)/60):.1f} min') 
     print(f'emulator AUGRC: {augrc_emu}')
     print(f'emulator acc: {acc_emu}')
     # Define the server URL (change if running on a different host)
     rpi_ip = cfg.optimizer.rpi_ip #input('RPI IP address: ')
     SERVER_URL = f"http://{rpi_ip}:5001/validate"  # Update with actual server address 
-    hef_dir = f'../models/{exp_name}/{args.run_id}'
+    hef_dir = f'../models/{exp_name}/{run_id}'
     # File to send 
     FILE_PATH = os.path.join(hef_dir, f'model_{run_id}.hef')  # Change this to your actual file path
     
