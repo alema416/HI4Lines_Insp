@@ -39,9 +39,12 @@ Abstract: Abstract
 
 --------
 
-## Data Science Server 
+## Installation & Execution Instructions
 
-### Step 1: Setup Data Science Module
+
+### Data Science Server 
+
+#### Step 1: Setup Data Science Module
 
 Install virtualenv & download data via:
 
@@ -51,7 +54,7 @@ make requirements
 make data
 ```
 
-### Step 2: Setup Quantizer/Emulator
+#### Step 2: Setup Quantizer/Emulator
 
 * Install HAILO AI SW Suite via the instructions: 
 
@@ -81,9 +84,9 @@ sudo chmod -R a+w ..
 python3 server.py
 ```
 
-## Raspberry Pi
+### Raspberry Pi
 
-### Setup Edge Device
+#### Setup Edge Device
 
 Install virtualenv & download data via:
 
