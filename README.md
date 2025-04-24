@@ -73,9 +73,10 @@ And this:
 
 (line 226)
 
-Finally: 
+Finally, from inside the docker container run: 
 ```
-cd hailo_src
+cd /local/<your_repo_path>/hailo_src
+python3 -m pip install flask
 sudo chmod -R a+w ..
 python3 server.py
 ```

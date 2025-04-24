@@ -116,7 +116,7 @@ def objective(trial):
     epochs = cfg.training.epochs
     plot = cfg.training.validate_freq
     batch_size = cfg.training.batch_size 
-    port = cfg.training.port
+    port = 5001
     save_path = cfg.training.save_path
     base_lr = trial.suggest_loguniform('lr', cfg.training.base_lr_low, cfg.training.base_lr_high)
     
@@ -278,9 +278,10 @@ def objective(trial):
     writer.add_scalar('final_Metrics/test_augrc', augrc, epoch)
     
     ccc = 0
+    hailo_ip = input('hailo ip address: ')
     while ccc < 10:
         try:
-            response = requests.post(f"http://{cfg.training.hailo_ip}:{port}/validate", json={"run_id": RUN_ID})
+            response = requests.post(f"http://{hailo_ip}:{port}/validate", json={"run_id": RUN_ID})
             response.raise_for_status()
             break
         except requests.RequestException as e:

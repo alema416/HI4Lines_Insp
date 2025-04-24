@@ -4,6 +4,8 @@ ruff
 notebook
 ipykernel
 degirum
+hydra-core
+flask
 degirum_tools
 degirum_cli
 -e .
