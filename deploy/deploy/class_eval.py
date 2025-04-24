@@ -16,19 +16,19 @@ model = dg.load_model(
     zoo_url= cfg.classifier.model_zoo_dir
 )
 
-evaluator_tr = class_eval_sec.ImageClassificationModelEvaluator(
+evaluator_tr = class_eval_src.ImageClassificationModelEvaluator(
     model,
     show_progress=False, split='train',
     top_k=[1],  # Evaluate top-1 and top-5 accuracy
     foldermap={0: "broken", 1: "healthy"}  # Mapping class IDs to folders
 )
-evaluator_v = class_eval_sec.ImageClassificationModelEvaluator(
+evaluator_v = class_eval_src.ImageClassificationModelEvaluator(
     model,
     show_progress=False, split='val',
     top_k=[1],  # Evaluate top-1 and top-5 accuracy
     foldermap={0: "broken", 1: "healthy"}  # Mapping class IDs to folders
 )
-evaluator_te = class_eval_sec.ImageClassificationModelEvaluator(
+evaluator_te = class_eval_src.ImageClassificationModelEvaluator(
     model,
     show_progress=False, split='test',
     top_k=[1],  # Evaluate top-1 and top-5 accuracy
