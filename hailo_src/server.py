@@ -6,9 +6,13 @@ import subprocess
 import os
 import base64
 import requests
-app = Flask(__name__)
+from hydra import initialize, compose
 
-EXP_PATH = '../models/exp_name' 
+app = Flask(__name__)
+with initialize(config_path="../configs/"):
+    cfg = compose(config_name="optimizer")  # exp1.yaml with defaults key
+
+EXP_PATH = cfg.optimizer.exp_name
 
 @app.route('/validate', methods=['POST'])
 
