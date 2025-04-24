@@ -290,9 +290,8 @@ def objective(trial):
     return float(augrc_hw_val)
     
 def main():
-    storage_name = input('storage_name: ')
-    study_name = input('study_name: ')
-    storage = f'sqlite:///{storage_name}.db'
+    study_name = cfg.training.study_name #input('study_name: ')
+    storage = f'sqlite:///{study_name}_storage.db'
     study = optuna.create_study(direction='minimize', load_if_exists=True, study_name = study_name, storage=storage)
     print(f"Sampler is {study.sampler.__class__.__name__}")
     study.optimize(objective, n_trials=1, n_jobs=1)

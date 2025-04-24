@@ -331,8 +331,8 @@ def objective(trial):
     
 
 def main():
-    study_name = input('study_name: ')
-    storage = "sqlite:///haht_augrc_quant_no_ES.db" #'' # (sensitive)
+    study_name = cfg.training.study_name #input('study_name: ')
+    storage = f'sqlite:///{study_name}_storage.db'
     study = optuna.create_study(direction='minimize', load_if_exists=True, study_name = study_name, storage=storage)
     print(f"Sampler is {study.sampler.__class__.__name__}")
     study.optimize(objective, n_trials=400, n_jobs=1)
