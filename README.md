@@ -4,6 +4,7 @@
     <img src="https://img.shields.io/badge/CCDS-Project%20template-328F97?logo=cookiecutter" />
 </a>
 
+
 End-to-End MLOps Pipeline for Trustworthy Power-Lines-Inspection
 
 ![image](https://github.com/user-attachments/assets/80c2dbd1-43da-4402-987e-30a17e18db5e)
@@ -20,21 +21,20 @@ Abstract: Abstract
 ## Project Organization
 
 ```
-├── configs
+├── configs             <- Store project-wide editable variables and configurations.
 ├── data
-├── deploy
-├── docs
-├── hailo_src
-├── hi4lines_insp
-├── Makefile
-├── models
-├── notebooks
+│   ├── raw            <- The original, immutable data dump.
+│   ├── interim        <- Intermediate data that has been transformed.
+│   ├── processed      <- The final data sets for modeling.
+├── deploy             <- Source code and env for edge device inference.
+├── docs               <- A default mkdocs project.
+├── hailo_src          <- Source code for HAILO convertions.
+├── hi4lines_insp      <- Source code for Data-Science part.
+├── Makefile           <- Makefile with convenience commands for installation
 ├── pyproject.toml
-├── README.md
-├── references
+├── README.md          <- The top-level README for developers using this project.
 ├── reports
-└── requirements.txt
-
+└── requirements.txt   <- The requirements file for reproducing the data-science analysis environment.
 ```
 
 --------
@@ -76,7 +76,7 @@ And this:
 Finally, from inside the docker container run: 
 ```
 cd /local/<your_repo_path>/hailo_src
-python3 -m pip install flask
+python3 -m pip install requirements.txt flask torchmetrics
 sudo chmod -R a+w ..
 python3 server.py
 ```
