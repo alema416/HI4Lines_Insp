@@ -27,8 +27,10 @@ def validate():
         print(f'received run_id {run_id}')
         
     except Exception as e:
-        return jsonify({"error": str(e)}), 400
-
+        #return jsonify({"error": str(e)}), 400
+        with open('sasaa.txt', "w", encoding="utf-8") as f:
+            f.write(str(e))
+        return jsonify({'error': str(e)}), 400
     if encoded_file:
         file_content = base64.b64decode(encoded_file)
         file_path = os.path.join(UPLOAD_FOLDER, cfg.server.temp_model_flnm)
@@ -37,7 +39,7 @@ def validate():
         print(f"File {file_path} received and saved.")
 
     for j in ['class_eval', 'metric']:
-        scripts.append({"file": f"{j}.py", "args": ["--model", cdf.server.temp_model_flnm]})
+        scripts.append({"file": f"{j}.py", "args": ["--model", cfg.server.temp_model_flnm]})
     
     augrc_hw_train = None
     acc_hw_train = None
@@ -110,6 +112,10 @@ def validate():
         except subprocess.CalledProcessError as e:
             print(f"Error running {script['file']}:")
             print(e.stderr)
+            os.remove(LOCK_FILE)
+            with open('sasaa.txt', "w", encoding="utf-8") as f:
+                f.write(str(e.stderr))         # write the string
+                f.write("\n")         # optionally add a newline
     os.remove(LOCK_FILE)
     return jsonify({'acc_hw_train': acc_hw_train, 'augrc_hw_train': augrc_hw_train, 'acc_hw_val': acc_hw_val, 'augrc_hw_val': augrc_hw_val, 'acc_hw_test': acc_hw_test, 'augrc_hw_test': augrc_hw_test}), 200
 
