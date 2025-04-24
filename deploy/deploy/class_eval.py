@@ -1,8 +1,9 @@
 import degirum as dg
 import degirum_tools
 from pprint import pprint
-import class_eval_sec
+import class_eval_src
 import argparse
+from hydra import initialize, compose
 
 with initialize(config_path="../../configs/"):
     cfg = compose(config_name="hw_classifier")  # exp1.yaml with defaults key
@@ -12,7 +13,7 @@ model_name = cfg.classifier.modelname
 model = dg.load_model(
     model_name=model_name,
     inference_host_address='@local',
-    zoo_url= cfg.classifer.model_zoo_dir
+    zoo_url= cfg.classifier.model_zoo_dir
 )
 
 evaluator_tr = class_eval_sec.ImageClassificationModelEvaluator(

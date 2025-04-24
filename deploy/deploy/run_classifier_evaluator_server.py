@@ -31,7 +31,7 @@ def validate():
 
     if encoded_file:
         file_content = base64.b64decode(encoded_file)
-        file_path = os.path.join(UPLOAD_FOLDER, cdf.server.temp_model_flnm)
+        file_path = os.path.join(UPLOAD_FOLDER, cfg.server.temp_model_flnm)
         with open(file_path, 'wb') as f:
             f.write(file_content)
         print(f"File {file_path} received and saved.")
@@ -114,4 +114,4 @@ def validate():
     return jsonify({'acc_hw_train': acc_hw_train, 'augrc_hw_train': augrc_hw_train, 'acc_hw_val': acc_hw_val, 'augrc_hw_val': augrc_hw_val, 'acc_hw_test': acc_hw_test, 'augrc_hw_test': augrc_hw_test}), 200
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5001)
+    app.run(host='192.168.2.98', port=5001)

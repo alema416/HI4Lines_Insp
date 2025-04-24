@@ -1,4 +1,5 @@
 classifier:
+  modelname: 'temporal_optimization_model'
   model_zoo_dir: "/home/amax/GitHub/hailo_examples/models/"
   train_set_dir: './assets/classification_train_set/'
   val_set_dir: './assets/classification_val_set/'
