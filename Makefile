@@ -16,7 +16,13 @@ PYTHON_INTERPRETER = python
 requirements:
 	$(PYTHON_INTERPRETER) -m pip install -U pip
 	$(PYTHON_INTERPRETER) -m pip install -r requirements.txt
-	
+
+## Install Python rpi dependencies
+PHONY: requirements_rpi
+requirements_rpi:
+	$(PYTHON_INTERPRETER) -m pip install -U pip
+	$(PYTHON_INTERPRETER) -m pip install -r ./deploy/requirements.txt
+
 ## Delete all compiled Python files
 .PHONY: clean
 clean:
