@@ -2,7 +2,7 @@
 # GLOBALS                                                                       #
 #################################################################################
 
-PROJECT_NAME = HI4Lines_Insp
+PROJECT_NAME = HI4Lines_Insp11
 PYTHON_VERSION = 3.9
 PYTHON_INTERPRETER = python
 
@@ -54,7 +54,6 @@ create_environment:
 	conda create --name $(PROJECT_NAME) python=$(PYTHON_VERSION) -y
 	
 	@echo ">>> conda env created. Activate with:\nconda activate $(PROJECT_NAME)"
-	
 
 
 

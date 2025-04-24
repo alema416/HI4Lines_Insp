@@ -12,7 +12,7 @@ app = Flask(__name__)
 with initialize(config_path="../configs/"):
     cfg = compose(config_name="optimizer")  # exp1.yaml with defaults key
 
-EXP_PATH = cfg.optimizer.exp_name
+exp_name = cfg.optimizer.exp_name
 
 @app.route('/validate', methods=['POST'])
 
@@ -67,7 +67,7 @@ def validate():
     # Define the server URL (change if running on a different host)
     rpi_ip = input('RPI IP address: ')
     SERVER_URL = f"http://{rpi_ip}:5001/validate"  # Update with actual server address 
-    hef_dir = './'
+    hef_dir = f'../models/{exp_name}/{args.run_id}'
     # File to send 
     FILE_PATH = os.path.join(hef_dir, f'model_{run_id}.hef')  # Change this to your actual file path
     
