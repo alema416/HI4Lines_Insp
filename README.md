@@ -19,7 +19,7 @@ Abstract:
 ## Project Organization
 
 ```
-├── configs             <- Store project-wide editable variables and configurations.
+├── configs            <- Store project-wide editable variables and configurations.
 ├── data
 │   ├── raw            <- The original, immutable data dump.
 │   ├── interim        <- Intermediate data that has been transformed.
