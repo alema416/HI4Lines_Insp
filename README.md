@@ -4,7 +4,18 @@
     <img src="https://img.shields.io/badge/CCDS-Project%20template-328F97?logo=cookiecutter" />
 </a>
 
-description_too
+End-to-End MLOps Pipeline for Trustworthy Power-Lines-Inspection
+
+![image](https://github.com/user-attachments/assets/80c2dbd1-43da-4402-987e-30a17e18db5e)
+
+
+Description
+
+Please cite our journal paper as such:
+
+Citation
+
+Abstract: Abstract
 
 ## Project Organization
 
@@ -28,20 +39,6 @@ description_too
 
 --------
 
-# HI4Lines_Insp
-
-End-to-End MLOps Pipeline for Trustworthy Power-Lines-Inspection
-
-![image](https://github.com/user-attachments/assets/80c2dbd1-43da-4402-987e-30a17e18db5e)
-
-
-Description
-
-Please cite our journal paper as such:
-
-Citation
-
-Abstract: Abstract
 
 **TODO**
 
