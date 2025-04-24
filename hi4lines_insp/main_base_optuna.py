@@ -111,7 +111,7 @@ def objective(trial):
     epochs = cfg.training.epochs
     plot = cfg.training.validate_freq
     rank_weight = cfg.training.rank_weight
-    port = 5001
+    port = 5001 if server2 else 5000
     base_lr = trial.suggest_loguniform('lr', cfg.training.base_lr_low, cfg.training.base_lr_high) 
     lr_strat = [80, 130, 170]
     lr_factor =  cfg.training.lr_factor # Learning rate decrease factor
