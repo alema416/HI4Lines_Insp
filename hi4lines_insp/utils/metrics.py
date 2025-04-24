@@ -8,7 +8,7 @@ import os
 from utils.nmetr import AUGRC
 from hydra import initialize, compose
 
-with initialize(config_path="../configs/"):
+with initialize(config_path="../../configs/"):
     cfg = compose(config_name="fmfp")  # exp1.yaml with defaults key
 
 device = cfg.training.device #torch.device("cuda" if torch.cuda.is_available() else "cpu")
