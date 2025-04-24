@@ -5,11 +5,14 @@ from PIL import Image
 import random
 from tqdm import tqdm
 import csv
+from hydra import initialize, compose
 
 random.seed(42)
+with initialize(config_path="../configs/"):
+    cfg = compose(config_name="data")  # exp1.yaml with defaults key
 
-SCENE_WIDTH = 1280
-CLASSIFIER_WIDTH = 224
+SCENE_WIDTH = cfg.data.scene_width #1280
+CLASSIFIER_WIDTH = cfg.data.classifier_width #224
 
 def search_csv(filename, bbox):
     with open("labels_filenames.csv", "r", newline="") as csvfile:
@@ -266,12 +269,12 @@ def process_data_class(train_data, val_data, test_data, og_image_dir, yolo_m1_di
 # Main function
 def main():
     modal = SCENE_WIDTH
-    base_dir_og = '../data/raw/ididv12/Train/'
+    base_dir_og = cfg.data.base_dir_og
     json_file_path = os.path.join(base_dir_og, 'labels_v1.2.json')   
     og_image_dir = os.path.join(base_dir_og, 'Images')  
     
-    yolo_m1_dir = f'../data/processed/yolo_m1_JOIN_{modal}_debug'
-    yolo_m2_dir = f'../data/processed/IDID_cropped_224'  
+    yolo_m1_dir = cfg.data.base_dir_m1 #f'../data/processed/yolo_m1_JOIN_{modal}_debug'
+    yolo_m2_dir = cfg.data.base_dir_m2 #f'../data/processed/IDID_cropped_224'  
     
     os.makedirs(yolo_m1_dir, exist_ok=True)
     os.makedirs(yolo_m2_dir, exist_ok=True)
