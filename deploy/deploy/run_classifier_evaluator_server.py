@@ -114,5 +114,5 @@ def validate():
     return jsonify({'acc_hw_train': acc_hw_train, 'augrc_hw_train': augrc_hw_train, 'acc_hw_val': acc_hw_val, 'augrc_hw_val': augrc_hw_val, 'acc_hw_test': acc_hw_test, 'augrc_hw_test': augrc_hw_test}), 200
 
 if __name__ == '__main__':
-    ip = input('IP address: ') # 192.168.2.6
-    app.run(host=ip, port=5001)
+    #ip = input('IP address: ') # 192.168.2.6
+    app.run(host='0.0.0.0', port=5001)

@@ -39,9 +39,9 @@ Abstract: Abstract
 
 --------
 
-## Server 
+## Data Science Server 
 
-### Setup Data Science Module
+### Step 1: Setup Data Science Module
 
 Install virtualenv & download data via:
 
@@ -51,10 +51,12 @@ make requirements
 make data
 ```
 
+### Step 2: Setup Quantizer/Emulator
 
-### Setup Quantizer/Emulator
+* Install HAILO AI SW Suite via the instructions: 
 
-* Install HAILO AI SW Suite via the instructions: https://hailo.ai/developer-zone/documentation/hailo-sw-suite-2024-07/?sp_referrer=suite%2Fsuite_install.html#docker-installation
+https://hailo.ai/developer-zone/documentation/hailo-sw-suite-2024-07/?sp_referrer=suite%2Fsuite_install.html#docker-installation
+
 * and in the dockerfile replace this: 
 
 ```
@@ -71,6 +73,7 @@ And this:
 
 (line 226)
 
+Finally: 
 ```
 cd hailo_src
 sudo chmod -R a+w ..
@@ -86,6 +89,3 @@ Install virtualenv & download data via:
 ```
 make create_environment && make requirements_rpi && make data
 ```
-
-Install virtualenv & download data via:
-
