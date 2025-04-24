@@ -65,7 +65,7 @@ def validate():
     print(f'emulator AUGRC: {augrc_emu}')
     print(f'emulator acc: {acc_emu}')
     # Define the server URL (change if running on a different host)
-    rpi_ip = input('RPI IP address: ')
+    rpi_ip = cfg.optimizer.rpi_ip #input('RPI IP address: ')
     SERVER_URL = f"http://{rpi_ip}:5001/validate"  # Update with actual server address 
     hef_dir = f'../models/{exp_name}/{args.run_id}'
     # File to send 
