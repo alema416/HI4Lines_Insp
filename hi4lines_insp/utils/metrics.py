@@ -6,8 +6,13 @@ from sklearn import metrics
 import csv
 import os
 from utils.nmetr import AUGRC
+from hydra import initialize, compose
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+with initialize(config_path="../configs/"):
+    cfg = compose(config_name="fmfp")  # exp1.yaml with defaults key
+
+device = cfg.training.device #torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(f"Using device: {device}")
 
 def calc_metrics(args, loader, model, criterion, DATA_DIR, split):
     acc, softmax, correct, logit, conf_correct, conf_wrong, ece_correct, ece_wrong, nll_correct, nll_wrong, labels = get_metric_values(args, loader, model, criterion, DATA_DIR, split)

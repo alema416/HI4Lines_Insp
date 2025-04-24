@@ -19,3 +19,5 @@ training:
   print_freq: 72 
   port: 5000
   gpu: '0'
+  device: 'cpu'
+  ds_device_ip: '192.168.188.202'

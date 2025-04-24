@@ -63,9 +63,6 @@ from hydra import initialize, compose
 rlimit = resource.getrlimit(resource.RLIMIT_NOFILE)
 resource.setrlimit(resource.RLIMIT_NOFILE, (2048, rlimit[1]))
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print(f"Using device: {device}")
-
 def validate(loader, model, criterion):
     model.eval()
     total_loss = 0.0
@@ -100,11 +97,13 @@ def csv_writter(path, dic, start):
 class Counter(dict):
     def __missing__(self, key):
         return None
+with initialize(config_path="../configs/"):
+    cfg = compose(config_name="fmfp")  # exp1.yaml with defaults key
+
+device = cfg.training.device #torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(f"Using device: {device}")
 
 def objective(trial):
-    with initialize(config_path="../configs/"):
-        cfg = compose(config_name="base")  # exp1.yaml with defaults key
-    print(cfg)
 
     server1 = True
     server2 = not server1
@@ -242,7 +241,7 @@ def objective(trial):
     writer.add_scalar('final_Metrics/test_augrc', augrc, epoch)
     
     ccc = 0
-    hailo_ip = input('hailo ip address: ')
+    hailo_ip = cfg.training.ds_device_ip
     while ccc < 10:
         try:
             response = requests.post(f"http://{hailo_ip}:{port}/validate", json={"run_id": RUN_ID})

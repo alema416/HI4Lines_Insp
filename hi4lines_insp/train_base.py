@@ -8,8 +8,12 @@ import numpy as np
 import torch.nn.functional as F
 from torch.autograd import Variable
 import random
+from hydra import initialize, compose
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+with initialize(config_path="../configs/"):
+    cfg = compose(config_name="fmfp")  # exp1.yaml with defaults key
+
+device = cfg.training.device #torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
 class KDLoss(nn.Module):
