@@ -3,3 +3,4 @@ server:
   temp_model_flnm: 'temporal_optimization_model.hef'
   lock_file: './LOCK_FILE.txt'
   modelname: 'temporal_optimization_model'
+  rpi_ip: '192.168.2.98'

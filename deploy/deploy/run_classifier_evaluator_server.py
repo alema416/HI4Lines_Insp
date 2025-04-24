@@ -120,4 +120,4 @@ def validate():
     return jsonify({'acc_hw_train': acc_hw_train, 'augrc_hw_train': augrc_hw_train, 'acc_hw_val': acc_hw_val, 'augrc_hw_val': augrc_hw_val, 'acc_hw_test': acc_hw_test, 'augrc_hw_test': augrc_hw_test}), 200
 
 if __name__ == '__main__':
-    app.run(host='192.168.2.98', port=5001)
+    app.run(host=cfg.server.rpi_ip, port=5001)
