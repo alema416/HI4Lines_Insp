@@ -82,9 +82,6 @@ Abstract: Abstract
 
 ### Setup Data Science Module
 
-git clone repo
-cd repo
-
 Install virtualenv & download data via:
 
 ```
@@ -96,12 +93,11 @@ make data
 
 ### Setup Quantizer/Emulator
 
-* git clone repo
 * Install HAILO AI SW Suite via the instructions: https://hailo.ai/developer-zone/documentation/hailo-sw-suite-2024-07/?sp_referrer=suite%2Fsuite_install.html#docker-installation
 * and in the dockerfile replace this: 
 
 ```
-readonly SHARED_DIR=<repo_dir>
+readonly SHARED_DIR=$repo_dir
 ```
 
 (line 16)
@@ -126,8 +122,9 @@ python3 server.py
 
 Install virtualenv & download data via:
 
-git clone repo
-cd repo/deploy
+```
+make create_environment && make requirements_rpi && make data
+```
 
 Install virtualenv & download data via:
 
