@@ -14,7 +14,7 @@ args = parser.parse_args()
 device = torch.device("cpu")
 num_class = 2
 
-onnx_dir = f'../models/exp_name/{args.run_id}'
+onnx_dir = f'../models/{exp_name}/{args.run_id}'
 model_dict = {"num_classes": num_class}
 
 ours = True
