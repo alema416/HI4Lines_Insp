@@ -9,7 +9,7 @@ from hydra import initialize, compose
 
 random.seed(42)
 with initialize(config_path="../../configs/"):
-    cfg = compose(config_name="data")  # exp1.yaml with defaults key
+    cfg = compose(config_name="data_rpi")  # exp1.yaml with defaults key
 
 SCENE_WIDTH = cfg.data.scene_width #1280
 CLASSIFIER_WIDTH = cfg.data.classifier_width #224
