@@ -57,10 +57,10 @@ make data
 
 https://hailo.ai/developer-zone/documentation/hailo-sw-suite-2024-07/?sp_referrer=suite%2Fsuite_install.html#docker-installation
 
-* and in the dockerfile replace this: 
+* with one change: in the .sh installer replace this: 
 
 ```
-readonly SHARED_DIR=$repo_dir
+readonly SHARED_DIR=$repo_absolute_dir
 ```
 
 (line 16)

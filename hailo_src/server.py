@@ -61,8 +61,8 @@ def validate():
     print(f'emulator AUGRC: {augrc_emu}')
     print(f'emulator acc: {acc_emu}')
     # Define the server URL (change if running on a different host)
-    
-    SERVER_URL = "http://192.168.1.9:5001/validate"  # Update with actual server address 
+    rpi_ip = input('RPI IP address: ')
+    SERVER_URL = f"http://{rpi_ip}:5001/validate"  # Update with actual server address 
     hef_dir = './'
     # File to send 
     FILE_PATH = os.path.join(hef_dir, f'model_{run_id}.hef')  # Change this to your actual file path
