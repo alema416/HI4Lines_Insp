@@ -39,11 +39,6 @@ Abstract: Abstract
 
 --------
 
-
-**TODO**
-
-* differentiate *persample metrics* and *global metrics* (steamline pipeline infererence results)
-
 ## Server 
 
 ### Setup Data Science Module
