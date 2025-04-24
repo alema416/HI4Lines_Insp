@@ -124,7 +124,7 @@ def objective(trial):
     data = 'idid_cropped'
     classnumber = cfg.training.classnumber
     input_size = cfg.training.input_size
-    #os.environ['CUDA_VISIBLE_DEVICES'] = cfg.training.gpu
+    os.environ['CUDA_VISIBLE_DEVICES'] = cfg.training.gpu
     cudnn.benchmark = True
 
     save_path = os.path.join(save_path, f'{trial.number}')
