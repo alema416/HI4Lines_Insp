@@ -1,5 +1,12 @@
 models/
-data/**
+# 1) ignore absolutely everything under /data
+/data/**
+
+# 2) but do NOT ignore any directory in there
+!/data/**/
+
+# 3) and finally, re-include your placeholders
+!/data/**/*.gitkeep
 *.log
 *.csv
 __pycache__/
@@ -11,4 +18,3 @@ deploy/deploy/labels_train.txt
 deploy/deploy/labels_val.txt
 deploy/deploy/sasaa.txt
 reports/figures/
-!/data/**/*.gitkeep
