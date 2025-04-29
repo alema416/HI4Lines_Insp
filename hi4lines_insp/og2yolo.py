@@ -140,8 +140,8 @@ def process_data_det(train_data, val_data, test_data, og_image_dir, yolo_m1_dir)
         #for entry in data:
         for entry in tqdm(data, desc=f'converting {split_name}', unit="img"):
             counter += 1
-            if counter % 500:
-                print(f'{split_name}: {(counter / total_images_split)*100}% completed')
+            #if counter % 500:
+            #    print(f'{split_name}: {(counter / total_images_split)*100}% completed')
             filename = entry["filename"]
             labels = entry["Labels"]["objects"]
 

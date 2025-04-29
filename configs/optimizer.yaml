@@ -3,3 +3,4 @@ optimizer:
   all_path: '../data/interim/IDID_cropped_224'
   exp_name: 'exp_coop'
   rpi_ip: '192.168.2.98'
+  model_size: 224
