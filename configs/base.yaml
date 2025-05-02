@@ -7,7 +7,7 @@ training:
   rank_weight: 1.0
   momentum_low: 0.85
   momentum_high: 0.99   
-  batch_size: 16
+  batch_size: 8
   learning_rate: 0.001
   epochs: 2
   validate_freq: 1
@@ -15,7 +15,7 @@ training:
   input_size: 224
   data_path: '../data/processed/IDID_cropped_224'
   save_path: '../models/exp_coop'
-  model_name: 'resnet18'
+  model_name: 'mobilenet'
   print_freq: 72 
   port: 5000
   gpu: '0'

@@ -53,6 +53,7 @@ import numpy as np
 import resource
 from collections import OrderedDict
 from model import resnet
+from model import mobilenet
 from model import resnet18_custom
 from model import resnet18
 from utils import data as dataset
@@ -155,8 +156,10 @@ def objective(trial):
     model_dict = { "num_classes": num_class }
     
     print(100 * '#')
-    
-    model = resnet18.ResNet18(**model_dict).to(device)
+    if modelname == 'resnet':
+        model = resnet18.ResNet18(**model_dict).to(device)
+    elif modelname == 'mobilenet':
+        model = mobilenet.mobilenet(**model_dict).to(device)
     cls_criterion = nn.CrossEntropyLoss().to(device)
 
         
