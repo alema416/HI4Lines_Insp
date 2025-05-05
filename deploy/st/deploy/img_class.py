@@ -84,7 +84,7 @@ if __name__ == '__main__':
         labels = load_labels(args.label_file)
         for cls in ['broken', 'healthy']:
             img_dir1 = os.path.join(img_dir, cls)
-            for img in tqdm(os.listdir(img_dir1)):
+            for img in os.listdir(img_dir1):
 
                 img = os.path.join(img_dir1, img)
                 input_image = Image.open(img).resize((input_width,input_height))
