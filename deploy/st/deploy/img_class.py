@@ -16,7 +16,7 @@ def load_labels(filename):
         return [line.strip() for line in f.readlines()]
 
 if __name__ == '__main__':
-    with initialize(config_path="../../configs/"):
+    with initialize(config_path="../../../configs/"):
         cfg = compose(config_name="hw_eval_server_st")  # exp1.yaml with defaults key
 
     parser = ArgumentParser()
