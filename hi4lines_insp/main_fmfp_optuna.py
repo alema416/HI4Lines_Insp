@@ -150,6 +150,7 @@ def objective(trial):
         os.makedirs(os.path.join(save_path, 'logs'))
 
     with mlflow.start_run(run_name=run_name, nested=True):
+        '''
         dataset_path = cfg.training.data_path
         train_loader, valid_loader, test_loader = custom_data.get_loader_local(dataset_path, batch_size=batch_size, input_size=cfg.training.input_size)
         
@@ -250,7 +251,7 @@ def objective(trial):
         mlflow.log_metric('test_augrc', augrc, step=epoch)
 
         mlflow.pytorch.log_model(model, artifact_path="model")
-        '''
+        
         ccc = 0
         hailo_ip = cfg.training.ds_device_ip
         while ccc < 10:
@@ -276,7 +277,7 @@ def objective(trial):
         stmz = cfg.training.ds_device_ip_st
         while ccc < 10:
             try:
-                with open(os.path.join(cfg.training.save_path, str(RUN_ID), 'model_state_dict', 'model.pth'), "rb") as f:
+                with open(os.path.join(cfg.training.save_path, str(RUN_ID - 1), 'model_state_dict', 'model.pth'), "rb") as f:
                     encoded = base64.b64encode(f.read()).decode("utf-8")
                 payload = {
                     "file": encoded,

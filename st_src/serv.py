@@ -14,7 +14,7 @@ import requests
 with initialize(config_path="../configs/"):
     cfg = compose(config_name="base")  # exp1.yaml with defaults key
 
-def send_file(filename, run_id, url="http://{cfg.training.st_dev_ip}:{cfg.training.st_port}/validate"):
+def send_file(filename, run_id, url=f"http://{cfg.training.st_dev_ip}:{cfg.training.st_port}/validate"):
     # Read and encode the file
     with open(filename, "rb") as f:
         encoded = base64.b64encode(f.read()).decode("utf-8")
