@@ -17,7 +17,7 @@ def validate():
     
     scripts = []
     if os.path.exists(LOCK_FILE):
-	      return jsonify({"error": 'device locked'}), 400
+        return jsonify({"error": 'device locked'}), 400
     with open(LOCK_FILE, 'w') as lock_file:
         lock_file.write("locked")
     try:
