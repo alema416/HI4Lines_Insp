@@ -38,6 +38,7 @@ def load_checkpoint1(pth_path: str):
     # 4) load into the model
     model.load_state_dict(clean)
     return model
+
 def load_checkpoint(pth_path: str) -> torch.nn.Module:
     model = mobilenet(num_classes=2)
     sd = torch.load(pth_path, map_location="cpu")
@@ -78,28 +79,14 @@ def export_and_simplify(model: torch.nn.Module, onnx_path: str, opset: int):
     onnx.save(simp, onnx_path)
     print(f"✅ Simplified ONNX saved → {onnx_path}")
 
-def main():
-    p = argparse.ArgumentParser(
-        description="Export ResNet18 → ONNX → Simplify (using torch.flatten)"
-    )
-    p.add_argument("--pth", "-p", required=True,
-                   help="Path to your model.pth")
-    p.add_argument("--out", "-o", required=True,
-                   help="Output path for the ONNX model, e.g. ./model.onnx")
-    p.add_argument("--opset", "-s", type=int, default=13,
-                   help="ONNX opset version (≤ what torch supports)")
-    args = p.parse_args()
-
+def main_onnx(exp_name, run_id, out):
     # Make sure you have:
     #   pip install "numpy<2.0" torch onnx onnx-simplifier
-
-    model = load_checkpoint1(args.pth)
-    export_and_simplify(model, args.out, args.opset)
+    
+    model = load_checkpoint1(os.path.join(exp_name, run_id, 'model_state_dict', 'model.pth'))
+    export_and_simplify(model, out, opset=13)
 
     print("\nDone! Now run your STM32Cube.AI MCU flow:")
     print("  python3 stm32ai_main.py \\")
     print("    --config-path config_file_examples \\")
     print("    --config-name chain_mc_config.yaml")
-
-if __name__ == "__main__":
-    main()
