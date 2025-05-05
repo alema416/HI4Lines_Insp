@@ -145,6 +145,7 @@ def objective(trial):
     if not os.path.exists(save_path):
         os.makedirs(save_path)
         os.makedirs(os.path.join(save_path, 'model_state_dict'))
+        os.makedirs(os.path.join(save_path, 'logs'))
 
     with mlflow.start_run(run_name=run_name, nested=True):
         dataset_path = cfg.training.data_path
