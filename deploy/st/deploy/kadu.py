@@ -83,4 +83,4 @@ def run_eval(model_path, data_root):
     print(f"Avg latency: {np.mean(latencies):.1f} ms")
 
 if __name__=="__main__":
-    run_eval('/usr/local/bin/tflite-vx-delegate-example/model.tflite', '../../../data/processed/IDID_cropped_224')
+    run_eval('../../../models/temporal_optimization_model_st/temporal_optimization_model.tflite', '../../../data/processed/IDID_cropped_224')
