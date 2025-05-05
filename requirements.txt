@@ -11,5 +11,6 @@ torchvision==0.11.1
 tensorboard
 scikit-learn
 hydra-core
+mlflow
 pandas
 -e .

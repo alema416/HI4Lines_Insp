@@ -19,7 +19,7 @@ training:
   print_freq: 72 
   port: 5000
   gpu: '0'
-  device: 'cpu'
+  device: 'cuda'
   ds_device_ip: #'192.168.188.202'
   study_name: 'test_study'
 
