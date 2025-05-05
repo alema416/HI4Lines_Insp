@@ -42,10 +42,10 @@ def run_eval(model_path, data_root):
     for split in ['test']:
       for cls in labels:
         true_idx = labels.index(cls)
-        print(true_idx)
+        print(f'true_idx: {true_idx}')
         folder   = os.path.join(data_root, split, cls)
-        print(folder)
-        for fn in tqdm(os.listdir(folder)):
+        print(f'folder: {folder}')
+        for fn in os.listdir(folder): #tqdm(os.listdir(folder)):
           img_path = os.path.join(folder, fn)
           inp      = preprocess_image(img_path, inp_det)
 
