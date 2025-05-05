@@ -54,7 +54,7 @@ def run_eval(model_path, data_root):
           latencies.append((t1 - t0) * 1000)  # ms
 
           out = interp.get_tensor(out_idx).squeeze()  # shape (1,) → float
-          print(out)
+          print(f'out: {out}')
           pred = int(out > 0.5)                      # threshold
 
           total += 1
