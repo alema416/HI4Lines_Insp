@@ -10,8 +10,6 @@ from tqdm import tqdm
 def preprocess_image(path, input_details):
     # load, resize, RGB → uint8 array
     _, height, width, _ = input_details['shape']
-    print(f'reshaping to {width}x{height}')
-
     img = Image.open(path).convert('RGB').resize((width, height))
     arr = np.asarray(img, dtype=input_details['dtype'])
     # add batch dim
