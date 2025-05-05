@@ -100,7 +100,9 @@ if __name__ == '__main__':
                 #print("Inference time: ", (end - start) *1000, "ms")
                 output_data = stai_model.get_output(index=0)
                 results = np.squeeze(output_data)
-                print(results)
+                #print(results)
+                pred_idx = int(np.argmax(results))
+                print(pred_idx)
                 '''
                 q_out = stai_model.get_output(index=0)         # shape (1,2) or (1,N), dtype=int8/int16
                 q_logits = np.squeeze(q_out).astype(np.float32)  # e.g. [ -82., 127. ]
