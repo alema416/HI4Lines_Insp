@@ -21,7 +21,7 @@ training:
   gpu: '0'
   device: 'cuda'
   ds_device_ip: #'192.168.188.202'
-  ds_device_ip_st: 192.168.1.10 #'192.168.188.202'
+  ds_device_ip_st: 192.168.2.97 #'192.168.188.202'
   study_name: 'test_study'
   st_dev_ip: 192.168.2.97
   st_port: 5001
