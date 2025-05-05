@@ -9,6 +9,7 @@ import cv2 as cv
 import numpy as np
 import os
 import time
+from tqdm import tqdm
 from hydra import initialize, compose
 
 def load_labels(filename):
@@ -83,7 +84,7 @@ if __name__ == '__main__':
         labels = load_labels(args.label_file)
         for cls in ['broken', 'healty']:
             img_dir = os.path.join(img_dir, cls)
-            for img in os.listdir(img_dir):
+            for img in tqdm(os.listdir(img_dir)):
 
                 img = os.path.join(img_dir, img)
                 input_image = Image.open(img).resize((input_width,input_height))
@@ -102,7 +103,6 @@ if __name__ == '__main__':
                 results = np.squeeze(output_data)
                 #print(results)
                 pred_idx = int(np.argmax(results))
-                print(pred_idx)
                 total += 1 
                 if (pred_idx == 0 and cls == 'broken') or (pred_idx == 1 and cls == 'healthy'):
                     corr += 1
