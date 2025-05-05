@@ -38,8 +38,8 @@ def validate():
             f.write(file_content)
         print(f"File {file_path} received and saved.")
 
-    for j in ['img_class', 'metric']:
-        scripts.append({"file": f"{j}.py", "args": ["--model", cfg.server.temp_model_flnm]})
+    for j in ['kadu', 'metric']:
+        scripts.append({"file": f"{j}.py", "args": [None]})
     
     augrc_hw_train = None
     acc_hw_train = None
@@ -49,7 +49,7 @@ def validate():
     acc_hw_test = None
     
     for script in scripts:
-        command = ["python", script["file"]] + script["args"]
+        command = ["python", script["file"]]
         try:
             # Run the command; check=True raises an error if the command fails
             result = subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)

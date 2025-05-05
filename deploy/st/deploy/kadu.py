@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# usage: python3 kadu.py /usr/local/bin/tflite-vx-delegate-example/model.tflite ../../../data/processed/IDID_cropped_224
 import argparse, os
 from timeit import default_timer as timer
 from PIL import Image
@@ -84,10 +83,4 @@ def run_eval(model_path, data_root):
     print(f"Avg latency: {np.mean(latencies):.1f} ms")
 
 if __name__=="__main__":
-    p = argparse.ArgumentParser()
-    p.add_argument('model_path', help='.tflite file')
-    p.add_argument('data_root',
-                   help='root folder with train/val/test subfolders')
-    args = p.parse_args()
-
-    run_eval(args.model_path, args.data_root)
+    run_eval('/usr/local/bin/tflite-vx-delegate-example/model.tflite', '../../../data/processed/IDID_cropped_224')
