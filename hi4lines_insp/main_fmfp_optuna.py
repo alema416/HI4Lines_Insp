@@ -280,7 +280,7 @@ def main():
     study = optuna.create_study(direction='minimize', load_if_exists=True, study_name = study_name, storage=storage)
     print(f"Sampler is {study.sampler.__class__.__name__}")
     mlflow.log_param('sampler', study.sampler.__class__.__name__)
-    study.optimize(objective, n_trials=400, n_jobs=1)
+    study.optimize(objective, n_trials=3, n_jobs=1)
 
     print("Best hyperparameters:", study.best_params)
     print("Best accuracy:", study.best_value)

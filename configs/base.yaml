@@ -20,6 +20,6 @@ training:
   port: 5000
   gpu: '0'
   device: 'cpu'
-  ds_device_ip: '192.168.188.202'
+  ds_device_ip: #'192.168.188.202'
   study_name: 'test_study'
 
