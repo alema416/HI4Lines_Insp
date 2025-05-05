@@ -1,1 +1,1 @@
-400 Bad Request: The browser (or proxy) sent a request that this server could not understand.
+HTTPConnectionPool(host='192.168.2.97', port=5001): Max retries exceeded with url: /validate (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7b63e558aa90>: Failed to establish a new connection: [Errno 111] Connection refused'))
