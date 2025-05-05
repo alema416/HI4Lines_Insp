@@ -61,6 +61,7 @@ def run_eval(model_path, data_root):
       # 5) report
       acc = correct/total if total else 0
       print(f"Evaluated {total} images")
+      print(f'SPECIAL_PRINTacc{split}: {acc*100:.2f}')
       print(f"Accuracy : {correct}/{total} = {acc*100:.2f}%")
     print(f"Avg latency: {np.mean(latencies):.1f} ms")
 
