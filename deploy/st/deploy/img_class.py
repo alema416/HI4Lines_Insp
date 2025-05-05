@@ -83,10 +83,10 @@ if __name__ == '__main__':
         img_dir = os.path.join(args.image, split)
         labels = load_labels(args.label_file)
         for cls in ['broken', 'healty']:
-            img_dir = os.path.join(img_dir, cls)
-            for img in tqdm(os.listdir(img_dir)):
+            img_dir1 = os.path.join(img_dir, cls)
+            for img in tqdm(os.listdir(img_dir1)):
 
-                img = os.path.join(img_dir, img)
+                img = os.path.join(img_dir1, img)
                 input_image = Image.open(img).resize((input_width,input_height))
                 input_data = np.expand_dims(input_image, axis=0)
                 if input_tensor_dtype == np.float32:
