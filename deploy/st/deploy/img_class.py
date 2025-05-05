@@ -86,7 +86,6 @@ if __name__ == '__main__':
             for img in os.listdir(img_dir):
 
                 img = os.path.join(img_dir, img)
-                print(img)
                 input_image = Image.open(img).resize((input_width,input_height))
                 input_data = np.expand_dims(input_image, axis=0)
                 if input_tensor_dtype == np.float32:
@@ -128,5 +127,5 @@ if __name__ == '__main__':
                     wrong += 1
                     pass #print(f"{pred_conf:0.6f}: {pred_label}")
                 '''
-            accuracy = 0
-            print(f'SPECIAL_PRINTacc{split} {accuracy}')
+            #accuracy = 0
+            #print(f'SPECIAL_PRINTacc{split} {accuracy}')
