@@ -1,0 +1,15 @@
+pip
+python-dotenv
+ruff
+notebook
+ipykernel
+degirum
+pandas
+scikit-learn
+hydra-core
+torch
+torchmetrics
+flask
+degirum_tools
+degirum_cli
+-e .
