@@ -97,12 +97,16 @@ def export_and_simplify(model: torch.nn.Module, onnx_path: str, opset: int):
     print(f"✅ Simplified ONNX saved → {onnx_path}")
 
 def main_onnx(pth_file, out):
-    # Make sure you have:
-    #   pip install "numpy<2.0" torch onnx onnx-simplifier
     
     model = load_checkpoint(pth_file)
     export_and_simplify(model, out, opset=13)
     print('pth --> onnx done')
+    
+    # cd /home/alema416/dev/work/ST_stm32ai-modelzoo-services/image_classification/src
+    # export stmai_username='alema416@gmail.com' && export stmai_password='@Alex1234@#'
+    # python3 stm32ai_main.py --config-path /home/alema416/dev/work/ST_stm32ai-modelzoo-services/image_classification/src/config_file_examples --config-name quantization_config general.model_path=/home/alema416/dev/work/HI4Lines_Insp/models/model.onnx
+    # cd /home/alema416/dev/work/HI4Lines_Insp/st_src
+    
     print('onnx --> tflite done')
     print('ready to send tflite model...')
     return '/home/alema416/quantized_model.tflite' #os.path.join('../models', 'model.tflite')
