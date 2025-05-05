@@ -28,8 +28,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     times = []
-    total = 0
-    wrong = 0
     model_path = cfg.server.upload_dir
     stai_model = stai_mpu_network(model_path=os.path.join(model_path, args.model_file), use_hw_acceleration=True)
     # Read input tensor information
@@ -79,6 +77,8 @@ if __name__ == '__main__':
     input_height = input_tensor_shape[2]
     
     for split in ['train', 'val', 'test']: 
+        total = 0
+        corr = 0
         img_dir = os.path.join(args.image, split)
         labels = load_labels(args.label_file)
         for cls in ['broken', 'healty']:
@@ -103,6 +103,9 @@ if __name__ == '__main__':
                 #print(results)
                 pred_idx = int(np.argmax(results))
                 print(pred_idx)
+                total += 1 
+                if (pred_idx == 0 && cls == 'broken') or (pred_idx == 1 && cls == 'healthy'):
+                    corr += 1
                 '''
                 q_out = stai_model.get_output(index=0)         # shape (1,2) or (1,N), dtype=int8/int16
                 q_logits = np.squeeze(q_out).astype(np.float32)  # e.g. [ -82., 127. ]
@@ -129,5 +132,8 @@ if __name__ == '__main__':
                     wrong += 1
                     pass #print(f"{pred_conf:0.6f}: {pred_label}")
                 '''
+            print(f'total={total}')
+            print(f'corr={corr}')
+            print(f'{corr / total} % accuracy')
             #accuracy = 0
             #print(f'SPECIAL_PRINTacc{split} {accuracy}')
