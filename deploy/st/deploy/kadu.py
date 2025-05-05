@@ -37,6 +37,8 @@ def run_eval(model_path, data_root):
 
     # 4) loop over dataset
     for split in ['train', 'val', 'test']:
+      FILE_CNF = []
+      FILE_LBL = []
       total   = correct = 0
       for cls in labels:
         true_idx = labels.index(cls)
@@ -57,12 +59,28 @@ def run_eval(model_path, data_root):
           total += 1
           if pred == true_idx:
             correct += 1
+            FILE_LBL.append(1)
+          else:
+            FILE_LBL.append(0)
+          if out > 0.5:
+            FILE_CNF.append(out)
+          else:
+            FILE_CNF.append(1 - out)
+          
 
       # 5) report
       acc = correct/total if total else 0
       print(f"Evaluated {total} images")
       print(f'SPECIAL_PRINTacc{split}: {acc*100:.2f}')
       print(f"Accuracy : {correct}/{total} = {acc*100:.2f}%")
+      
+      with open(f'labels_{split}.txt', "w") as file:
+        for line in FILE_LBL:
+          file.write(str(line) + "\n")  # Adding newline character
+      with open(f'confs_{split}.txt', "w") as file:
+        for line in FILE_CNF:
+          file.write(str(line) + "\n")  # Adding newline character
+
     print(f"Avg latency: {np.mean(latencies):.1f} ms")
 
 if __name__=="__main__":
