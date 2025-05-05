@@ -277,7 +277,7 @@ def objective(trial):
         stmz = cfg.training.ds_device_ip_st
         while ccc < 10:
             try:
-                with open(os.path.join(cfg.training.save_path, str(RUN_ID - 1), 'model_state_dict', 'model.pth'), "rb") as f:
+                with open(os.path.join(cfg.training.save_path, str(15), 'model_state_dict', 'model.pth'), "rb") as f:
                     encoded = base64.b64encode(f.read()).decode("utf-8")
                 payload = {
                     "file": encoded,
