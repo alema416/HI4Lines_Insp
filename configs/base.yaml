@@ -21,5 +21,6 @@ training:
   gpu: '0'
   device: 'cuda'
   ds_device_ip: #'192.168.188.202'
+  ds_device_ip_st: #'192.168.188.202'
   study_name: 'test_study'
 

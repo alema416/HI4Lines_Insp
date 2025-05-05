@@ -247,11 +247,33 @@ def objective(trial):
         mlflow.log_metric('test_augrc', augrc, step=epoch)
 
         mlflow.pytorch.log_model(model, artifact_path="model")
+        '''
         ccc = 0
         hailo_ip = cfg.training.ds_device_ip
         while ccc < 10:
             try:
                 response = requests.post(f"http://{hailo_ip}:{port}/validate", json={"run_id": RUN_ID})
+                response.raise_for_status()
+                break
+            except requests.RequestException as e:
+                print(e)
+                print(f"================ERROR #{ccc}================")
+                ccc += 1
+                continue
+        
+        result = response.json()
+        
+        for key, val in result.items():
+            if isinstance(val, (int, float)):
+                mlflow.log_metric(key, val)
+        
+        augrc_hw_val = result.get("augrc_hw_val")
+        '''
+        ccc = 0
+        stmz = cfg.training.ds_device_ip_st
+        while ccc < 10:
+            try:
+                response = requests.post(f"http://{stmz}:{port}/validate", json={"run_id": RUN_ID})
                 response.raise_for_status()
                 break
             except requests.RequestException as e:
