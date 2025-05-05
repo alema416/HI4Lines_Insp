@@ -77,52 +77,54 @@ if __name__ == '__main__':
     # Reading input image
     input_width = input_tensor_shape[1]
     input_height = input_tensor_shape[2]
+    
     for split in ['train', 'val', 'test']: 
         img_dir = os.path.join(args.image, split)
         labels = load_labels(args.label_file)
+        for cls in ['broken', 'healty']:
+            img_dir = os.path.join(img_dir, cls)
+            for img in os.listdir(img_dir):
 
-        for img in os.listdir(img_dir):
+                img = os.path.join(img_dir, img)
+                print(img)
+                input_image = Image.open(img).resize((input_width,input_height))
+                input_data = np.expand_dims(input_image, axis=0)
+                if input_tensor_dtype == np.float32:
+                    input_data = (np.float32(input_data) - args.input_mean) /args.input_std
 
-            img = os.path.join(img_dir, img)
-            print(img)
-            input_image = Image.open(img).resize((input_width,input_height))
-            input_data = np.expand_dims(input_image, axis=0)
-            if input_tensor_dtype == np.float32:
-                input_data = (np.float32(input_data) - args.input_mean) /args.input_std
+                stai_model.set_input(0, input_data)
+                start = timer()
+                stai_model.run()
+                end = timer()
+                times.append(end-start)
+                
+                #print("Inference time: ", (end - start) *1000, "ms")
+                output_data = stai_model.get_output(index=0)
+                results = np.squeeze(output_data)
+                print(results)
+                q_out = stai_model.get_output(index=0)         # shape (1,2) or (1,N), dtype=int8/int16
+                q_logits = np.squeeze(q_out).astype(np.float32)  # e.g. [ -82., 127. ]
+                logits = q_logits * output_tensor_scale                        # dequantized float  logits
 
-            stai_model.set_input(0, input_data)
-            start = timer()
-            stai_model.run()
-            end = timer()
-            times.append(end-start)
-            
-            #print("Inference time: ", (end - start) *1000, "ms")
-            output_data = stai_model.get_output(index=0)
-            results = np.squeeze(output_data)
-            print(results)
-            q_out = stai_model.get_output(index=0)         # shape (1,2) or (1,N), dtype=int8/int16
-            q_logits = np.squeeze(q_out).astype(np.float32)  # e.g. [ -82., 127. ]
-            logits = q_logits * output_tensor_scale                        # dequantized float  logits
+                # — Softmax to get probabilities —
+                probs = tf.nn.softmax(logits).numpy()            # e.g. [0.0000001, 0.9999999]
+                pred_idx = np.argmax(probs)
+                pred_label = labels[pred_idx]
+                pred_conf = probs[pred_idx]
 
-            # — Softmax to get probabilities —
-            probs = tf.nn.softmax(logits).numpy()            # e.g. [0.0000001, 0.9999999]
-            pred_idx = np.argmax(probs)
-            pred_label = labels[pred_idx]
-            pred_conf = probs[pred_idx]
-
-            print(f"Logits: {logits}")
-            print(f"Probs:  {probs}")
-            print(f"→ Prediction: {pred_label} ({pred_conf:.4f})\n")
-            '''
-            # single-output (binary) case
-            score_pos = float(results)
-            score_neg = 1.0 - score_pos
-            pred_label = labels[1] if score_pos>=score_neg else labels[0]
-            pred_conf  = max(score_pos, score_neg)
-            total += 1
-            if pred_label != args.cl:
-                wrong += 1
-                pass #print(f"{pred_conf:0.6f}: {pred_label}")
-            '''
-            
+                print(f"Logits: {logits}")
+                print(f"Probs:  {probs}")
+                print(f"→ Prediction: {pred_label} ({pred_conf:.4f})\n")
+                '''
+                # single-output (binary) case
+                score_pos = float(results)
+                score_neg = 1.0 - score_pos
+                pred_label = labels[1] if score_pos>=score_neg else labels[0]
+                pred_conf  = max(score_pos, score_neg)
+                total += 1
+                if pred_label != args.cl:
+                    wrong += 1
+                    pass #print(f"{pred_conf:0.6f}: {pred_label}")
+                '''
+            accuracy = 0
             print(f'SPECIAL_PRINTacc{split} {accuracy}')
