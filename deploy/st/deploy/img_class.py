@@ -77,7 +77,7 @@ if __name__ == '__main__':
     input_width = input_tensor_shape[1]
     input_height = input_tensor_shape[2]
     
-    for split in ['train', 'val', 'test']: 
+    for split in ['test']: #['train', 'val', 'test']: 
         total = 0
         corr = 0
         img_dir = os.path.join(args.image, split)
