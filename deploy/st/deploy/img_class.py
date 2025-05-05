@@ -22,7 +22,7 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('-m','--model_file', help='model to be executed.')
     parser.add_argument('-i','--image', default='../../../data/processed/IDID_cropped_224/', help='image path to be classified.')
-    parser.add_argument('-l','--label_file', default='./labels_idid_cropped.txt', help='name of labels file.')
+    parser.add_argument('-l','--label_file', default='../../../../labels_idid_cropped.txt', help='name of labels file.')
     parser.add_argument('--input_mean', default=127.5, help='input_mean')
     parser.add_argument('--input_std', default=127.5,help='input stddev')
     args = parser.parse_args()
