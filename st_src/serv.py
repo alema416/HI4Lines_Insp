@@ -60,7 +60,7 @@ def validate():
         run_id = data.get('run_id')
         print(f'received run_id {run_id}')
         # pth --> tflite
-        respon = send_file(os.path.join(cfg.training.save_path, run_id, 'tflite', 'model.tflite'), run_id)
+        respon = send_file(os.path.join(cfg.training.save_path, str(run_id), 'tflite', 'model.tflite'), run_id)
     except Exception as e:
         #return jsonify({"error": str(e)}), 400
         with open('sasaa.txt', "w", encoding="utf-8") as f:
