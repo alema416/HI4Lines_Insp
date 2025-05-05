@@ -33,16 +33,14 @@ def run_eval(model_path, data_root):
 
     # 3) metrics
     labels  = ['broken','healthy']
-    total   = correct = 0
     latencies = []
 
     # 4) loop over dataset
-    for split in ['test']:
+    for split in ['train', 'val', 'test']:
+      total   = correct = 0
       for cls in labels:
         true_idx = labels.index(cls)
-        print(f'true_idx: {true_idx}')
         folder   = os.path.join(data_root, split, cls)
-        print(f'folder: {folder}')
         for fn in os.listdir(folder): #tqdm(os.listdir(folder)):
           img_path = os.path.join(folder, fn)
           inp      = preprocess_image(img_path, inp_det)
@@ -54,17 +52,16 @@ def run_eval(model_path, data_root):
           latencies.append((t1 - t0) * 1000)  # ms
 
           out = interp.get_tensor(out_idx).squeeze()  # shape (1,) → float
-          print(f'out: {out}')
           pred = int(out > 0.5)                      # threshold
 
           total += 1
           if pred == true_idx:
             correct += 1
 
-    # 5) report
-    acc = correct/total if total else 0
-    print(f"Evaluated {total} images")
-    print(f"Accuracy : {correct}/{total} = {acc*100:.2f}%")
+      # 5) report
+      acc = correct/total if total else 0
+      print(f"Evaluated {total} images")
+      print(f"Accuracy : {correct}/{total} = {acc*100:.2f}%")
     print(f"Avg latency: {np.mean(latencies):.1f} ms")
 
 if __name__=="__main__":
