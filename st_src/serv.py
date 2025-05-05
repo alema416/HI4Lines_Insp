@@ -2,10 +2,19 @@
 import os
 import sys
 import json
+from flask import Flask, request, jsonify
+from datetime import datetime
+import subprocess
+import base64
+import os
+from hydra import initialize, compose
+
 import base64
 import requests
+with initialize(config_path="../configs/"):
+    cfg = compose(config_name="base")  # exp1.yaml with defaults key
 
-def send_file(filename, run_id, url="http://192.168.1.11:5001/validate"):
+def send_file(filename, run_id, url="http://{cfg.training.st_dev_ip}:{cfg.training.st_port}/validate"):
     # Read and encode the file
     with open(filename, "rb") as f:
         encoded = base64.b64encode(f.read()).decode("utf-8")
@@ -42,14 +51,6 @@ def send_file(filename, run_id, url="http://192.168.1.11:5001/validate"):
     return jsonify({'augrc_hw_train': float(augrc_hw_train), 'acc_hw_train': float(acc_hw_train), 'augrc_hw_val': float(augrc_hw_val), 'acc_hw_val': float(acc_hw_val), 'augrc_hw_test': float(augrc_hw_test), 'acc_hw_test': float(acc_hw_test)})
 
 # validation_service.py inside the Docker container
-from flask import Flask, request, jsonify
-from datetime import datetime
-import subprocess
-import base64
-import os
-from hydra import initialize, compose
-with initialize(config_path="./configs/"):
-    cfg = compose(config_name="base")  # exp1.yaml with defaults key
 
 app = Flask(__name__)
 @app.route('/validate', methods=['POST'])
