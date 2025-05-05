@@ -5,12 +5,12 @@ import subprocess
 import base64
 import os
 from hydra import initialize, compose
+with initialize(config_path="../../../configs/"):
+    cfg = compose(config_name="hw_eval_server_st")  # exp1.yaml with defaults key
 
 app = Flask(__name__)
 @app.route('/validate', methods=['POST'])
 def validate():
-    with initialize(config_path="../../../configs/"):
-        cfg = compose(config_name="hw_eval_server_st")  # exp1.yaml with defaults key
 
     UPLOAD_FOLDER = cfg.server.upload_dir
     LOCK_FILE = cfg.server.lock_file
