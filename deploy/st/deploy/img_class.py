@@ -115,32 +115,6 @@ if __name__ == '__main__':
                 print(f"broken: {probs[0]:.4f}, healthy: {probs[1]:.4f}")
                 pred_idx = int(np.argmax(probs))
                 print("Predicted:", labels[pred_idx])
-                '''
-                q_out = stai_model.get_output(index=0)         # shape (1,2) or (1,N), dtype=int8/int16
-                q_logits = np.squeeze(q_out).astype(np.float32)  # e.g. [ -82., 127. ]
-                logits = q_logits * output_tensor_scale                        # dequantized float  logits
-
-                # — Softmax to get probabilities —
-                probs = tf.nn.softmax(logits).numpy()            # e.g. [0.0000001, 0.9999999]
-                pred_idx = np.argmax(probs)
-                pred_label = labels[pred_idx]
-                pred_conf = probs[pred_idx]
-
-                print(f"Logits: {logits}")
-                print(f"Probs:  {probs}")
-                print(f"→ Prediction: {pred_label} ({pred_conf:.4f})\n")
-                
-
-                # single-output (binary) case
-                score_pos = float(results)
-                score_neg = 1.0 - score_pos
-                pred_label = labels[1] if score_pos>=score_neg else labels[0]
-                pred_conf  = max(score_pos, score_neg)
-                total += 1
-                if pred_label != args.cl:
-                    wrong += 1
-                    pass #print(f"{pred_conf:0.6f}: {pred_label}")
-                '''
         print(f'total={total}')
         print(f'corr={corr}')
         print(f'{corr / total} % accuracy')
