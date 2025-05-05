@@ -102,11 +102,10 @@ def main_onnx(pth_file, out):
     
     model = load_checkpoint(pth_file)
     export_and_simplify(model, out, opset=13)
-
-    print("\nDone! Now run your STM32Cube.AI MCU flow:")
-    print("  python3 stm32ai_main.py \\")
-    print("    --config-path config_file_examples \\")
-    print("    --config-name chain_mc_config.yaml")
+    print('pth --> onnx done')
+    print('onnx --> tflite done')
+    print('ready to send tflite model...')
+    return '/home/alema416/quantized_model.tflite' #os.path.join('../models', 'model.tflite')
 
 def send_file(filename, run_id, url=f"http://{cfg.training.st_dev_ip}:{cfg.training.st_port}/validate"):
     # Read and encode the file
@@ -162,8 +161,8 @@ def validate():
 
         print(f'received run_id {run_id}')
         # pth --> tflite
-        main_onnx(file_path, os.path.join('../models', 'model.onnx'))
-        respon = send_file(os.path.join('../models', 'model.onnx'), run_id) #send_file(os.path.join(cfg.training.save_path, str(run_id), 'tflite', 'model.tflite'), run_id)
+        tflite_path = main_onnx(file_path, os.path.join('../models', 'model.onnx'))
+        respon = send_file(tflite_path, run_id) #send_file(os.path.join(cfg.training.save_path, str(run_id), 'tflite', 'model.tflite'), run_id)
     except Exception as e:
         #return jsonify({"error": str(e)}), 400
         with open('sasaa.txt', "w", encoding="utf-8") as f:
