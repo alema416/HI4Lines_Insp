@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
+# usage: python3 kadu.py /usr/local/bin/tflite-vx-delegate-example/model.tflite ../../../data/processed/IDID_cropped_224
 import argparse, os
 from timeit import default_timer as timer
 from PIL import Image
 import numpy as np
 import tflite_runtime.interpreter as tflr
 from tqdm import tqdm
+
 def preprocess_image(path, input_details):
     # load, resize, RGB → uint8 array
+    print(f'reshaping to {width}x{height}')
     _, height, width, _ = input_details['shape']
     img = Image.open(path).convert('RGB').resize((width, height))
     arr = np.asarray(img, dtype=input_details['dtype'])
@@ -38,7 +41,9 @@ def run_eval(model_path, data_root):
     for split in ['test']:
       for cls in labels:
         true_idx = labels.index(cls)
+        print(true_idx)
         folder   = os.path.join(data_root, split, cls)
+        print(folder)
         for fn in tqdm(os.listdir(folder)):
           img_path = os.path.join(folder, fn)
           inp      = preprocess_image(img_path, inp_det)
@@ -50,6 +55,7 @@ def run_eval(model_path, data_root):
           latencies.append((t1 - t0) * 1000)  # ms
 
           out = interp.get_tensor(out_idx).squeeze()  # shape (1,) → float
+          print(out)
           pred = int(out > 0.5)                      # threshold
 
           total += 1

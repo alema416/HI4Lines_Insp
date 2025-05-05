@@ -9,6 +9,7 @@
 # The application take as argument a .tflite model and run a simple inference with
 # inputs data fill with a default input tensor.
 
+
 import argparse
 import numpy as np
 import tflite_runtime.interpreter as tf
