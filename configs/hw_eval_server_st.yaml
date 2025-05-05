@@ -1,5 +1,5 @@
 server:
-  upload_dir: '../../models/temporal_optimization_model/'
+  upload_dir: '../../../models/temporal_optimization_model_st/'
   temp_model_flnm: 'temporal_optimization_model.nb'
   lock_file: './LOCK_FILE.txt'
   modelname: 'temporal_optimization_model'
