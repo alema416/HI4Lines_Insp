@@ -1,6 +1,6 @@
 server:
   upload_dir: '../../../models/temporal_optimization_model_st/'
-  temp_model_flnm: 'temporal_optimization_model.nb'
+  temp_model_flnm: 'temporal_optimization_model.tflite'
   lock_file: './LOCK_FILE.txt'
   modelname: 'temporal_optimization_model'
   st_ip: '192.168.1.11'
