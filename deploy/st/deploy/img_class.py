@@ -102,6 +102,7 @@ if __name__ == '__main__':
                 output_data = stai_model.get_output(index=0)
                 results = np.squeeze(output_data)
                 print(results)
+                '''
                 q_out = stai_model.get_output(index=0)         # shape (1,2) or (1,N), dtype=int8/int16
                 q_logits = np.squeeze(q_out).astype(np.float32)  # e.g. [ -82., 127. ]
                 logits = q_logits * output_tensor_scale                        # dequantized float  logits
@@ -116,6 +117,7 @@ if __name__ == '__main__':
                 print(f"Probs:  {probs}")
                 print(f"→ Prediction: {pred_label} ({pred_conf:.4f})\n")
                 '''
+
                 # single-output (binary) case
                 score_pos = float(results)
                 score_neg = 1.0 - score_pos
@@ -125,6 +127,6 @@ if __name__ == '__main__':
                 if pred_label != args.cl:
                     wrong += 1
                     pass #print(f"{pred_conf:0.6f}: {pred_label}")
-                '''
+                
             accuracy = 0
             print(f'SPECIAL_PRINTacc{split} {accuracy}')
