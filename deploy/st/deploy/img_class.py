@@ -116,7 +116,7 @@ if __name__ == '__main__':
                 print(f"Logits: {logits}")
                 print(f"Probs:  {probs}")
                 print(f"→ Prediction: {pred_label} ({pred_conf:.4f})\n")
-                '''
+                
 
                 # single-output (binary) case
                 score_pos = float(results)
@@ -127,6 +127,6 @@ if __name__ == '__main__':
                 if pred_label != args.cl:
                     wrong += 1
                     pass #print(f"{pred_conf:0.6f}: {pred_label}")
-                
+                '''
             accuracy = 0
             print(f'SPECIAL_PRINTacc{split} {accuracy}')
