@@ -48,7 +48,7 @@ import subprocess
 import base64
 import os
 from hydra import initialize, compose
-with initialize(config_path="../../../configs/"):
+with initialize(config_path="./configs/"):
     cfg = compose(config_name="base")  # exp1.yaml with defaults key
 
 app = Flask(__name__)
