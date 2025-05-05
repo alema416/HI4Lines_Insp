@@ -104,7 +104,7 @@ if __name__ == '__main__':
                 pred_idx = int(np.argmax(results))
                 print(pred_idx)
                 total += 1 
-                if (pred_idx == 0 && cls == 'broken') or (pred_idx == 1 && cls == 'healthy'):
+                if (pred_idx == 0 and cls == 'broken') or (pred_idx == 1 and cls == 'healthy'):
                     corr += 1
                 '''
                 q_out = stai_model.get_output(index=0)         # shape (1,2) or (1,N), dtype=int8/int16
@@ -132,8 +132,8 @@ if __name__ == '__main__':
                     wrong += 1
                     pass #print(f"{pred_conf:0.6f}: {pred_label}")
                 '''
-            print(f'total={total}')
-            print(f'corr={corr}')
-            print(f'{corr / total} % accuracy')
-            #accuracy = 0
-            #print(f'SPECIAL_PRINTacc{split} {accuracy}')
+        print(f'total={total}')
+        print(f'corr={corr}')
+        print(f'{corr / total} % accuracy')
+        #accuracy = 0
+        #print(f'SPECIAL_PRINTacc{split} {accuracy}')
