@@ -121,7 +121,7 @@ def objective(trial):
     epochs = cfg.training.epochs
     plot = cfg.training.validate_freq
     batch_size = cfg.training.batch_size 
-    port = 5001 if server2 else 5000
+    port = 5002 #5001 if server2 else 5000
     save_path = cfg.training.save_path
 
     base_lr = trial.suggest_loguniform('lr', cfg.training.base_lr_low, cfg.training.base_lr_high)
