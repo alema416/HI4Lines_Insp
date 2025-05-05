@@ -5,7 +5,7 @@ import json
 import base64
 import requests
 
-def send_file(filename, run_id, url="http://localhost:5001/validate"):
+def send_file(filename, run_id, url="http://192.168.1.11:5001/validate"):
     # Read and encode the file
     with open(filename, "rb") as f:
         encoded = base64.b64encode(f.read()).decode("utf-8")

@@ -49,7 +49,7 @@ def validate():
     acc_hw_test = None
     
     for script in scripts:
-        command = ["python", script["file"]]
+        command = ["python3", script["file"]]
         try:
             # Run the command; check=True raises an error if the command fails
             result = subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
