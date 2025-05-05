@@ -146,7 +146,7 @@ def objective(trial):
         os.makedirs(save_path)
         os.makedirs(os.path.join(save_path, 'model_state_dict'))
 
-    with mlflow.start_run(run_name=run_name):
+    with mlflow.start_run(run_name=run_name, nested=True):
         dataset_path = cfg.training.data_path
         train_loader, valid_loader, test_loader = custom_data.get_loader_local(dataset_path, batch_size=batch_size, input_size=cfg.training.input_size)
         
