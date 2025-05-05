@@ -108,6 +108,13 @@ if __name__ == '__main__':
                 total += 1 
                 if (pred_idx == 0 and cls == 'broken') or (pred_idx == 1 and cls == 'healthy'):
                     corr += 1
+                logits = (results.astype(np.float32) - output_tensor_zp) * output_tensor_scale
+                shifted = logits - np.max(logits)     # avoid overflow
+                exp_logits = np.exp(shifted)
+                probs = exp_logits / np.sum(exp_logits)
+                print(f"broken: {probs[0]:.4f}, healthy: {probs[1]:.4f}")
+                pred_idx = int(np.argmax(probs))
+                print("Predicted:", labels[pred_idx])
                 '''
                 q_out = stai_model.get_output(index=0)         # shape (1,2) or (1,N), dtype=int8/int16
                 q_logits = np.squeeze(q_out).astype(np.float32)  # e.g. [ -82., 127. ]
