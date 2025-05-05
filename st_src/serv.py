@@ -100,7 +100,7 @@ def main_onnx(pth_file, out):
     # Make sure you have:
     #   pip install "numpy<2.0" torch onnx onnx-simplifier
     
-    model = load_checkpoint1(pth_file)
+    model = load_checkpoint(pth_file)
     export_and_simplify(model, out, opset=13)
 
     print("\nDone! Now run your STM32Cube.AI MCU flow:")
