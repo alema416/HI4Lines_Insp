@@ -103,6 +103,8 @@ if __name__ == '__main__':
                 results = np.squeeze(output_data)
                 #print(results)
                 pred_idx = int(np.argmax(results))
+                for i in range(len(results)):
+                    print(f'{float(results[i] / 255.0)} {labels[i]}')
                 total += 1 
                 if (pred_idx == 0 and cls == 'broken') or (pred_idx == 1 and cls == 'healthy'):
                     corr += 1
