@@ -58,9 +58,17 @@ def validate():
     try:
         data = request.get_json()
         run_id = data.get('run_id')
+        encoded_file = data.get('file')  # Get the Base64 encoded file
+        if encoded_file:
+            file_content = base64.b64decode(encoded_file)
+            file_path = os.path.join('../models', 'model.pth')
+            with open(file_path, 'wb') as f:
+                f.write(file_content)
+            print(f"File {file_path} received and saved.")
+
         print(f'received run_id {run_id}')
         # pth --> tflite
-        respon = send_file(os.path.join(cfg.training.save_path, str(run_id), 'tflite', 'model.tflite'), run_id)
+        respon = send_file(os.path.join('../models', 'model.pth'), run_id) #send_file(os.path.join(cfg.training.save_path, str(run_id), 'tflite', 'model.tflite'), run_id)
     except Exception as e:
         #return jsonify({"error": str(e)}), 400
         with open('sasaa.txt', "w", encoding="utf-8") as f:

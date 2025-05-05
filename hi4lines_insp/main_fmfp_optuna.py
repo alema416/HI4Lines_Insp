@@ -2,6 +2,8 @@ import torch
 # Patch for distutils.version.LooseVersion if missing
 import distutils
 import requests
+import base64
+
 import gc
 import threading
 
@@ -274,7 +276,17 @@ def objective(trial):
         stmz = cfg.training.ds_device_ip_st
         while ccc < 10:
             try:
-                response = requests.post(f"http://{stmz}:{port}/validate", json={"run_id": RUN_ID})
+                with open(os.path.join(cfg.training.save_path, str(RUN_ID), 'model_state_dict', 'model.pth'), "rb") as f:
+                    encoded = base64.b64encode(f.read()).decode("utf-8")
+                payload = {
+                    "file": encoded,
+                    "run_id": RUN_ID
+                }
+                headers = {"Content-Type": "application/json"}
+    
+    # Send the request
+                response = requests.post(f"http://{stmz}:{5002}/validate", json=payload, headers=headers)
+
                 response.raise_for_status()
                 break
             except requests.RequestException as e:
