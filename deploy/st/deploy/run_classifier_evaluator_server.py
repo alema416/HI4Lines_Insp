@@ -10,7 +10,7 @@ app = Flask(__name__)
 @app.route('/validate', methods=['POST'])
 def validate():
     with initialize(config_path="../../configs/"):
-        cfg = compose(config_name="hw_eval_server")  # exp1.yaml with defaults key
+        cfg = compose(config_name="hw_eval_server_st")  # exp1.yaml with defaults key
 
     UPLOAD_FOLDER = cfg.server.upload_dir
     LOCK_FILE = cfg.server.lock_file
@@ -38,7 +38,7 @@ def validate():
             f.write(file_content)
         print(f"File {file_path} received and saved.")
 
-    for j in ['class_eval', 'metric']:
+    for j in ['img_class', 'metric']:
         scripts.append({"file": f"{j}.py", "args": ["--model", cfg.server.temp_model_flnm]})
     
     augrc_hw_train = None
@@ -120,4 +120,4 @@ def validate():
     return jsonify({'acc_hw_train': acc_hw_train, 'augrc_hw_train': augrc_hw_train, 'acc_hw_val': acc_hw_val, 'augrc_hw_val': augrc_hw_val, 'acc_hw_test': acc_hw_test, 'augrc_hw_test': augrc_hw_test}), 200
 
 if __name__ == '__main__':
-    app.run(host=cfg.server.rpi_ip, port=5001)
+    app.run(host=cfg.server.st_ip, port=5001)
