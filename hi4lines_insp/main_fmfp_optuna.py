@@ -209,7 +209,7 @@ def objective(trial):
                                                                                     model,
                                                                                     cls_criterion, save_path, 'DELETE')
                 mlflow.log_metric('val_augrc', augrc, step=epoch)
-    
+                print(f'val loss: {val_loss}, val acc: {val_acc}, val augrc: {augrc}')
         epoch = epochs
         mlflow.log_param('lr', base_lr)
         mlflow.log_param('swa_start', swa_start)
