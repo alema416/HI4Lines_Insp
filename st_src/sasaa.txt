@@ -1,1 +1,1 @@
-float() argument must be a string or a number, not 'NoneType'
+[Errno 21] Is a directory: '/home/alema416/dev/work/ST_stm32ai-modelzoo-services/image_classification/src/experiments_outputs/mlruns/987276245178714594/337c1825b8c04d418cbcf779543b44eb/artifacts/2025_05_06_14_59_31/quantized_models'

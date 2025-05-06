@@ -1,184 +1,90 @@
-#!/usr/bin/env python3
-import os
-from pathlib import Path
-from timeit import default_timer as timer
-from argparse import ArgumentParser
-import math
-from PIL import Image
-import numpy as np
-import cv2
 from stai_mpu import stai_mpu_network
+from numpy.typing import NDArray
+from typing import Any, List
+from pathlib import Path
+from PIL import Image
+from argparse import ArgumentParser
+from timeit import default_timer as timer
+import cv2 as cv
+import numpy as np
+import time
 
 def load_labels(filename):
     with open(filename, 'r') as f:
-        return [line.strip() for line in f]
+        return [line.strip() for line in f.readlines()]
 
-def preprocess_image(path: str,
-                     width: int, height: int,
-                     dtype, qtype: str,
-                     scale=None, zp=None, dfp_pos=None,
-                     mean: float=127.5, std: float=127.5):
-    """
-    Load, resize, normalize and quantize (if needed) into a batched array.
-    """
-    #img = Image.open(path).convert('RGB').resize((width, height))
-      # shape (H, W, 3), dtype uint8
-    img = cv2.imread(str(path))
-    img = cv2.resize(img, (width, height))  # much faster than PIL
-    arr = np.asarray(img)
-    # float32 path
-    if dtype == np.float32:
-        arr = (arr.astype(np.float32) - mean) / std
+if __name__ == '__main__':
+    parser = ArgumentParser()
+    parser.add_argument('--input_mean', default=127.5, help='input_mean')
+    parser.add_argument('--input_std', default=127.5,help='input stddev')
+    args = parser.parse_args()
 
-    # staticAffine quantization:  val_q = round(val_f/scale) + zp
-    elif qtype == "staticAffine":
-        arr_f = (arr.astype(np.float32) - mean) / std
-        arr = np.round(arr_f / scale + zp).astype(np.uint8)
+    model_file = '../../../models/temporal_optimization_model_st/temporal_optimization_model.nb'
+    image = '../../../data/processed/IDID_cropped_224/test/broken/'
+    label_file = 'labels_idid.txt'
+    
+    stai_model = stai_mpu_network(model_path=model_file, use_hw_acceleration=True)
+    # Read input tensor information
+    num_inputs = stai_model.get_num_inputs()
+    input_tensor_infos = stai_model.get_input_infos()
+    for i in range(0, num_inputs):
+        input_tensor_shape = input_tensor_infos[i].get_shape()
+        input_tensor_name = input_tensor_infos[i].get_name()
+        input_tensor_rank = input_tensor_infos[i].get_rank()
+        input_tensor_dtype = input_tensor_infos[i].get_dtype()
+        print("**Input node: {} -Input_name:{} -Input_dims:{} - input_type:{} -Input_shape:{}".format(i, input_tensor_name,
+                                                                                                    input_tensor_rank,
+                                                                                                    input_tensor_dtype,
+                                                                                                    input_tensor_shape))
+        if input_tensor_infos[i].get_qtype() == "staticAffine":
+            # Reading the input scale and zero point variables
+            input_tensor_scale = input_tensor_infos[i].get_scale()
+            input_tensor_zp = input_tensor_infos[i].get_zero_point()
+        if input_tensor_infos[i].get_qtype() == "dynamicFixedPoint":
+            # Reading the dynamic fixed point position
+            input_tensor_dfp_pos = input_tensor_infos[i].get_fixed_point_pos()
 
-    # dynamicFixedPoint: val_q = round(val_f * 2^dfp_pos)
-    elif qtype == "dynamicFixedPoint":
-        arr_f = (arr.astype(np.float32) - mean) / std
-        arr = np.round(arr_f * (2 ** dfp_pos)).astype(dtype)
 
-    else:
-        # fallback cast
-        arr = arr.astype(dtype)
-
-    # add batch dim
-    return np.expand_dims(arr, axis=0)
-
-def run_eval(model_path: str, data_root: str, label_file: str,
-             mean: float, std: float):
-    # 1) Load model with HW acceleration
-    stai_model = stai_mpu_network(model_path=model_path,
-                                  use_hw_acceleration=True)
-
-    # 2) Read input tensor info (we assume single-input)
-    inp = stai_model.get_input_infos()[0]
+    # Read output tensor information
+    num_outputs = stai_model.get_num_outputs()
     output_tensor_infos = stai_model.get_output_infos()
-    shape = inp.get_shape()      # e.g. [1, 224, 224, 3]
-    _, width, height, _ = shape
-    dtype = inp.get_dtype()
-    qtype = inp.get_qtype()
+    for i in range(0, num_outputs):
+        output_tensor_shape = output_tensor_infos[i].get_shape()
+        output_tensor_name = output_tensor_infos[i].get_name()
+        output_tensor_rank = output_tensor_infos[i].get_rank()
+        output_tensor_dtype = output_tensor_infos[i].get_dtype()
+        print("**Output node: {} -Output_name:{} -Output_dims:{} -  Output_type:{} -Output_shape:{}".format(i, output_tensor_name,
+                                                                                                        output_tensor_rank,
+                                                                                                        output_tensor_dtype,
+                                                                                                        output_tensor_shape))
+        if output_tensor_infos[i].get_qtype() == "staticAffine":
+            # Reading the output scale and zero point variables
+            output_tensor_scale = output_tensor_infos[i].get_scale()
+            output_tensor_zp = output_tensor_infos[i].get_zero_point()
+        if output_tensor_infos[i].get_qtype() == "dynamicFixedPoint":
+            # Reading the dynamic fixed point position
+            output_tensor_dfp_pos = output_tensor_infos[i].get_fixed_point_pos()
+    for i in range(10):
+        # Reading input image
+        input_width = input_tensor_shape[1]
+        input_height = input_tensor_shape[2]
+        input_image = Image.open(image).resize((input_width,input_height))
+        input_data = np.expand_dims(input_image, axis=0)
+        if input_tensor_dtype == np.float32:
+            input_data = (np.float32(input_data) - args.input_mean) /args.input_std
 
-    # read quant params if needed
-    scale = zp = dfp_pos = None
-    if qtype == "staticAffine":
-        scale = inp.get_scale()
-        zp    = inp.get_zero_point()
-    elif qtype == "dynamicFixedPoint":
-        dfp_pos = inp.get_fixed_point_pos()
+        stai_model.set_input(0, input_data)
+        start = timer()
+        stai_model.run()
+        end = timer()
 
-    # 3) Load labels & class names
-    labels_list = load_labels(label_file)
-
-    # 4) Loop over splits & classes
-    for split in ['test']: #["train", "val", "test"]:
-        total = correct = 0
-        file_lbls = []
-        file_confs = []
-
-        for cls_idx, cls_name in enumerate(labels_list):
-            folder = Path(data_root) / split / cls_name
-            if not folder.is_dir():
-                continue
-
-            for img_path in folder.iterdir():
-                # preprocess
-                print(img_path)
-                x = preprocess_image(
-                    str(img_path),
-                    width, height,
-                    dtype, qtype,
-                    scale, zp, dfp_pos,
-                    mean, std
-                )
-
-                # inference + timing
-                dummy = np.zeros_like(x)      # x is your preprocessed (1,H,W,3) array
-                stai_model.set_input(0, dummy)
-                for _ in range(5):
-                    stai_model.run()
-                #print("HW accel enabled? ", stai_model.is_hw_acceleration_enabled())
-                stai_model.set_input(0, x)
-                t0 = timer()
-                stai_model.run()
-                t1 = timer()
-
-                # record latency (ms)
-                latency_ms = (t1 - t0) * 1000.0
-                # get and interpret output
-                out_qtype = output_tensor_infos[0].get_qtype()          # "staticAffine" or "dynamicFixedPoint" or ""
-                if out_qtype == "staticAffine":
-                    out_scale = output_tensor_infos[0].get_scale()
-                    out_zp    = output_tensor_infos[0].get_zero_point()
-                elif out_qtype == "dynamicFixedPoint":
-                    out_dfp   = output_tensor_infos[0].get_fixed_point_pos()
-
-                raw = stai_model.get_output(0)
-
-
-                if out_qtype == "staticAffine":
-                    # float_value = (quant_value - zero_point) * scale
-                    arr_f = (raw.astype(np.float32) - out_zp) * out_scale
-
-                elif out_qtype == "dynamicFixedPoint":
-                    # float_value = quant_value / 2^dfp_pos
-                    arr_f = raw.astype(np.float32) / (2 ** out_dfp)
-
-                else:
-                    arr_f = raw.astype(np.float32)
-
-                scores = np.squeeze(arr_f)   # this is a logit if ndim==0, or raw class‐scores if ndim>0
-
-                if scores.ndim == 0:
-                    # single‐logit case → convert to probability via sigmoid
-                    logit = float(scores)
-                    prob  = 1.0 / (1.0 + math.exp(-logit))
-                    pred  = 1 if prob > 0.5 else 0
-                    conf  = prob
-
-                else:
-                    # multi‐class case → softmax then argmax
-                    exps = np.exp(scores - scores.max())
-                    sm   = exps / exps.sum()
-                    pred = int(np.argmax(sm))
-                    conf = float(sm[pred])                
-                '''
-                arr = np.squeeze(out)
-
-                if arr.ndim == 0:
-                    # single score
-                    score = float(arr)
-                    pred  = 1 if score > 0.5 else 0
-                    conf  = score if pred == 1 else 1.0 - score
-                else:
-                    # multi-class
-                    pred = int(np.argmax(arr))
-                    conf = float(arr[pred])
-                '''
-                print(f'{pred} {conf} {latency_ms}')
-                total += 1
-                if pred == cls_idx:
-                    correct += 1
-                    file_lbls.append(1)
-                else:
-                    file_lbls.append(0)
-                file_confs.append(conf)
-
-        # 5) report + dump
-        acc = correct / total if total else 0.0
-        print(f"Evaluated {total} images in {split}")
-        print(f"SPECIAL_PRINTacc{split} {acc*100:.2f}")
-        print(f"Accuracy : {correct}/{total} = {acc*100:.2f}%")
-
-        with open(f"labels_{split}.txt", "w") as f:
-            for v in file_lbls:
-                f.write(f"{v}\n")
-
-        with open(f"confs_{split}.txt", "w") as f:
-            for v in file_confs:
-                f.write(f"{v:.6f}\n")
-
-if __name__ == "__main__":
-    run_eval('../../../models/temporal_optimization_model_st/temporal_optimization_model.nb', '../../../data/processed/IDID_cropped_224', './labels_idid.txt', 127.5, 127.5)
+        print("Inference time: ", (end - start) *1000, "ms")
+        output_data = stai_model.get_output(index=0)
+        results = np.squeeze(output_data)
+        top_k = results.argsort()[-5:][::-1]
+        labels = load_labels(label_file)
+        for i in top_k:
+            if output_tensor_dtype == np.uint8:
+                print('{:08.6f}: {}'.format(float(results[i] / 255.0), labels[i]))
+            else:
+                print('{:08.6f}: {}'.format(float(results[i]), labels[i]))
