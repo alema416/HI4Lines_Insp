@@ -50,6 +50,10 @@ def run_eval(model_path: str, data_root: str):
         sess_options=sess_opts,
         providers=['VSINPUExecutionProvider']
     )
+    sess_opts.enable_profiling = True
+    sess_opts.log_severity_level = 0  # VERBOSE
+    prof_file = session.end_profiling()
+    print("Profiling data written to", prof_file)
 
     # --- 2) Discover input/output metadata ---
     inp = session.get_inputs()[0]
