@@ -99,7 +99,7 @@ def run_eval(model_path: str, data_root: str, label_file: str,
                 stai_model.set_input(0, dummy)
                 for _ in range(5):
                     stai_model.run()
-                print("HW accel enabled? ", stai_model.is_hw_acceleration_enabled())
+                #print("HW accel enabled? ", stai_model.is_hw_acceleration_enabled())
                 stai_model.set_input(0, x)
                 t0 = timer()
                 stai_model.run()
