@@ -199,7 +199,6 @@ def objective(trial):
             
             # calc measure
             if epoch % val_freq == 0:
-                print(f"{'#'*50} validating... {50*'#'}")
                 val_loss, val_acc = validate(valid_loader, model, cls_criterion)
                 mlflow.log_metric('val_loss', val_loss, step=epoch)
                 mlflow.log_metric('val_acc', val_acc, step=epoch)
@@ -209,6 +208,9 @@ def objective(trial):
                                                                                     cls_criterion, save_path, 'DELETE')
                 mlflow.log_metric('val_augrc', augrc, step=epoch)
                 print(f'val loss: {val_loss}, val acc: {val_acc}, val augrc: {augrc}')
+                print('Validation Loss: {0}\t'
+                    'Validation Loss: {1})\t'
+                    'Validation AUGRC: {2})\t'.format(val_loss, val_acc, augrc))
         epoch = epochs
         mlflow.log_param('lr', base_lr)
         mlflow.log_param('swa_start', swa_start)
