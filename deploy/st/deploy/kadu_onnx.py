@@ -52,8 +52,6 @@ def run_eval(model_path: str, data_root: str):
     )
     sess_opts.enable_profiling = True
     sess_opts.log_severity_level = 0  # VERBOSE
-    prof_file = session.end_profiling()
-    print("Profiling data written to", prof_file)
 
     # --- 2) Discover input/output metadata ---
     inp = session.get_inputs()[0]
@@ -89,7 +87,7 @@ def run_eval(model_path: str, data_root: str):
             if not os.path.isdir(folder):
                 continue
 
-            for fn in os.listdir(folder):
+            for fn in os.listdir(folder[:2]):
                 img_path = os.path.join(folder, fn)
                 # Preprocess
                 x = preprocess_image(img_path, input_shape, input_dtype)
@@ -159,6 +157,8 @@ def run_eval(model_path: str, data_root: str):
         with open(f"confs_{split}.txt", "w") as f_conf:
             for v in file_confs:
                 f_conf.write(f"{v:.6f}\n")
+    prof_file = session.end_profiling()
+    print("Profiling data written to", prof_file)
 
     # 6) Overall latency
     print(f"Avg latency: {np.mean(latencies):.1f} ms  (over {len(latencies)} inferences)")
