@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 from timeit import default_timer as timer
 from argparse import ArgumentParser
-
+import math
 from PIL import Image
 import numpy as np
 import cv2
@@ -124,13 +124,21 @@ def run_eval(model_path: str, data_root: str, label_file: str,
                 else:
                     arr_f = raw.astype(np.float32)
 
-                scores = np.squeeze(arr_f)   # now in real [0,1] or logits
+                scores = np.squeeze(arr_f)   # this is a logit if ndim==0, or raw class‐scores if ndim>0
+
                 if scores.ndim == 0:
-                    pred = 1 if scores > 0.5 else 0
-                    conf = float(scores) if pred == 1 else float(1.0 - scores)
+                    # single‐logit case → convert to probability via sigmoid
+                    logit = float(scores)
+                    prob  = 1.0 / (1.0 + math.exp(-logit))
+                    pred  = 1 if prob > 0.5 else 0
+                    conf  = prob
+
                 else:
-                    pred = int(np.argmax(scores))
-                    conf = float(scores[pred])
+                    # multi‐class case → softmax then argmax
+                    exps = np.exp(scores - scores.max())
+                    sm   = exps / exps.sum()
+                    pred = int(np.argmax(sm))
+                    conf = float(sm[pred])                
                 '''
                 arr = np.squeeze(out)
 
