@@ -89,14 +89,14 @@ def run_eval(model_path: str, data_root: str):
                 continue
 
             for fn in os.listdir(folder):
+                t0 = timer()
                 img_path = os.path.join(folder, fn)
                 # Preprocess
                 x = preprocess_image(img_path, input_shape, input_dtype)
                 # run inference
-                t0 = timer()
+                
                 raw_out = session.run([out.name], {input_name: x})[0]  # -> e.g. shape (1,) or (1,C)
-                t1 = timer()
-                latencies.append((t1 - t0) * 1000.0)
+                
                 arr = np.squeeze(raw_out, axis=0)                      # -> shape () or (C,)
 
                 # decide prediction & confidence
@@ -122,6 +122,8 @@ def run_eval(model_path: str, data_root: str):
                     file_lbls.append(0)
 
                 file_confs.append(conf)
+                t1 = timer()
+                latencies.append((t1 - t0) * 1000.0)
 
         # 4) Report
         acc = correct / total if total else 0.0
