@@ -67,11 +67,19 @@ if __name__ == '__main__':
             output_tensor_dfp_pos = output_tensor_infos[i].get_fixed_point_pos()
     for i in range(1):
         # Reading input image
-        input_width = input_tensor_shape[1]
-        input_height = input_tensor_shape[2]
-        print(f'{input_width}x{input_height}')
-        input_image = Image.open(image).resize((input_width,input_height))
+        #input_width = input_tensor_shape[1]
+        #input_height = input_tensor_shape[2]
+        
+        _, C, H, W = input_tensor_shape
+        # PIL wants (width, height)
+        print(f'{W}x{H}')
+
+        input_image = Image.open(image).resize((W, H))
+        input_np = np.array(input_image)                  # HxWxC
+        input_chw = input_np.transpose(2,0,1)             # CxHxW
+        
         input_data = np.expand_dims(input_image, axis=0)
+        
         if input_tensor_dtype == np.float32:
             input_data = (np.float32(input_data) - args.input_mean) /args.input_std
 
