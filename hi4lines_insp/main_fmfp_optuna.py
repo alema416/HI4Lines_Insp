@@ -122,7 +122,8 @@ def objective(trial):
     server1 = True
     server2 = not server1
     epochs = cfg.training.epochs
-    plot = cfg.training.validate_freq
+    val_freq = cfg.training.validate_freq
+    plot = cfg.training.print_freq
     batch_size = cfg.training.batch_size 
     port = 5002 #5001 if server2 else 5000
     save_path = cfg.training.save_path
@@ -198,7 +199,7 @@ def objective(trial):
                 torch.save(model.state_dict(), os.path.join(save_path, 'model_state_dict', 'model.pth'))
             
             # calc measure
-            if epoch % plot == 0:
+            if epoch % val_freq == 0:
                 print(f"{'#'*50} validating... {50*'#'}")
                 val_loss, val_acc = validate(valid_loader, model, cls_criterion)
                 mlflow.log_metric('val_loss', val_loss, step=epoch)
