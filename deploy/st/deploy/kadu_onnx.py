@@ -77,7 +77,7 @@ def run_eval(model_path: str, data_root: str):
     latencies = []
 
     # --- 3) Loop over splits ---
-    for split in ['test']: #['train', 'val', 'test']:
+    for split in ['train', 'val', 'test']:
         total = correct = 0
         file_lbls = []
         file_confs = []
@@ -92,31 +92,6 @@ def run_eval(model_path: str, data_root: str):
                 # Preprocess
                 x = preprocess_image(img_path, input_shape, input_dtype)
                 print('preprocessed')
-                '''
-                # Inference + timing
-                t0 = timer()
-                # session.run returns a list of outputs; here we expect one scalar array
-                out_arr = session.run([out.name], {input_name: x})[0]
-                t1 = timer()
-                latencies.append((t1 - t0) * 1000.0)
-
-                # Assume out_arr shape is (1,1) or (1,) giving a score in [0,1]
-                print(out_arr)
-                score = float(np.squeeze(out_arr))
-                pred = 1 if score > 0.5 else 0
-
-                total += 1
-                if pred == cls_idx:
-                    correct += 1
-                    file_lbls.append(1)
-                else:
-                    file_lbls.append(0)
-
-                # store confidence (probability of predicted class)
-                conf = score if pred == 1 else 1.0 - score
-                file_confs.append(conf)
-                # inside your for-each-image loop:
-                '''
                 # run inference
                 t0 = timer()
                 raw_out = session.run([out.name], {input_name: x})[0]  # -> e.g. shape (1,) or (1,C)
