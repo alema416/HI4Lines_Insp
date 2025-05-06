@@ -92,13 +92,11 @@ def run_eval(model_path: str, data_root: str):
                 img_path = os.path.join(folder, fn)
                 # Preprocess
                 x = preprocess_image(img_path, input_shape, input_dtype)
-                print('preprocessed')
                 # run inference
                 t0 = timer()
                 raw_out = session.run([out.name], {input_name: x})[0]  # -> e.g. shape (1,) or (1,C)
                 t1 = timer()
                 latencies.append((t1 - t0) * 1000.0)
-                print('inference done!')
                 arr = np.squeeze(raw_out, axis=0)                      # -> shape () or (C,)
 
                 # decide prediction & confidence
