@@ -66,6 +66,8 @@ if __name__ == '__main__':
             # Reading the dynamic fixed point position
             output_tensor_dfp_pos = output_tensor_infos[i].get_fixed_point_pos()
     for i in range(1):
+        start = timer()
+
         # Reading input image
         #input_width = input_tensor_shape[1]
         #input_height = input_tensor_shape[2]
@@ -84,9 +86,8 @@ if __name__ == '__main__':
             input_data = (np.float32(input_data) - args.input_mean) /args.input_std
 
         stai_model.set_input(0, input_data)
-        start = timer()
         stai_model.run()
-        end = timer()
+        
 
         print("Inference time: ", (end - start) *1000, "ms")
         output_data = stai_model.get_output(index=0)
@@ -105,3 +106,4 @@ if __name__ == '__main__':
                 print('{:08.6f}: {}'.format(float(results[i] / 255.0), labels[i]))
             else:
                 print('{:08.6f}: {}'.format(float(results[i]), labels[i]))
+        end = timer()
