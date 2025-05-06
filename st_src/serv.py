@@ -30,32 +30,6 @@ from model.mobilenet import mobilenet
 
 from torchvision.models import mobilenet_v2
 
-def load_checkpoint1(pth_path: str):
-    # 1) instantiate the exact torchvision MobileNetV2
-    model = mobilenet_v2(weights=None, num_classes=2)
-    model.eval()
-
-    # 2) load your checkpoint (it may be a dict with 'state_dict' inside)
-    ckpt = torch.load(pth_path, map_location="cpu")
-    if "state_dict" in ckpt:
-        sd = ckpt["state_dict"]
-    else:
-        sd = ckpt
-
-    # 3) strip off any "module." prefixes and unwanted keys
-    clean = OrderedDict()
-    for k, v in sd.items():
-        # remove DataParallel prefix
-        nk = k.replace("module.", "")
-        # drop any extra keys your training pipeline may have added
-        if nk == "n_averaged":
-            continue
-        clean[nk] = v
-
-    # 4) load into the model
-    model.load_state_dict(clean)
-    return model
-
 def load_checkpoint(pth_path: str) -> torch.nn.Module:
     model = mobilenet(num_classes=2)
     sd = torch.load(pth_path, map_location="cpu")
@@ -101,7 +75,7 @@ def main_onnx(pth_file, out):
     model = load_checkpoint(pth_file)
     export_and_simplify(model, out, opset=13)
     print('pth --> onnx done')
-    
+    print(input('wait: '))
     # cd /home/alema416/dev/work/ST_stm32ai-modelzoo-services/image_classification/src
     # export stmai_username='alema416@gmail.com' && export stmai_password='@Alex1234@#'
     # python3 stm32ai_main.py --config-path /home/alema416/dev/work/ST_stm32ai-modelzoo-services/image_classification/src/config_file_examples --config-name quantization_config general.model_path=/home/alema416/dev/work/HI4Lines_Insp/models/model.onnx
@@ -158,14 +132,14 @@ def validate():
         encoded_file = data.get('file')  # Get the Base64 encoded file
         if encoded_file:
             file_content = base64.b64decode(encoded_file)
-            file_path = os.path.join('../models', 'model.pth')
+            file_path = os.path.join('../models', 'ckpt.pth')
             with open(file_path, 'wb') as f:
                 f.write(file_content)
             print(f"File {file_path} received and saved.")
 
         print(f'received run_id {run_id}')
         # pth --> tflite
-        tflite_path = main_onnx(file_path, os.path.join('../models', 'model.onnx'))
+        tflite_path = main_onnx(file_path, os.path.join('../models', 'model_q.onnx'))
         respon = send_file(tflite_path, run_id) #send_file(os.path.join(cfg.training.save_path, str(run_id), 'tflite', 'model.tflite'), run_id)
     except Exception as e:
         #return jsonify({"error": str(e)}), 400

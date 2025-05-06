@@ -6,6 +6,7 @@ import base64
 
 import gc
 import threading
+from torchvision.models import mobilenet_v2
 
 
 
@@ -141,7 +142,7 @@ def objective(trial):
 
     save_path = os.path.join(save_path, f'{trial.number}')
     RUN_ID = trial.number
-    modelname = cfg.training.model_name
+    modelname = 'kadu' #cfg.training.model_name
     run_name = f'trial_{trial.number}'
     
     if not os.path.exists(save_path):
@@ -150,7 +151,7 @@ def objective(trial):
         os.makedirs(os.path.join(save_path, 'logs'))
 
     with mlflow.start_run(run_name=run_name, nested=True):
-        '''
+        
         dataset_path = cfg.training.data_path
         train_loader, valid_loader, test_loader = custom_data.get_loader_local(dataset_path, batch_size=batch_size, input_size=cfg.training.input_size)
         
@@ -162,6 +163,8 @@ def objective(trial):
             model = resnet18.ResNet18(**model_dict).to(device)
         elif modelname == 'mobilenet':
             model = mobilenet.mobilenet(**model_dict).to(device)
+        else:
+            model = mobilenet_v2(pretrained=False, num_classes=2).to(device)
         cls_criterion = nn.CrossEntropyLoss().to(device)
 
             
@@ -272,7 +275,7 @@ def objective(trial):
                 mlflow.log_metric(key, val)
         
         augrc_hw_val = result.get("augrc_hw_val")
-        '''
+        
         ccc = 0
         stmz = cfg.training.ds_device_ip_st
         while ccc < 10:
