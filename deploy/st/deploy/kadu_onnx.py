@@ -98,6 +98,7 @@ def run_eval(model_path: str, data_root: str):
                 latencies.append((t1 - t0) * 1000.0)
 
                 # Assume out_arr shape is (1,1) or (1,) giving a score in [0,1]
+                print(out_arr)
                 score = float(np.squeeze(out_arr))
                 pred = 1 if score > 0.5 else 0
 
