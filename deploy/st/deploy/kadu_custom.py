@@ -71,7 +71,7 @@ if __name__ == '__main__':
         # Reading input image
         #input_width = input_tensor_shape[1]
         #input_height = input_tensor_shape[2]
-        '''
+        
         _, C, H, W = input_tensor_shape
         # PIL wants (width, height)
         print(f'{W}x{H}')
@@ -101,7 +101,7 @@ if __name__ == '__main__':
         # — transpose to C×H×W and add batch
         input_chw = quant.transpose(2, 0, 1)        # from H×W×C → C×H×W
         input_data = input_chw[np.newaxis, :, :, :]  # shape (1, C, H, W)
-        
+        '''
         if input_tensor_dtype == np.float32:
             input_data = (np.float32(input_data) - args.input_mean) /args.input_std
 
