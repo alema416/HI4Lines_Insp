@@ -65,7 +65,7 @@ if __name__ == '__main__':
         if output_tensor_infos[i].get_qtype() == "dynamicFixedPoint":
             # Reading the dynamic fixed point position
             output_tensor_dfp_pos = output_tensor_infos[i].get_fixed_point_pos()
-    for i in range(10):
+    for i in range(1):
         # Reading input image
         input_width = input_tensor_shape[1]
         input_height = input_tensor_shape[2]
@@ -83,6 +83,8 @@ if __name__ == '__main__':
         print("Inference time: ", (end - start) *1000, "ms")
         output_data = stai_model.get_output(index=0)
         results = np.squeeze(output_data)
+        labels = load_labels(label_file)
+
         print('dequantized: ')
         real_scores = (results.astype(np.float32) - output_tensor_zp) * output_tensor_scale
         top_k = real_scores.argsort()[-5:][::-1]
@@ -90,7 +92,6 @@ if __name__ == '__main__':
             print(f"{real_scores[idx]:.6f}: {labels[idx]}")
         print('not dequantized: ')
         top_k = results.argsort()[-5:][::-1]
-        labels = load_labels(label_file)
         for i in top_k:
             if output_tensor_dtype == np.uint8:
                 print('{:08.6f}: {}'.format(float(results[i] / 255.0), labels[i]))
