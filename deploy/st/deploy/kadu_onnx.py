@@ -106,4 +106,4 @@ def run_eval(model_path: str, data_root: str):
     print(f"Avg latency: {np.mean(latencies):.1f} ms  (over {len(latencies)} inferences)")
 
 if __name__ == "__main__":
-    run_eval('../../../models/temporal_optimization_model_st/temporal_optimization_model.tflite', '../../../data/processed/IDID_cropped_224')
+    run_eval('../../../models/temporal_optimization_model_st/temporal_optimization_model.onnx', '../../../data/processed/IDID_cropped_224')

@@ -38,7 +38,7 @@ def validate():
             f.write(file_content)
         print(f"File {file_path} received and saved.")
 
-    for j in ['kadu', 'metric']:
+    for j in ['kadu_onnx', 'metric']:
         scripts.append({"file": f"{j}.py", "args": [None]})
     
     augrc_hw_train = None
