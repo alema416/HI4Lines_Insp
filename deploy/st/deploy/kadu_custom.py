@@ -53,6 +53,7 @@ def run_eval(model_path: str, data_root: str, label_file: str,
 
     # 2) Read input tensor info (we assume single-input)
     inp = stai_model.get_input_infos()[0]
+    output_tensor_infos = stai_model.get_output_infos()
     shape = inp.get_shape()      # e.g. [1, 224, 224, 3]
     _, width, height, _ = shape
     dtype = inp.get_dtype()
@@ -100,7 +101,35 @@ def run_eval(model_path: str, data_root: str, label_file: str,
                 # record latency (ms)
                 latency_ms = (t1 - t0) * 1000.0
                 # get and interpret output
-                out = stai_model.get_output(0)
+                out_qtype = output_tensor_infos[0].get_qtype()          # "staticAffine" or "dynamicFixedPoint" or ""
+                if out_qtype == "staticAffine":
+                    out_scale = output_tensor_infos[0].get_scale()
+                    out_zp    = output_tensor_infos[0].get_zero_point()
+                elif out_qtype == "dynamicFixedPoint":
+                    out_dfp   = output_tensor_infos[0].get_fixed_point_pos()
+
+                raw = stai_model.get_output(0)
+
+
+                if out_qtype == "staticAffine":
+                    # float_value = (quant_value - zero_point) * scale
+                    arr_f = (raw.astype(np.float32) - out_zp) * out_scale
+
+                elif out_qtype == "dynamicFixedPoint":
+                    # float_value = quant_value / 2^dfp_pos
+                    arr_f = raw.astype(np.float32) / (2 ** out_dfp)
+
+                else:
+                    arr_f = raw.astype(np.float32)
+
+                scores = np.squeeze(arr_f)   # now in real [0,1] or logits
+                if scores.ndim == 0:
+                    pred = 1 if scores > 0.5 else 0
+                    conf = float(scores) if pred == 1 else float(1.0 - scores)
+                else:
+                    pred = int(np.argmax(scores))
+                    conf = float(scores[pred])
+                '''
                 arr = np.squeeze(out)
 
                 if arr.ndim == 0:
@@ -112,6 +141,7 @@ def run_eval(model_path: str, data_root: str, label_file: str,
                     # multi-class
                     pred = int(np.argmax(arr))
                     conf = float(arr[pred])
+                '''
                 print(f'{pred} {conf} {latency_ms}')
                 total += 1
                 if pred == cls_idx:
