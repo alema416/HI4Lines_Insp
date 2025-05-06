@@ -89,7 +89,7 @@ def run_eval(model_path: str, data_root: str):
                 img_path = os.path.join(folder, fn)
                 # Preprocess
                 x = preprocess_image(img_path, input_shape, input_dtype)
-                
+                '''
                 # Inference + timing
                 t0 = timer()
                 # session.run returns a list of outputs; here we expect one scalar array
@@ -111,6 +111,33 @@ def run_eval(model_path: str, data_root: str):
 
                 # store confidence (probability of predicted class)
                 conf = score if pred == 1 else 1.0 - score
+                file_confs.append(conf)
+                # inside your for-each-image loop:
+                '''
+                # run inference
+                raw_out = session.run([out.name], {input_name: x})[0]  # -> e.g. shape (1,) or (1,C)
+                arr = np.squeeze(raw_out, axis=0)                      # -> shape () or (C,)
+
+                # decide prediction & confidence
+                if arr.ndim == 0:
+                    # single score in [0,1]
+                    score = float(arr)
+                    pred  = 1 if score > 0.5 else 0
+                    conf  = score if pred == 1 else 1.0 - score
+
+                else:
+                    # multiclass: pick the highest-scoring class
+                    # (if these are logits, you may want to softmax first)
+                    pred = int(np.argmax(arr))
+                    conf = float(arr[pred])
+
+                total += 1
+                if pred == cls_idx:
+                    correct += 1
+                    file_lbls.append(1)
+                else:
+                    file_lbls.append(0)
+
                 file_confs.append(conf)
 
         # 4) Report
