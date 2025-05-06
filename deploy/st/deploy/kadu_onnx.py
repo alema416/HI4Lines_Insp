@@ -89,6 +89,7 @@ def run_eval(model_path: str, data_root: str):
                 img_path = os.path.join(folder, fn)
                 # Preprocess
                 x = preprocess_image(img_path, input_shape, input_dtype)
+                print('preprocessed')
                 '''
                 # Inference + timing
                 t0 = timer()
@@ -116,6 +117,7 @@ def run_eval(model_path: str, data_root: str):
                 '''
                 # run inference
                 raw_out = session.run([out.name], {input_name: x})[0]  # -> e.g. shape (1,) or (1,C)
+                print('inference done!')
                 arr = np.squeeze(raw_out, axis=0)                      # -> shape () or (C,)
 
                 # decide prediction & confidence
