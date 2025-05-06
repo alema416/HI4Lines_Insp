@@ -52,7 +52,7 @@ def run_eval(model_path: str, data_root: str):
     )
     sess_opts.enable_profiling = True
     sess_opts.log_severity_level = 0  # VERBOSE
-
+    sess_opts.profile_file_prefix = "./kadu_model_profile" 
     # --- 2) Discover input/output metadata ---
     inp = session.get_inputs()[0]
     out = session.get_outputs()[0]
