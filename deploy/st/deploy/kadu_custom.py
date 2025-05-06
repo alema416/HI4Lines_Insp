@@ -71,7 +71,7 @@ if __name__ == '__main__':
         # Reading input image
         #input_width = input_tensor_shape[1]
         #input_height = input_tensor_shape[2]
-        
+        '''
         _, C, H, W = input_tensor_shape
         # PIL wants (width, height)
         print(f'{W}x{H}')
@@ -81,6 +81,26 @@ if __name__ == '__main__':
         input_chw = input_np.transpose(2,0,1)             # CxHxW
         
         input_data = np.expand_dims(input_image, axis=0)
+        '''
+        _, C, H, W = input_tensor_shape
+
+        # Read and preprocess ONCE:
+        # — read as BGR, convert to RGB if your model expects RGB
+        bgr = cv.imread(image, cv.IMREAD_COLOR)
+        rgb = cv.cvtColor(bgr, cv.COLOR_BGR2RGB)
+        # — resize to W×H
+        resized = cv.resize(rgb, (W, H), interpolation=cv.INTER_LINEAR)
+
+        # — quantize:
+        #    ((pixel/std + mean) / scale) + zp
+        #    note: args.input_mean/std are scalars
+        quant = ((resized.astype(np.float32) - args.input_mean) / args.input_std)
+        quant = quant / input_tensor_scale + input_tensor_zp
+        quant = np.clip(np.round(quant), -128, 127).astype(np.int8)
+
+        # — transpose to C×H×W and add batch
+        input_chw = quant.transpose(2, 0, 1)        # from H×W×C → C×H×W
+        input_data = input_chw[np.newaxis, :, :, :]  # shape (1, C, H, W)
         
         if input_tensor_dtype == np.float32:
             input_data = (np.float32(input_data) - args.input_mean) /args.input_std
