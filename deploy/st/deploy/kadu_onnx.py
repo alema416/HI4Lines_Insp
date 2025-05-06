@@ -83,6 +83,7 @@ def run_eval(model_path: str, data_root: str):
         file_confs = []
 
         for cls_idx, cls_name in enumerate(labels):
+            print(f'{cls_idx}, {cls_name}')
             folder = os.path.join(data_root, split, cls_name)
             if not os.path.isdir(folder):
                 continue
@@ -102,12 +103,14 @@ def run_eval(model_path: str, data_root: str):
 
                 # decide prediction & confidence
                 if arr.ndim == 0:
+                    print(f'binary')
                     # single score in [0,1]
                     score = float(arr)
                     pred  = 1 if score > 0.5 else 0
                     conf  = score if pred == 1 else 1.0 - score
 
                 else:
+                    print(f'multiclass')
                     # multiclass: pick the highest-scoring class
                     # (if these are logits, you may want to softmax first)
                     pred = int(np.argmax(arr))
