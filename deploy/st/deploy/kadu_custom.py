@@ -95,6 +95,10 @@ def run_eval(model_path: str, data_root: str, label_file: str,
                 )
 
                 # inference + timing
+                dummy = np.zeros_like(x)      # x is your preprocessed (1,H,W,3) array
+                stai_model.set_input(0, dummy)
+                for _ in range(5):
+                    stai_model.run()
                 stai_model.set_input(0, x)
                 t0 = timer()
                 stai_model.run()
