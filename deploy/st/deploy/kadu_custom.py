@@ -6,7 +6,7 @@ from argparse import ArgumentParser
 
 from PIL import Image
 import numpy as np
-
+import cv2
 from stai_mpu import stai_mpu_network
 
 def load_labels(filename):
@@ -21,9 +21,11 @@ def preprocess_image(path: str,
     """
     Load, resize, normalize and quantize (if needed) into a batched array.
     """
-    img = Image.open(path).convert('RGB').resize((width, height))
-    arr = np.asarray(img)  # shape (H, W, 3), dtype uint8
-
+    #img = Image.open(path).convert('RGB').resize((width, height))
+      # shape (H, W, 3), dtype uint8
+    img = cv2.imread(str(img_path))
+    img = cv2.resize(img, (width, height))  # much faster than PIL
+    arr = np.asarray(img)
     # float32 path
     if dtype == np.float32:
         arr = (arr.astype(np.float32) - mean) / std
