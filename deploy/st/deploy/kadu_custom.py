@@ -69,7 +69,7 @@ if __name__ == '__main__':
         # Reading input image
         input_width = input_tensor_shape[1]
         input_height = input_tensor_shape[2]
-        print('f{input_width}x{input_height}')
+        print(f'{input_width}x{input_height}')
         input_image = Image.open(image).resize((input_width,input_height))
         input_data = np.expand_dims(input_image, axis=0)
         if input_tensor_dtype == np.float32:
