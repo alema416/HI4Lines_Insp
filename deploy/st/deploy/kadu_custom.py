@@ -112,7 +112,7 @@ def run_eval(model_path: str, data_root: str, label_file: str,
                     # multi-class
                     pred = int(np.argmax(arr))
                     conf = float(arr[pred])
-
+                print(f'{pred} {conf} {latency_ms}')
                 total += 1
                 if pred == cls_idx:
                     correct += 1
