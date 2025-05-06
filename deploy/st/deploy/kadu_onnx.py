@@ -87,7 +87,7 @@ def run_eval(model_path: str, data_root: str):
             if not os.path.isdir(folder):
                 continue
 
-            for fn in os.listdir(folder[:2]):
+            for fn in os.listdir(folder)[:2]:
                 img_path = os.path.join(folder, fn)
                 # Preprocess
                 x = preprocess_image(img_path, input_shape, input_dtype)
