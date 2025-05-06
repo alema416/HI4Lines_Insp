@@ -89,7 +89,6 @@ if __name__ == '__main__':
         stai_model.run()
         
 
-        print("Inference time: ", (end - start) *1000, "ms")
         output_data = stai_model.get_output(index=0)
         results = np.squeeze(output_data)
         labels = load_labels(label_file)
@@ -107,3 +106,4 @@ if __name__ == '__main__':
             else:
                 print('{:08.6f}: {}'.format(float(results[i]), labels[i]))
         end = timer()
+        print("Inference time: ", (end - start) *1000, "ms")
