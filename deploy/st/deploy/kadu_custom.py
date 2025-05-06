@@ -69,6 +69,7 @@ if __name__ == '__main__':
         # Reading input image
         input_width = input_tensor_shape[1]
         input_height = input_tensor_shape[2]
+        print('f{input_width}x{input_height}')
         input_image = Image.open(image).resize((input_width,input_height))
         input_data = np.expand_dims(input_image, axis=0)
         if input_tensor_dtype == np.float32:
@@ -82,7 +83,12 @@ if __name__ == '__main__':
         print("Inference time: ", (end - start) *1000, "ms")
         output_data = stai_model.get_output(index=0)
         results = np.squeeze(output_data)
-        print(results)
+        print('dequantized: ')
+        real_scores = (results.astype(np.float32) - output_tensor_zp) * output_tensor_scale
+        top_k = real_scores.argsort()[-5:][::-1]
+        for idx in top_k:
+            print(f"{real_scores[idx]:.6f}: {labels[idx]}")
+        print('not dequantized: ')
         top_k = results.argsort()[-5:][::-1]
         labels = load_labels(label_file)
         for i in top_k:
