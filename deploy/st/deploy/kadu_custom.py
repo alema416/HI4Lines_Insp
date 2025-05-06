@@ -70,7 +70,7 @@ def run_eval(model_path: str, data_root: str, label_file: str,
     labels_list = load_labels(label_file)
 
     # 4) Loop over splits & classes
-    for split in ["train", "val", "test"]:
+    for split in ['test']: #["train", "val", "test"]:
         total = correct = 0
         file_lbls = []
         file_confs = []
@@ -82,6 +82,7 @@ def run_eval(model_path: str, data_root: str, label_file: str,
 
             for img_path in folder.iterdir():
                 # preprocess
+                print(img_path)
                 x = preprocess_image(
                     str(img_path),
                     width, height,
