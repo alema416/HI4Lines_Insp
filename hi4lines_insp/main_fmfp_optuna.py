@@ -232,7 +232,8 @@ def objective(trial):
         mlflow.log_metric('train_aurc', aurc, step=epoch)
         mlflow.log_metric('train_eaurc', eaurc, step=epoch)
         mlflow.log_metric('train_augrc', augrc, step=epoch)
-        
+        print(f'ckpt train acc: {acc}')
+        print(f'ckpt train acc: {augrc}')
         acc, auroc, aupr_success, aupr, fpr, tnr, aurc, val_eaurc, val_augrc = metrics.calc_metrics(args, valid_loader, model, cls_criterion, save_path, 'val')
         
         mlflow.log_metric('val_acc', auroc, step=epoch)
@@ -242,7 +243,8 @@ def objective(trial):
         mlflow.log_metric('val_aurc', aurc, step=epoch)
         mlflow.log_metric('val_eaurc', val_eaurc, step=epoch)
         mlflow.log_metric('val_augrc', val_augrc, step=epoch)
-        
+        print(f'ckpt val acc: {acc}')
+        print(f'ckpt val acc: {augrc}')
         acc, auroc, aupr_success, aupr, fpr, tnr, aurc, eaurc, augrc = metrics.calc_metrics(args, test_loader, model, cls_criterion, save_path, 'test')
         
         mlflow.log_metric('test_acc', auroc, step=epoch)
@@ -252,7 +254,8 @@ def objective(trial):
         mlflow.log_metric('test_aurc', aurc, step=epoch)
         mlflow.log_metric('test_eaurc', eaurc, step=epoch)
         mlflow.log_metric('test_augrc', augrc, step=epoch)
-
+        print(f'ckpt test acc: {acc}')
+        print(f'ckpt test acc: {augrc}')
         mlflow.pytorch.log_model(model, artifact_path="model")
         '''
         ccc = 0

@@ -4,7 +4,7 @@ from model import resnet18
 from collections import OrderedDict
 import argparse
 import os
-
+from torchvision.models import mobilenet_v2
 from hydra import initialize, compose
 
 with initialize(config_path="../configs/"):
@@ -24,12 +24,12 @@ num_class = 2
 onnx_dir = f'../models/{exp_name}/{args.run_id}'
 model_dict = {"num_classes": num_class}
 
-ours = True
+ours = False
 
 if ours:
   model = resnet18.ResNet18(num_classes=2).to(device)
 else:
-  model = resnet18_custom.resnet18().to(device)
+  model = mobilenet_v2(weights=None, num_classes=2)
 
 model_name = f'model_{args.run_id}'
 model_path = f'../models/{exp_name}/{args.run_id}/model_state_dict/model.pth'
