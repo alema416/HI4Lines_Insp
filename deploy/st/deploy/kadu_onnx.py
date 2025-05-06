@@ -75,7 +75,7 @@ def run_eval(model_path: str, data_root: str):
     latencies = []
 
     # --- 3) Loop over splits ---
-    for split in ['train', 'val', 'test']:
+    for split in ['test']: #['train', 'val', 'test']:
         total = correct = 0
         file_lbls = []
         file_confs = []
