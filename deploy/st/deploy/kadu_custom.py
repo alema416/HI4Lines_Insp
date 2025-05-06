@@ -21,7 +21,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     model_file = '../../../models/temporal_optimization_model_st/temporal_optimization_model.nb' 
-    image = os.listdir('../../../data/processed/IDID_cropped_224/test/broken/')[0]
+    image = os.path.join('../../../data/processed/IDID_cropped_224/test/broken/', os.listdir('../../../data/processed/IDID_cropped_224/test/broken/')[0])
     label_file = 'labels_idid.txt'
     
     stai_model = stai_mpu_network(model_path=model_file, use_hw_acceleration=True)
