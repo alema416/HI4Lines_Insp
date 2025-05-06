@@ -29,6 +29,7 @@ from model.resnet18 import ResNet18
 from model.mobilenet import mobilenet
 
 from torchvision.models import mobilenet_v2
+
 def load_checkpoint1(pth_path: str):
     # 1) instantiate the exact torchvision MobileNetV2
     model = mobilenet_v2(weights=None, num_classes=2)
@@ -81,8 +82,6 @@ def export_and_simplify(model: torch.nn.Module, onnx_path: str, opset: int):
         do_constant_folding=True,           # fuse constants
         input_names=["input"],
         output_names=["output"],
-        dynamic_axes={"input":  {0: "batch_size"},
-                      "output": {0: "batch_size"}},
         training=torch.onnx.TrainingMode.EVAL,
     )
     print(f"✅ ONNX exported to: {onnx_path}")

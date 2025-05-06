@@ -118,7 +118,6 @@ print(f"Using device: {device}")
 mlflow.set_experiment(cfg.training.experiment_name if hasattr(cfg.training, 'experiment_name') else 'fmfp_experiment')
 
 def objective(trial):
-    print(cfg)
     server1 = True
     server2 = not server1
     epochs = cfg.training.epochs
@@ -133,7 +132,7 @@ def objective(trial):
     custom_weight_decay = trial.suggest_loguniform('weight_decay', cfg.training.weight_decay_low, cfg.training.weight_decay_high) 
     custom_momentum = trial.suggest_uniform('momentum', cfg.training.momentum_low, cfg.training.momentum_high) 
     swa_lr = trial.suggest_loguniform('swa_lr', cfg.fmfp.swa_lr_low, cfg.fmfp.swa_lr_high) 
-    
+    print(f'swa_start: {swa_start}')
     method = 'fmfp' 
 
     input_size = cfg.training.input_size
