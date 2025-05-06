@@ -109,7 +109,7 @@ def main_onnx(pth_file, out):
     
     print('onnx --> tflite done')
     print('ready to send tflite model...')
-    return '/home/alema416/dev/work/ST_stm32ai-modelzoo-services/image_classification/src/experiments_outputs/2025_05_05_17_32_52/quantized_models/model_opset17_quant_qdq_pc.onnx' #'/home/alema416/quantized_model.tflite' #os.path.join('../models', 'model.tflite')
+    return '/home/alema416/dev/work/ST_stm32ai-modelzoo-services/image_classification/src/experiments_outputs/2025_05_05_17_32_52/quantized_models/model_opset17_quant_qdq_pc.nb' #'/home/alema416/quantized_model.tflite' #os.path.join('../models', 'model.tflite')
 
 def send_file(filename, run_id, url=f"http://{cfg.training.st_dev_ip}:{cfg.training.st_port}/validate"):
     # Read and encode the file
