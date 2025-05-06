@@ -82,6 +82,7 @@ if __name__ == '__main__':
         print("Inference time: ", (end - start) *1000, "ms")
         output_data = stai_model.get_output(index=0)
         results = np.squeeze(output_data)
+        print(results)
         top_k = results.argsort()[-5:][::-1]
         labels = load_labels(label_file)
         for i in top_k:
