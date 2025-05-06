@@ -14,7 +14,7 @@ def load_labels(filename):
         return [line.strip() for line in f.readlines()]
 
 if __name__ == '__main__':
-    parser = ArgumentParser()
+    parser = ArgumentParser() # remove
     parser.add_argument('--input_mean', default=127.5, help='input_mean')
     parser.add_argument('--input_std', default=127.5,help='input stddev')
     args = parser.parse_args()
