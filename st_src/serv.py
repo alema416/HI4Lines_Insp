@@ -29,6 +29,32 @@ from model.resnet18 import ResNet18
 from model.mobilenet import mobilenet
 
 from torchvision.models import mobilenet_v2
+def load_checkpoint1(pth_path: str):
+    # 1) instantiate the exact torchvision MobileNetV2
+    model = mobilenet_v2(weights=None, num_classes=2)
+    model.eval()
+
+    # 2) load your checkpoint (it may be a dict with 'state_dict' inside)
+    ckpt = torch.load(pth_path, map_location="cpu")
+    if "state_dict" in ckpt:
+        sd = ckpt["state_dict"]
+    else:
+        sd = ckpt
+
+    # 3) strip off any "module." prefixes and unwanted keys
+    clean = OrderedDict()
+    for k, v in sd.items():
+        # remove DataParallel prefix
+        nk = k.replace("module.", "")
+        # drop any extra keys your training pipeline may have added
+        if nk == "n_averaged":
+            continue
+        clean[nk] = v
+
+    # 4) load into the model
+    model.load_state_dict(clean)
+    return model
+
 
 def load_checkpoint(pth_path: str) -> torch.nn.Module:
     model = mobilenet(num_classes=2)
@@ -72,7 +98,7 @@ def export_and_simplify(model: torch.nn.Module, onnx_path: str, opset: int):
 
 def main_onnx(pth_file, out):
     
-    model = load_checkpoint(pth_file)
+    model = load_checkpoint1(pth_file)
     export_and_simplify(model, out, opset=13)
     print('pth --> onnx done')
     print(input('wait: '))

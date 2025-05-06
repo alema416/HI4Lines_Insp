@@ -254,7 +254,7 @@ def objective(trial):
         mlflow.log_metric('test_augrc', augrc, step=epoch)
 
         mlflow.pytorch.log_model(model, artifact_path="model")
-        
+        '''
         ccc = 0
         hailo_ip = cfg.training.ds_device_ip
         while ccc < 10:
@@ -275,7 +275,7 @@ def objective(trial):
                 mlflow.log_metric(key, val)
         
         augrc_hw_val = result.get("augrc_hw_val")
-        
+        '''
         ccc = 0
         stmz = cfg.training.ds_device_ip_st
         while ccc < 10:
