@@ -101,15 +101,14 @@ def main_onnx(pth_file, out):
     model = load_checkpoint1(pth_file)
     export_and_simplify(model, out, opset=13)
     print('pth --> onnx done')
-    print(input('wait: '))
     # cd /home/alema416/dev/work/ST_stm32ai-modelzoo-services/image_classification/src
     # export stmai_username='alema416@gmail.com' && export stmai_password='@Alex1234@#'
     # python3 stm32ai_main.py --config-path /home/alema416/dev/work/ST_stm32ai-modelzoo-services/image_classification/src/config_file_examples --config-name quantization_config general.model_path=/home/alema416/dev/work/HI4Lines_Insp/models/model.onnx
     # cd /home/alema416/dev/work/HI4Lines_Insp/st_src
-    
+    qonnxpath = input('quantized onnx abs path: ')
     print('onnx --> tflite done')
     print('ready to send tflite model...')
-    return '/home/alema416/dev/work/ST_stm32ai-modelzoo-services/image_classification/src/experiments_outputs/2025_05_05_17_32_52/quantized_models/model_opset17_quant_qdq_pc.nb' #'/home/alema416/quantized_model.tflite' #os.path.join('../models', 'model.tflite')
+    return qonnxpath
 
 def send_file(filename, run_id, url=f"http://{cfg.training.st_dev_ip}:{cfg.training.st_port}/validate"):
     # Read and encode the file
