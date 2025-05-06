@@ -23,7 +23,7 @@ def preprocess_image(path: str,
     """
     #img = Image.open(path).convert('RGB').resize((width, height))
       # shape (H, W, 3), dtype uint8
-    img = cv2.imread(str(img_path))
+    img = cv2.imread(str(path))
     img = cv2.resize(img, (width, height))  # much faster than PIL
     arr = np.asarray(img)
     # float32 path
