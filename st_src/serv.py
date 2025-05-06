@@ -101,10 +101,12 @@ def main_onnx(pth_file, out):
     model = load_checkpoint1(pth_file)
     export_and_simplify(model, out, opset=13)
     print('pth --> onnx done')
+    
     # cd /home/alema416/dev/work/ST_stm32ai-modelzoo-services/image_classification/src
     # export stmai_username='alema416@gmail.com' && export stmai_password='@Alex1234@#'
-    # python3 stm32ai_main.py --config-path /home/alema416/dev/work/ST_stm32ai-modelzoo-services/image_classification/src/config_file_examples --config-name quantization_config general.model_path=/home/alema416/dev/work/HI4Lines_Insp/models/model.onnx
-    # cd /home/alema416/dev/work/HI4Lines_Insp/st_src
+    # python3 stm32ai_main.py --config-path /home/alema416/dev/work/ST_stm32ai-modelzoo-services/image_classification/src/config_file_examples --config-name quantization_config general.model_path=/home/alema416/dev/work/HI4Lines_Insp/models/model_q.onnx
+    # cd /home/alema416/dev/work/HI4Lines_Insp/st_src/
+    
     qonnxpath = input('quantized onnx abs path: ')
     print('onnx --> tflite done')
     print('ready to send tflite model...')
