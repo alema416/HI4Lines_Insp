@@ -8,6 +8,7 @@ models/
 # 3) and finally, re-include your placeholders
 !/data/**/*.gitkeep
 *.log
+*.db
 *.csv
 __pycache__/
 deploy/deploy/confs_test.txt
