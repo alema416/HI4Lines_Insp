@@ -1,0 +1,15 @@
+artifact_uri: file:///home/amax/HI4Lines_Insp/hi4lines_insp/mlruns/994808004837205094/69d5ff93af1f46cd9305c7e7017687f7/artifacts
+end_time: 1746611167302
+entry_point_name: ''
+experiment_id: '994808004837205094'
+lifecycle_stage: active
+run_id: 69d5ff93af1f46cd9305c7e7017687f7
+run_name: upset-goose-830
+run_uuid: 69d5ff93af1f46cd9305c7e7017687f7
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1746611165925
+status: 3
+tags: []
+user_id: amax

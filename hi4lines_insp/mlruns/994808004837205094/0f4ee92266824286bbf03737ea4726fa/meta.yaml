@@ -1,0 +1,15 @@
+artifact_uri: file:///home/amax/HI4Lines_Insp/hi4lines_insp/mlruns/994808004837205094/0f4ee92266824286bbf03737ea4726fa/artifacts
+end_time: 1746611535649
+entry_point_name: ''
+experiment_id: '994808004837205094'
+lifecycle_stage: active
+run_id: 0f4ee92266824286bbf03737ea4726fa
+run_name: wise-smelt-256
+run_uuid: 0f4ee92266824286bbf03737ea4726fa
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1746611504537
+status: 3
+tags: []
+user_id: amax

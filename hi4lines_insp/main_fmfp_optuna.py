@@ -7,7 +7,8 @@ import base64
 import gc
 import threading
 from torchvision.models import mobilenet_v2
-from models.custom_mob import build_model
+from torchvision.models import efficientnet_b0
+from model.custom_mob import build_model
 
 
 try:
@@ -156,18 +157,21 @@ def objective(trial):
         train_loader, valid_loader, test_loader = custom_data.get_loader_local(dataset_path, batch_size=batch_size, input_size=cfg.training.input_size)
         
         num_class = cfg.training.classnumber  
-        model_dict = { "num_classes": num_class }
+        model_dict = { "num_classes": num_class, 'weights': 'MobileNet_V2_Weights'}
         
         print(100 * '#')
+        '''
         if modelname == 'resnet':
             model = resnet18.ResNet18(**model_dict).to(device)
         elif modelname == 'mobilenet':
+            print('mobilenet')
             model = mobilenet.mobilenet(**model_dict).to(device)
         else:
-            model = build_model('model.onnx').to(device) #mobilenet_v2(pretrained=False, num_classes=2).to(device)
+        '''
+        model = mobilenet_v2(pretrained=False, num_classes=2).to(device)
         cls_criterion = nn.CrossEntropyLoss().to(device)
 
-            
+        
         correctness_history = crl_utils.History(len(train_loader.dataset))
         ranking_criterion = nn.MarginRankingLoss(margin=0.0).to(device)
 
