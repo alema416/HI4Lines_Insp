@@ -7,21 +7,21 @@ training:
   rank_weight: 1.0
   momentum_low: 0.85
   momentum_high: 0.99   
-  batch_size: 8
+  batch_size: 4
   learning_rate: 0.001
-  epochs: 1
+  epochs: 10
   validate_freq: 1
   classnumber: 2
   input_size: 224
   data_path: '../data/processed/IDID_cropped_224'
   save_path: '../models/exp_coop'
-  model_name: 'mobilenet'
-  print_freq: 72 
+  model_name: 'custom' #'mobilenet'
+  print_freq: 144
   port: 5000
   gpu: '0'
   device: 'cuda'
   ds_device_ip: #'192.168.188.202'
-  ds_device_ip_st: 192.168.2.97 #'192.168.188.202'
+  ds_device_ip_st: 192.168.2.73 #'192.168.188.202'
   study_name: 'test_study'
   st_dev_ip: 192.168.1.11
   st_port: 5001

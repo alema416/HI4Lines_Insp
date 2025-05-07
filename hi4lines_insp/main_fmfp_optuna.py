@@ -142,7 +142,7 @@ def objective(trial):
 
     save_path = os.path.join(save_path, f'{trial.number}')
     RUN_ID = trial.number
-    modelname = 'kadu' #cfg.training.model_name
+    modelname = cfg.training.model_name
     run_name = f'trial_{trial.number}'
     
     if not os.path.exists(save_path):

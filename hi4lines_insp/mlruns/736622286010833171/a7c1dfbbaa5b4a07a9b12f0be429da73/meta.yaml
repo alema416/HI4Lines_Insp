@@ -1,0 +1,15 @@
+artifact_uri: file:///home/amax/HI4Lines_Insp/hi4lines_insp/mlruns/736622286010833171/a7c1dfbbaa5b4a07a9b12f0be429da73/artifacts
+end_time: 1746526639167
+entry_point_name: ''
+experiment_id: '736622286010833171'
+lifecycle_stage: active
+run_id: a7c1dfbbaa5b4a07a9b12f0be429da73
+run_name: trial_6
+run_uuid: a7c1dfbbaa5b4a07a9b12f0be429da73
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1746526615746
+status: 4
+tags: []
+user_id: amax

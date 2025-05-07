@@ -1,0 +1,15 @@
+artifact_uri: file:///home/amax/HI4Lines_Insp/hi4lines_insp/mlruns/736622286010833171/bf0452c7c9634d068ad3396a8289e590/artifacts
+end_time: 1746526523277
+entry_point_name: ''
+experiment_id: '736622286010833171'
+lifecycle_stage: active
+run_id: bf0452c7c9634d068ad3396a8289e590
+run_name: redolent-mink-394
+run_uuid: bf0452c7c9634d068ad3396a8289e590
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1746526500130
+status: 3
+tags: []
+user_id: amax

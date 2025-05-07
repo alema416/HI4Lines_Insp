@@ -1,0 +1,15 @@
+artifact_uri: file:///home/amax/HI4Lines_Insp/hi4lines_insp/mlruns/736622286010833171/f86e1bbecd434d228425b3fa69da15c3/artifacts
+end_time: 1746536000546
+entry_point_name: ''
+experiment_id: '736622286010833171'
+lifecycle_stage: active
+run_id: f86e1bbecd434d228425b3fa69da15c3
+run_name: nebulous-robin-733
+run_uuid: f86e1bbecd434d228425b3fa69da15c3
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1746535976642
+status: 3
+tags: []
+user_id: amax

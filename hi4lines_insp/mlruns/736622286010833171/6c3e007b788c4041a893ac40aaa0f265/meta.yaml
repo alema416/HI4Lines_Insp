@@ -1,0 +1,15 @@
+artifact_uri: file:///home/amax/HI4Lines_Insp/hi4lines_insp/mlruns/736622286010833171/6c3e007b788c4041a893ac40aaa0f265/artifacts
+end_time: 1746539581334
+entry_point_name: ''
+experiment_id: '736622286010833171'
+lifecycle_stage: active
+run_id: 6c3e007b788c4041a893ac40aaa0f265
+run_name: judicious-whale-579
+run_uuid: 6c3e007b788c4041a893ac40aaa0f265
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1746539573049
+status: 3
+tags: []
+user_id: amax

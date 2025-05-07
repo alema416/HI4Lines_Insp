@@ -1,0 +1,15 @@
+artifact_uri: file:///home/amax/HI4Lines_Insp/hi4lines_insp/mlruns/736622286010833171/6c06c9e54b4b425a8c7b0767f5d43381/artifacts
+end_time: 1746526126002
+entry_point_name: ''
+experiment_id: '736622286010833171'
+lifecycle_stage: active
+run_id: 6c06c9e54b4b425a8c7b0767f5d43381
+run_name: ambitious-sponge-508
+run_uuid: 6c06c9e54b4b425a8c7b0767f5d43381
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1746526125908
+status: 3
+tags: []
+user_id: amax

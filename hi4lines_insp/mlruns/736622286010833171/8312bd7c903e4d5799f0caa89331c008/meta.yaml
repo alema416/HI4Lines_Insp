@@ -1,0 +1,15 @@
+artifact_uri: file:///home/amax/HI4Lines_Insp/hi4lines_insp/mlruns/736622286010833171/8312bd7c903e4d5799f0caa89331c008/artifacts
+end_time: 1746554706085
+entry_point_name: ''
+experiment_id: '736622286010833171'
+lifecycle_stage: active
+run_id: 8312bd7c903e4d5799f0caa89331c008
+run_name: thundering-bird-629
+run_uuid: 8312bd7c903e4d5799f0caa89331c008
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1746553673169
+status: 3
+tags: []
+user_id: amax

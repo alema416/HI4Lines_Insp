@@ -1,0 +1,15 @@
+artifact_uri: file:///home/amax/HI4Lines_Insp/hi4lines_insp/mlruns/736622286010833171/e75eb889febf4d19a410b7150a8882f4/artifacts
+end_time: 1746533573254
+entry_point_name: ''
+experiment_id: '736622286010833171'
+lifecycle_stage: active
+run_id: e75eb889febf4d19a410b7150a8882f4
+run_name: likeable-shrew-887
+run_uuid: e75eb889febf4d19a410b7150a8882f4
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1746533523563
+status: 3
+tags: []
+user_id: amax

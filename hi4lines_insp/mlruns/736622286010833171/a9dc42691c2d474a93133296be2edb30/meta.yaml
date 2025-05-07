@@ -1,0 +1,15 @@
+artifact_uri: file:///home/amax/HI4Lines_Insp/hi4lines_insp/mlruns/736622286010833171/a9dc42691c2d474a93133296be2edb30/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '736622286010833171'
+lifecycle_stage: active
+run_id: a9dc42691c2d474a93133296be2edb30
+run_name: silent-dolphin-36
+run_uuid: a9dc42691c2d474a93133296be2edb30
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1746527396332
+status: 1
+tags: []
+user_id: amax

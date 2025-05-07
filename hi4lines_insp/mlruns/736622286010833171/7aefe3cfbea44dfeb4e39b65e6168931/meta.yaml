@@ -1,0 +1,15 @@
+artifact_uri: file:///home/amax/HI4Lines_Insp/hi4lines_insp/mlruns/736622286010833171/7aefe3cfbea44dfeb4e39b65e6168931/artifacts
+end_time: 1746541623074
+entry_point_name: ''
+experiment_id: '736622286010833171'
+lifecycle_stage: active
+run_id: 7aefe3cfbea44dfeb4e39b65e6168931
+run_name: debonair-auk-174
+run_uuid: 7aefe3cfbea44dfeb4e39b65e6168931
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1746540824558
+status: 3
+tags: []
+user_id: amax

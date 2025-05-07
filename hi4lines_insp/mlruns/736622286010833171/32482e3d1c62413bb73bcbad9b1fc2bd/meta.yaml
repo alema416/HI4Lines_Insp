@@ -1,0 +1,15 @@
+artifact_uri: file:///home/amax/HI4Lines_Insp/hi4lines_insp/mlruns/736622286010833171/32482e3d1c62413bb73bcbad9b1fc2bd/artifacts
+end_time: 1746527315605
+entry_point_name: ''
+experiment_id: '736622286010833171'
+lifecycle_stage: active
+run_id: 32482e3d1c62413bb73bcbad9b1fc2bd
+run_name: glamorous-goat-113
+run_uuid: 32482e3d1c62413bb73bcbad9b1fc2bd
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1746526837786
+status: 3
+tags: []
+user_id: amax

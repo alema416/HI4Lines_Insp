@@ -1,0 +1,15 @@
+artifact_uri: file:///home/amax/HI4Lines_Insp/hi4lines_insp/mlruns/736622286010833171/13b18370753140a19951cdf987a55d32/artifacts
+end_time: 1746533130131
+entry_point_name: ''
+experiment_id: '736622286010833171'
+lifecycle_stage: active
+run_id: 13b18370753140a19951cdf987a55d32
+run_name: valuable-midge-711
+run_uuid: 13b18370753140a19951cdf987a55d32
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1746530411488
+status: 3
+tags: []
+user_id: amax
