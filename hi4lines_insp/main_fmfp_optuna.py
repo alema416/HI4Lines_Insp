@@ -160,14 +160,6 @@ def objective(trial):
         model_dict = { "num_classes": num_class, 'weights': 'MobileNet_V2_Weights'}
         
         print(100 * '#')
-        '''
-        if modelname == 'resnet':
-            model = resnet18.ResNet18(**model_dict).to(device)
-        elif modelname == 'mobilenet':
-            print('mobilenet')
-            model = mobilenet.mobilenet(**model_dict).to(device)
-        else:
-        '''
         model = mobilenet_v2(pretrained=False, num_classes=2).to(device)
         cls_criterion = nn.CrossEntropyLoss().to(device)
 
@@ -213,7 +205,7 @@ def objective(trial):
                 mlflow.log_metric('val_augrc', augrc, step=epoch)
                 print(f'val loss: {val_loss}, val acc: {val_acc}, val augrc: {augrc}')
                 print('Validation Loss: {0}\t'
-                    'Validation Loss: {1})\t'
+                    'Validation Acc: {1})\t'
                     'Validation AUGRC: {2})\t'.format(val_loss, val_acc, augrc))
         epoch = epochs
         mlflow.log_param('lr', base_lr)
