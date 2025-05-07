@@ -10,7 +10,6 @@ import subprocess
 import base64
 import os
 from hydra import initialize, compose
-
 import base64
 import requests
 with initialize(config_path="../configs/"):
@@ -32,7 +31,7 @@ from torchvision.models import mobilenet_v2
 
 def load_checkpoint1(pth_path: str):
     # 1) instantiate the exact torchvision MobileNetV2
-    model = mobilenet_v2(weights=None, num_classes=2)
+    model = mobilenet(num_classes=2)
     model.eval()
 
     # 2) load your checkpoint (it may be a dict with 'state_dict' inside)
