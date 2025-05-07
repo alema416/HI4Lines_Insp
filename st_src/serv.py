@@ -28,10 +28,11 @@ from model.resnet18 import ResNet18
 from model.mobilenet import mobilenet
 
 from torchvision.models import mobilenet_v2
+from torchvision.models import efficientnet_b0
 
 def load_checkpoint1(pth_path: str):
     # 1) instantiate the exact torchvision MobileNetV2
-    model = mobilenet(num_classes=2)
+    model = mobilenet_v2(num_classes=2) #mobilenet(num_classes=2)
     model.eval()
 
     # 2) load your checkpoint (it may be a dict with 'state_dict' inside)
@@ -53,20 +54,6 @@ def load_checkpoint1(pth_path: str):
 
     # 4) load into the model
     model.load_state_dict(clean)
-    return model
-
-
-def load_checkpoint(pth_path: str) -> torch.nn.Module:
-    model = mobilenet(num_classes=2)
-    sd = torch.load(pth_path, map_location="cpu")
-    clean = OrderedDict()
-    for k, v in sd.items():
-        nk = k.replace("module.", "")
-        if nk == "n_averaged":
-            continue
-        clean[nk] = v
-    model.load_state_dict(clean)
-    model.eval()
     return model
 
 def export_and_simplify(model: torch.nn.Module, onnx_path: str, opset: int):
