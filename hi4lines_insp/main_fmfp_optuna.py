@@ -7,7 +7,7 @@ import base64
 import gc
 import threading
 from torchvision.models import mobilenet_v2
-
+from models.custom_mob import build_model
 
 
 try:
@@ -164,7 +164,7 @@ def objective(trial):
         elif modelname == 'mobilenet':
             model = mobilenet.mobilenet(**model_dict).to(device)
         else:
-            model = mobilenet_v2(pretrained=False, num_classes=2).to(device)
+            model = build_model('model.onnx').to(device) #mobilenet_v2(pretrained=False, num_classes=2).to(device)
         cls_criterion = nn.CrossEntropyLoss().to(device)
 
             
