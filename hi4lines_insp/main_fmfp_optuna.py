@@ -177,7 +177,7 @@ def objective(trial):
         args = None
         
         for epoch in range(1, epochs + 1):
-            train_loss, train_acc  = train_fmfp.train(train_loader, \
+            train_loss, train_acc  = train_fmfp.train(run_id, train_loader, \
                                                     model, cls_criterion, ranking_criterion, optimizer, epoch, correctness_history, plot, method)
             
             if epoch > swa_start:
