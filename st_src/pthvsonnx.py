@@ -34,14 +34,16 @@ def load_checkpoint1(pth_path: str):
 
 pt = load_checkpoint1("../models/ckpt.pth").eval()
 sess = ort.InferenceSession("../models/model_q.onnx")
-_, _, val_loader = custom_data.get_loader_local('/home/alema416/dev/work/HI4Lines_Insp/data/processed/IDID_cropped_224', batch_size=1, input_size=224)
 
-pt_corr = onnx_corr = total = 0
-for x,y,_,_ in val_loader:
-    total    += y.size(0)
-    pt_corr   += (pt(x).argmax(1).cpu().numpy() == y.numpy()).sum()
-    onnx_out  = sess.run(None, {"input": x.numpy()})[0]
-    onnx_corr += (onnx_out.argmax(1) == y.numpy()).sum()
+train_loader, val_loader, test_loader = custom_data.get_loader_local('/home/alema416/dev/work/HI4Lines_Insp/data/processed/IDID_cropped_224', batch_size=1, input_size=224)
 
-print("PyTorch test Acc:", pt_corr/total)
-print("ONNX    test Acc:", onnx_corr/total)
+for loader in [train_loader, val_loader, test_loader]:
+    pt_corr = onnx_corr = total = 0
+    for x,y,_,_ in loader:
+        total    += y.size(0)
+        pt_corr   += (pt(x).argmax(1).cpu().numpy() == y.numpy()).sum()
+        onnx_out  = sess.run(None, {"input": x.numpy()})[0]
+        onnx_corr += (onnx_out.argmax(1) == y.numpy()).sum()
+
+    print("PyTorch  Acc:", pt_corr/total)
+    print("ONNX     Acc:", onnx_corr/total)

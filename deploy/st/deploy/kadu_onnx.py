@@ -5,33 +5,20 @@ import onnxruntime as ort
 import os
 from timeit import default_timer as timer
 
-def preprocess_image1(path: str, input_shape, input_dtype):
-    """
-    Load an image from disk, resize to (W,H) and return a batched numpy array.
-    """
-    # ONNX shapes are typically [N,H,W,C] or [N,C,H,W]; detect channel order by length
-    # We'll assume [N,H,W,C] here for simplicity.
-    _, height, width, channels = input_shape
-    img = Image.open(path).convert('RGB').resize((width, height))
-    arr = np.asarray(img, dtype=input_dtype)
-    # add batch dimension
-    return np.expand_dims(arr, axis=0)
 def preprocess_image(path: str, input_shape, input_dtype):
-    """
-    Load an image, resize it, and return a batched array in the correct
-    channel order (NCHW vs NHWC) for the ONNX session.
-    """
-    # Replace any dynamic dims (None) in the shape with 1
     dims = [d if isinstance(d, int) else 1 for d in input_shape]  
     # Determine channel ordering:
     #  - if dims[1] is 1 or 3 → channels-first  (N,C,H,W)
     #  - otherwise           → channels-last   (N,H,W,C)
     nchw = (dims[1] in (1,3))
-
+    
     if nchw:
         _, C, H, W = dims
         img = Image.open(path).convert('RGB').resize((W, H))
         arr = np.asarray(img, dtype=input_dtype)           # (H,W,3)
+        scale  = np.array([0.0213538, 0.0208032, 0.0197237], dtype=np.float32)
+        offset = np.array([-2.7478418, -2.4465773, -2.1585231], dtype=np.float32)
+        arr = arr * scale + offset            # broadcast per-channel
         arr = arr.transpose(2, 0, 1)                        # → (3,H,W)
     else:
         _, H, W, C = dims
