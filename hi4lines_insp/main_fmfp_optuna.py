@@ -208,6 +208,11 @@ def objective(trial):
                 print('Validation Loss: {0}\t'
                     'Validation Acc: {1})\t'
                     'Validation AUGRC: {2})\t'.format(val_loss, val_acc, augrc))
+                used    = torch.cuda.memory_allocated()  / 1024**2
+                reserved= torch.cuda.memory_reserved()   / 1024**2
+                mlflow.log_metric("gpu_mem_allocated_MB", used,     step=epoch)
+                mlflow.log_metric("gpu_mem_reserved_MB", reserved, step=epoch)
+                torch.cuda.empty_cache()
         epoch = epochs
         mlflow.log_param('lr', base_lr)
         mlflow.log_param('swa_start', swa_start)

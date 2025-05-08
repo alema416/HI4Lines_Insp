@@ -141,7 +141,7 @@ def main_onnx(run_id, pth_file, out):
     script = "/home/alema416/dev/work/ST_stm32ai-modelzoo-services/image_classification/src/stm32ai_main.py"
     cfg_path = "/home/alema416/dev/work/HI4Lines_Insp/configs/"
     cfg_name = "quantization_config"
-    mdl_path = "/home/alema416/dev/work/HI4Lines_Insp/models/model_q.onnx"
+    mdl_path = f"/home/alema416/dev/work/HI4Lines_Insp/models/model_{run_id}.onnx"
 
     quant_dir = get_quantized_models_dir(run_id, script, cfg_path, cfg_name, mdl_path)
     print("Quantized models directory:", quant_dir)
@@ -205,7 +205,7 @@ def validate():
 
         print(f'received run_id {run_id}')
         # pth --> tflite
-        tflite_path = main_onnx(run_id, file_path, os.path.join('../models', 'model_q.onnx'))
+        tflite_path = main_onnx(run_id, file_path, os.path.join('../models', f'model_{run_id}.onnx'))
         respon = send_file(tflite_path, run_id) #send_file(os.path.join(cfg.training.save_path, str(run_id), 'tflite', 'model.tflite'), run_id)
     except Exception as e:
         #return jsonify({"error": str(e)}), 400
