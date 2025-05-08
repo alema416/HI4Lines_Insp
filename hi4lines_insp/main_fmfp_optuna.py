@@ -129,7 +129,8 @@ def objective(trial):
     save_path = cfg.training.save_path
 
     base_lr = trial.suggest_loguniform('lr', cfg.training.base_lr_low, cfg.training.base_lr_high)
-    swa_start = trial.suggest_int("swa_start", cfg.fmfp.swa_start_low, cfg.fmfp.swa_start_high)
+    print(f'base_lr: {base_lr}')
+    swa_start = 80 # 150 #trial.suggest_int("swa_start", cfg.fmfp.swa_start_low, cfg.fmfp.swa_start_high)
     custom_weight_decay = trial.suggest_loguniform('weight_decay', cfg.training.weight_decay_low, cfg.training.weight_decay_high) 
     custom_momentum = trial.suggest_uniform('momentum', cfg.training.momentum_low, cfg.training.momentum_high) 
     swa_lr = trial.suggest_loguniform('swa_lr', cfg.fmfp.swa_lr_low, cfg.fmfp.swa_lr_high) 
@@ -170,8 +171,8 @@ def objective(trial):
         base_optimizer = torch.optim.SGD
         optimizer = SAM(model.parameters(), base_optimizer, lr=base_lr, momentum=custom_momentum, weight_decay=custom_weight_decay)
         
-        swa_model = AveragedModel(model)
-        scheduler = CosineAnnealingLR(optimizer, T_max=100)
+        swa_model = AveragedModel(model).to(device)
+        scheduler = CosineAnnealingLR(optimizer, T_max=swa_start, eta_min=1e-5)
         swa_scheduler = SWALR(optimizer, swa_lr=swa_lr)
         
         args = None
@@ -216,11 +217,15 @@ def objective(trial):
         mlflow.log_param('epochs', epochs)
         mlflow.log_param('batch_size', batch_size)
         mlflow.log_param('model_name', modelname)
-    
         torch.optim.swa_utils.update_bn(train_loader, swa_model.cpu())
         model = swa_model.to(device)
         torch.save(model.state_dict(), os.path.join(save_path, 'model_state_dict', 'model.pth'))
-
+        '''
+        swa_model = swa_model.to(device)
+        torch.optim.swa_utils.update_bn(train_loader, swa_model, device=device)
+        swa_model.eval()
+        torch.save(swa_model.state_dict(), os.path.join(save_path, 'model_state_dict', 'swa_model.pth'))
+        '''
         acc, auroc, aupr_success, aupr, fpr, tnr, aurc, eaurc, augrc = metrics.calc_metrics(args, train_loader, model, cls_criterion, save_path, 'train') 
         
         mlflow.log_metric('train_acc', auroc, step=epoch)
@@ -230,6 +235,7 @@ def objective(trial):
         mlflow.log_metric('train_aurc', aurc, step=epoch)
         mlflow.log_metric('train_eaurc', eaurc, step=epoch)
         mlflow.log_metric('train_augrc', augrc, step=epoch)
+        mlflow.log_param('run_id', RUN_ID)
         print(f'ckpt train acc: {acc}')
         print(f'ckpt train augrc: {augrc}')
         acc, auroc, aupr_success, aupr, fpr, tnr, aurc, val_eaurc, val_augrc = metrics.calc_metrics(args, valid_loader, model, cls_criterion, save_path, 'val')
@@ -320,7 +326,7 @@ def main():
     study = optuna.create_study(direction='minimize', load_if_exists=True, study_name = study_name, storage=storage)
     print(f"Sampler is {study.sampler.__class__.__name__}")
     mlflow.log_param('sampler', study.sampler.__class__.__name__)
-    study.optimize(objective, n_trials=3, n_jobs=1)
+    study.optimize(objective, n_trials=500, n_jobs=1)
 
     print("Best hyperparameters:", study.best_params)
     print("Best accuracy:", study.best_value)
