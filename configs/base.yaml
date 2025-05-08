@@ -22,6 +22,6 @@ training:
   device: 'cuda'
   ds_device_ip: #'192.168.188.202'
   ds_device_ip_st: 192.168.2.97 #'192.168.188.202'
-  study_name: 'st_only_optimization_07_05_2025_v2'
+  study_name: 'st_only_optimization_08_05_2025_v1'
   st_dev_ip: 192.168.1.11
   st_port: 5001
