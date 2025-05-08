@@ -7,7 +7,7 @@ from hydra import initialize, compose
 with initialize(config_path="../configs/"):
     cfg = compose(config_name="optimizer")  # exp1.yaml with defaults key
 
-exp_name = cfg.optimizer.exp_name
+exp_name = 'test' #cfg.optimizer.exp_name
 
 parser = argparse.ArgumentParser(description='Rethinking CC for FP')
 parser.add_argument('--run_id', required=True, type=int, help='')

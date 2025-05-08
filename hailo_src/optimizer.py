@@ -205,7 +205,7 @@ def visualize_results(images, images_path, split, scores=None, inf_labels=None, 
 # -------------
 # load HAR file and prepare dataset
 # -------------
-exp_name = cfg.optimizer.exp_name
+exp_name = 'test' #cfg.optimizer.exp_name
 
 onnx_dir = f'../models/{exp_name}/{args.run_id}'
 har_dir = f'../models/{exp_name}/{args.run_id}'
