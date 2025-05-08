@@ -146,7 +146,7 @@ def main_onnx(run_id, pth_file, out):
     quant_dir = get_quantized_models_dir(run_id, script, cfg_path, cfg_name, mdl_path)
     print("Quantized models directory:", quant_dir)
 
-    qonnxpath = os.path.join(quant_dir, 'model_q_opset17_quant_qdq_pc.onnx') #input('quantized onnx abs path: ')
+    qonnxpath = os.path.join(quant_dir, f'model_{run_id}_opset17_quant_qdq_pc.onnx') #input('quantized onnx abs path: ')
     print('ONNX quantization done')
     print('ready to send quantized ONNX model...')
     return qonnxpath

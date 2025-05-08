@@ -9,7 +9,8 @@ training:
   momentum_high: 0.99
   batch_size: 8
   learning_rate: 0.001
-  epochs: 100
+  epochs_low: 100
+  epochs_high: 200
   validate_freq: 2
   classnumber: 2
   input_size: 224

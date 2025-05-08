@@ -10,7 +10,6 @@ from torchvision.models import mobilenet_v2
 from torchvision.models import efficientnet_b0
 from model.custom_mob import build_model
 
-
 try:
     from distutils.version import LooseVersion
 except ImportError:
@@ -121,7 +120,7 @@ mlflow.set_experiment(cfg.training.experiment_name if hasattr(cfg.training, 'exp
 def objective(trial):
     server1 = True
     server2 = not server1
-    epochs = cfg.training.epochs
+    epochs = trial.suggest_int("epochs", cfg.training.epochs_low, cfg.training.epochs_high)
     val_freq = cfg.training.validate_freq
     plot = cfg.training.print_freq
     batch_size = cfg.training.batch_size 
@@ -130,7 +129,7 @@ def objective(trial):
 
     base_lr = trial.suggest_loguniform('lr', cfg.training.base_lr_low, cfg.training.base_lr_high)
     print(f'base_lr: {base_lr}')
-    swa_start = 80 # 150 #trial.suggest_int("swa_start", cfg.fmfp.swa_start_low, cfg.fmfp.swa_start_high)
+    swa_start = trial.suggest_int("swa_start", int(epochs/2), int((3/4)*epochs))
     custom_weight_decay = trial.suggest_loguniform('weight_decay', cfg.training.weight_decay_low, cfg.training.weight_decay_high) 
     custom_momentum = trial.suggest_uniform('momentum', cfg.training.momentum_low, cfg.training.momentum_high) 
     swa_lr = trial.suggest_loguniform('swa_lr', cfg.fmfp.swa_lr_low, cfg.fmfp.swa_lr_high) 
@@ -266,7 +265,7 @@ def objective(trial):
         print(f'ckpt test acc: {acc}')
         print(f'ckpt test augrc: {augrc}')
         mlflow.pytorch.log_model(model, artifact_path="model")
-        '''
+        ''' RPI CODE
         ccc = 0
         hailo_ip = cfg.training.ds_device_ip
         while ccc < 10:
@@ -288,6 +287,8 @@ def objective(trial):
         
         augrc_hw_val = result.get("augrc_hw_val")
         '''
+        
+        # ST CODE
         ccc = 0
         stmz = cfg.training.ds_device_ip_st
         while ccc < 10:
