@@ -28,3 +28,5 @@ deploy/st/deploy/labels_test.txt
 deploy/st/deploy/labels_train.txt
 deploy/st/deploy/labels_val.txt
 deploy/st/deploy/sasaa.txt
+
+hi4lines_insp/mlruns/

@@ -51,9 +51,9 @@ def train(run_id, loader, model, criterion, criterion_ranking, optimizer, epoch,
         batch_time.update(time.time() - end)
         end = time.time()
         if i % plot == 0:
-            print('[{run_id}] Epoch: [{0}][{1}/{2}]\t'
+            print('[{3}] Epoch: [{0}][{1}/{2}]\t'
            'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
            'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
            'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
-           'Prec {top1.val:.2f}% ({top1.avg:.2f}%)'.format(epoch, i, len(loader), batch_time=batch_time,data_time=data_time, loss=total_losses, top1=top1, run_id=run_id))
+           'Prec {top1.val:.2f}% ({top1.avg:.2f}%)'.format(epoch, i, len(loader), run_id, batch_time=batch_time,data_time=data_time, loss=total_losses, top1=top1))
     return total_losses.avg, top1.avg
