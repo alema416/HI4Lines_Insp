@@ -15,7 +15,7 @@ with initialize(config_path="../configs/"):
 exp_name = cfg.optimizer.exp_name
 
 def validate(run_id):
-    '''
+    
     scripts = []
     print(f'received run_id {run_id}')
     
@@ -58,7 +58,6 @@ def validate(run_id):
         print(f'done in {((time.time() - start_time)/60):.1f} min') 
     print(f'emulator AUGRC: {augrc_emu}')
     print(f'emulator acc: {acc_emu}')
-    '''
     # Define the server URL (change if running on a different host)
     rpi_ip = cfg.optimizer.rpi_ip #input('RPI IP address: ')
     SERVER_URL = f"http://{rpi_ip}:5001/validate"  # Update with actual server address 
