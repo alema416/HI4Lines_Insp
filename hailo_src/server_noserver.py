@@ -15,7 +15,7 @@ with initialize(config_path="../configs/"):
 exp_name = cfg.optimizer.exp_name
 
 def validate(run_id):
-    
+    '''
     scripts = []
     print(f'received run_id {run_id}')
     
@@ -58,10 +58,11 @@ def validate(run_id):
         print(f'done in {((time.time() - start_time)/60):.1f} min') 
     print(f'emulator AUGRC: {augrc_emu}')
     print(f'emulator acc: {acc_emu}')
+    '''
     # Define the server URL (change if running on a different host)
     rpi_ip = cfg.optimizer.rpi_ip #input('RPI IP address: ')
     SERVER_URL = f"http://{rpi_ip}:5001/validate"  # Update with actual server address 
-    hef_dir = f'../models/{exp_name}/{run_id}'
+    hef_dir = f'../models/send/'
     # File to send 
     FILE_PATH = os.path.join(hef_dir, f'model_{run_id}.hef')  # Change this to your actual file path
     
@@ -114,9 +115,10 @@ def validate(run_id):
         print("Error:", response.status_code, response.text)
     #print({'acc_emu': float(acc_emu), 'augrc_emu': float(augrc_emu), 'augrc_hw': float(augrc_hw), 'acc_hw': float(acc_hw)})
     #return jsonify({'acc_emu': float(1.2), 'augrc_emu': float(1.2), 'augrc_hw': float(1.2), 'acc_hw': float(1.2)})
+    print(run_id)
     print({'acc_emu': float(acc_emu), 'augrc_emu': float(augrc_emu), 'augrc_hw_train': float(augrc_hw_train), 'acc_hw_train': float(acc_hw_train), 'augrc_hw_val': float(augrc_hw_val), 'acc_hw_val': float(acc_hw_val), 'augrc_hw_test': float(augrc_hw_test), 'acc_hw_test': float(acc_hw_test)})
     return 0
 
 if __name__ == '__main__':
-    for i in range(57):
+    for i in range(60):
         validate(i)
