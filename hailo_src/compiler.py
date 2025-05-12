@@ -13,8 +13,8 @@ parser = argparse.ArgumentParser(description='Rethinking CC for FP')
 parser.add_argument('--run_id', required=True, type=int, help='')
 args = parser.parse_args()
 
-hef_dir = f'../models/{exp_name}/{args.run_id}'
-quantized_har_dir = f'../models/{exp_name}/{args.run_id}'
+hef_dir = f'../models/send' #f'../models/{exp_name}/{args.run_id}'
+quantized_har_dir = f'../models/send' #f'../models/{exp_name}/{args.run_id}'
 
 model_name = f'model_{args.run_id}'
 quantized_model_har_path = os.path.join(quantized_har_dir, f"{model_name}_quantized_model.har")

@@ -22,7 +22,7 @@ args = parser.parse_args()
 device = torch.device("cpu")
 num_class = 2
 
-onnx_dir = f'../models/{exp_name}/{args.run_id}'
+onnx_dir = f'../models/send/' #{exp_name}/{args.run_id}'
 model_dict = {"num_classes": num_class}
 
 '''
@@ -36,7 +36,7 @@ else:
 model = mobilenet_v2(pretrained=False, num_classes=2).to(device)
 
 model_name = f'model_{args.run_id}'
-model_path = f'../models/{exp_name}/{args.run_id}/model_state_dict/model.pth'
+model_path = f'../models/send/model_{args.run_id}.pth' #f'../models/{exp_name}/{args.run_id}/model_state_dict/model.pth'
 
 state_dict_fmfp = torch.load(model_path, map_location=device)
 
@@ -61,4 +61,6 @@ torch.onnx.export(model, tuple(inp), onnx_path,
 training=torch.onnx.TrainingMode.PRESERVE,
 do_constant_folding=False,
 opset_version=13)
+print(os.path.abspath(model_path))
+print(os.path.abspath(onnx_path))
 print('done')
