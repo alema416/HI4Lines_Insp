@@ -1,4 +1,3 @@
-#
 # classification_eval.py: classification models evaluator
 #
 # Copyright DeGirum Corporation 2024
@@ -158,6 +157,7 @@ class ImageClassificationModelEvaluator(ModelEvaluatorBase):
                         
                     else:
                         fa += 1
+                        print(tmp_score)
                         fa_conf.append(tmp_score)
                 FILE_CNF.append(tmp_score)
                 FILE_LBL.append(1 if category_folder in top_classes else 0)
@@ -195,8 +195,22 @@ class ImageClassificationModelEvaluator(ModelEvaluatorBase):
                 continue
             break
         print(f'{tr} success, {fa} error')
-        print(f"SUCCESS - mean: {statistics.mean(tr_conf)}, std: {statistics.stdev(tr_conf)}")
-        print(f"ERROR - mean: {statistics.mean(fa_conf)}, std: {statistics.stdev(fa_conf)}")
+        #print(f"SUCCESS - mean: {statistics.mean(tr_conf)}, std: {statistics.stdev(tr_conf)}")
+        if len(fa_conf) >= 2:
+            std_err = statistics.stdev(fa_conf)
+            mean_err = statistics.mean(fa_conf)
+        else:
+            std_err = 0.0
+            mean_err = 0.0
+        
+        if len(tr_conf) >= 2:
+            std_tr = statistics.stdev(tr_conf)
+            mean_tr = statistics.mean(tr_conf)
+        else:
+            std_tr = 0.0
+            mean_tr = 0.0
+        print(f"SUCCESS - mean: {mean_tr}, std: {std_tr}")
+        print(f"ERROR - mean: {mean_err}, std: {std_err}")
 
         accuracies = [
             sum(total_correct_predictions[k_i]) / processed_images
