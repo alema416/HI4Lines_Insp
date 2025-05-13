@@ -124,7 +124,7 @@ def validate(run_id):
         if not file_exists:
             writer.writeheader()
         writer.writerow(row)
-    return 0
+    return   0
 
 if __name__ == '__main__':
     for i in range(60):
