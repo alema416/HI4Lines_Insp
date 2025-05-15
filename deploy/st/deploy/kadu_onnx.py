@@ -88,17 +88,28 @@ def run_eval(model_path: str, data_root: str):
 
                 # decide prediction & confidence
                 if arr.ndim == 0:
+                    print('single')
                     # single score in [0,1]
                     score = float(arr)
                     pred  = 1 if score > 0.5 else 0
                     conf  = score if pred == 1 else 1.0 - score
-
                 else:
+                    # Multiclass classification with logits
+                    def softmax(x):
+                        e_x = np.exp(x - np.max(x))
+                        return e_x / e_x.sum()
+                    probs = softmax(arr)
+                    pred = int(np.argmax(probs))
+                    conf = float(probs[pred])
+                    print(conf)
+                '''
+                else:
+                    print('multi')
                     # multiclass: pick the highest-scoring class
                     # (if these are logits, you may want to softmax first)
                     pred = int(np.argmax(arr))
                     conf = float(arr[pred])
-
+                '''
                 total += 1
                 if pred == cls_idx:
                     correct += 1
