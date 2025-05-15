@@ -1,6 +1,7 @@
 from PIL import Image
 import argparse
 import numpy as np
+import pandas as pd
 import onnxruntime as ort
 import os
 from timeit import default_timer as timer
@@ -62,13 +63,13 @@ def run_eval(model_path: str, data_root: str):
 
     labels = ['broken', 'healthy']
     latencies = []
-
+    
     # --- 3) Loop over splits ---
     for split in ['train', 'val', 'test']:
         total = correct = 0
         file_lbls = []
         file_confs = []
-
+        rows = []
         for cls_idx, cls_name in enumerate(labels):
             folder = os.path.join(data_root, split, cls_name)
             if not os.path.isdir(folder):
@@ -108,6 +109,8 @@ def run_eval(model_path: str, data_root: str):
                 file_confs.append(conf)
                 t1 = timer()
                 latencies.append((t1 - t0) * 1000.0)
+                row = {'filename': os.path.basename(img_path), 'confidence': conf, 'prediction': pred, 'ground_truth': cls_idx, 'correct': 1 if pred == cls_idx else 0}
+                rows.append(row)
 
         # 4) Report
         acc = correct / total if total else 0.0
@@ -122,6 +125,9 @@ def run_eval(model_path: str, data_root: str):
         with open(f"confs_{split}.txt", "w") as f_conf:
             for v in file_confs:
                 f_conf.write(f"{v:.6f}\n")
+        df = pd.DataFrame(rows)
+        df.to_csv(f'per_sample_{split}.csv', index=False)
+
     prof_file = session.end_profiling()
     print("Profiling data written to", prof_file)
 
