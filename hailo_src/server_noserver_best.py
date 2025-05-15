@@ -19,7 +19,7 @@ def validate(run_id):
     
     scripts = []
     print(f'received run_id {run_id}')
-    
+    ''' 
     for j in ['ckpt2onnx_mobilenet', 'parser', 'optimizer', 'compiler']:
         scripts.append({"file": f"{j}.py", "args": ["--run_id", str(run_id)]})
     scripts.append({"file": f"compiler.py", "args": ["--run_id", str(run_id)]})
@@ -59,6 +59,7 @@ def validate(run_id):
         print(f'done in {((time.time() - start_time)/60):.1f} min') 
     print(f'emulator AUGRC: {augrc_emu}')
     print(f'emulator acc: {acc_emu}')
+    '''
     # Define the server URL (change if running on a different host)
     rpi_ip = cfg.optimizer.rpi_ip #input('RPI IP address: ')
     SERVER_URL = f"http://{rpi_ip}:5001/validate"  # Update with actual server address 
@@ -113,6 +114,7 @@ def validate(run_id):
         print("Server Response:", response.json())  # Assuming the response is JSON
     else:
         print("Error:", response.status_code, response.text)
+    '''
     #print({'acc_emu': float(acc_emu), 'augrc_emu': float(augrc_emu), 'augrc_hw': float(augrc_hw), 'acc_hw': float(acc_hw)})
     #return jsonify({'acc_emu': float(1.2), 'augrc_emu': float(1.2), 'augrc_hw': float(1.2), 'acc_hw': float(1.2)})
     row = {'run_id': run_id, 'acc_emu': float(acc_emu), 'augrc_emu': float(augrc_emu), 'augrc_hw_train': float(augrc_hw_train), 'acc_hw_train': float(acc_hw_train), 'augrc_hw_val': float(augrc_hw_val), 'acc_hw_val': float(acc_hw_val), 'augrc_hw_test': float(augrc_hw_test), 'acc_hw_test': float(acc_hw_test)}
@@ -125,7 +127,8 @@ def validate(run_id):
             writer.writeheader()
         writer.writerow(row)
     return 0
-
+    '''
 if __name__ == '__main__':
-    for i in [32, 49, 51, 56]:
+    for i in [56]:
         validate(i)
+        a = input('kill me: ')
