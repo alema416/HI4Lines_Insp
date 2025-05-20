@@ -158,6 +158,7 @@ for run in all_runs:
             df_diff.loc[len(df_diff)] = [run.info.run_name, abs(avg_last_10_train - avg_val_on_last_10_train_steps), run.data.metrics.get("augrc_hw_val"), metrics_val_loss[-1].value]
         else:
             print(f"Run {run.info.run_name} does NOT have per-epoch 'val_acc' metrics.")
+df_diff.to_csv('./diffs.csv', index=False)
 df_diff = df_diff.sort_values(by='diff_of_last_epochs_averages')
 print(df_diff)
 # 6) Build DataFrame and sort by start time
