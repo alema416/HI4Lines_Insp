@@ -62,6 +62,7 @@ def validate():
         print(f'done in {((time.time() - start_time)/60):.1f} min') 
     print(f'emulator AUGRC: {augrc_emu}')
     print(f'emulator acc: {acc_emu}')
+    '''
     # Define the server URL (change if running on a different host)
     rpi_ip = cfg.optimizer.rpi_ip #input('RPI IP address: ')
     SERVER_URL = f"http://{rpi_ip}:5001/validate"  # Update with actual server address 
@@ -118,7 +119,8 @@ def validate():
         print("Error:", response.status_code, response.text)
     #print({'acc_emu': float(acc_emu), 'augrc_emu': float(augrc_emu), 'augrc_hw': float(augrc_hw), 'acc_hw': float(acc_hw)})
     #return jsonify({'acc_emu': float(1.2), 'augrc_emu': float(1.2), 'augrc_hw': float(1.2), 'acc_hw': float(1.2)})
-    return jsonify({'acc_emu': float(acc_emu), 'augrc_emu': float(augrc_emu), 'augrc_hw_train': float(augrc_hw_train), 'acc_hw_train': float(acc_hw_train), 'augrc_hw_val': float(augrc_hw_val), 'acc_hw_val': float(acc_hw_val), 'augrc_hw_test': float(augrc_hw_test), 'acc_hw_test': float(acc_hw_test)}), 200
+    '''
+    return jsonify({'acc_emu': float(acc_emu), 'augrc_emu': float(augrc_emu), 'augrc_hw_train': float(0), 'acc_hw_train': float(0), 'augrc_hw_val': float(augrc_emu), 'acc_hw_val': float(0), 'augrc_hw_test': float(0), 'acc_hw_test': float(0)}), 200
 
 if __name__ == '__main__':
     server2 = False
