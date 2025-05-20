@@ -1,6 +1,11 @@
 optimizer:
   classifier_data_path: '../data/processed/IDID_cropped_224'
   all_path: '../data/interim/IDID_cropped_224'
+<<<<<<< HEAD
   exp_name: 'exp_coop'
   rpi_ip: '192.168.2.54'
+=======
+  exp_name: 'exp_coop-hailo'
+  rpi_ip: '192.168.2.98'
+>>>>>>> e6570a18bb4a95d6c2082c684cb6883ea9b1e801
   model_size: 224

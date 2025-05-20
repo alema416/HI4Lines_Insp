@@ -265,7 +265,8 @@ def objective(trial):
         print(f'ckpt test acc: {acc}')
         print(f'ckpt test augrc: {augrc}')
         mlflow.pytorch.log_model(model, artifact_path="model")
-        ''' RPI CODE
+        
+        #RPI CODE
         ccc = 0
         hailo_ip = cfg.training.ds_device_ip
         while ccc < 10:
@@ -319,7 +320,7 @@ def objective(trial):
                 mlflow.log_metric(key, val)
         
         augrc_hw_val = result.get("augrc_hw_val")
-
+        '''
         gc.collect()
         torch.cuda.empty_cache()
 
