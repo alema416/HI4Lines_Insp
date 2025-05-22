@@ -30,3 +30,9 @@ deploy/st/deploy/labels_val.txt
 deploy/st/deploy/sasaa.txt
 
 hi4lines_insp/mlruns/
+deploy/st/deploy/*.png
+deploy/st/deploy/*.csv
+deploy/st/deploy/*.txt
+deploy/st/deploy/*.onnx
+deploy/st/deploy/*.ONNX
+
