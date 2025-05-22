@@ -30,3 +30,5 @@ deploy/st/deploy/labels_val.txt
 deploy/st/deploy/sasaa.txt
 
 hi4lines_insp/mlruns/
+hi4lines_insp/*.png
+configs/

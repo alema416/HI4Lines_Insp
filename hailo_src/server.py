@@ -27,7 +27,7 @@ def validate():
         scripts.append({"file": f"{j}.py", "args": ["--run_id", str(run_id)]})
     scripts.append({"file": f"compiler.py", "args": ["--run_id", str(run_id)]})
     
-    augrc_emu = 0.0
+    augrc_emu = 9999.999
     acc_emu = 9999.999
     for script in scripts:
         command = ["python", script["file"]] + script["args"]
@@ -120,6 +120,8 @@ def validate():
     #print({'acc_emu': float(acc_emu), 'augrc_emu': float(augrc_emu), 'augrc_hw': float(augrc_hw), 'acc_hw': float(acc_hw)})
     #return jsonify({'acc_emu': float(1.2), 'augrc_emu': float(1.2), 'augrc_hw': float(1.2), 'acc_hw': float(1.2)})
     '''
+    if float(augrc_emu) > float(1000):
+        a = input('problem: ')
     return jsonify({'acc_emu': float(acc_emu), 'augrc_emu': float(augrc_emu), 'augrc_hw_train': float(0), 'acc_hw_train': float(0), 'augrc_hw_val': float(augrc_emu), 'acc_hw_val': float(0), 'augrc_hw_test': float(0), 'acc_hw_test': float(0)}), 200
 
 if __name__ == '__main__':

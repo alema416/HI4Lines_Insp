@@ -88,7 +88,11 @@ def validate(loader, model, criterion):
     avg_loss = total_loss / total_samples
     acc = 100.0 * total_correct / total_samples
     return avg_loss, acc
-
+def chmod_recursive_777(path):
+    for root, dirs, files in os.walk(path):
+        os.chmod(root, 0o777)
+        for fname in files:
+            os.chmod(os.path.join(root, fname), 0o777)
 
 def csv_writter(path, dic, start):
     if os.path.isdir(path) == False: os.makedirs(path)
@@ -124,7 +128,7 @@ def objective(trial):
     val_freq = cfg.training.validate_freq
     plot = cfg.training.print_freq
     batch_size = cfg.training.batch_size 
-    port = 5002 #5001 if server2 else 5000
+    port = 5000 #5001 if server2 else 5000
     save_path = cfg.training.save_path
 
     base_lr = trial.suggest_loguniform('lr', cfg.training.base_lr_low, cfg.training.base_lr_high)
@@ -147,10 +151,10 @@ def objective(trial):
     run_name = f'trial_{trial.number}'
     
     if not os.path.exists(save_path):
-        os.makedirs(save_path)
-        os.makedirs(os.path.join(save_path, 'model_state_dict'))
-        os.makedirs(os.path.join(save_path, 'logs'))
-
+        os.makedirs(save_path, mode=0o777)
+        os.makedirs(os.path.join(save_path, 'model_state_dict'), mode=0o777)
+        os.makedirs(os.path.join(save_path, 'logs'), mode=0o777)
+    chmod_recursive_777(save_path)
     with mlflow.start_run(run_name=run_name, nested=True):
         
         dataset_path = cfg.training.data_path

@@ -11,7 +11,7 @@ from torchvision.models import mobilenet_v2
 with initialize(config_path="../configs/"):
     cfg = compose(config_name="optimizer")  # exp1.yaml with defaults key
 
-exp_name = 'test'#cfg.optimizer.exp_name
+exp_name = cfg.optimizer.exp_name
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -22,7 +22,7 @@ args = parser.parse_args()
 device = torch.device("cpu")
 num_class = 2
 
-onnx_dir = f'../models/send/' #{exp_name}/{args.run_id}'
+onnx_dir = f'../models/send/{exp_name}/{args.run_id}'
 model_dict = {"num_classes": num_class}
 
 '''
@@ -36,7 +36,7 @@ else:
 model = mobilenet_v2(pretrained=False, num_classes=2).to(device)
 
 model_name = f'model_{args.run_id}'
-model_path = f'../models/send/model_{args.run_id}.pth' #f'../models/{exp_name}/{args.run_id}/model_state_dict/model.pth'
+model_path = f'../models/{exp_name}/{args.run_id}/model_state_dict/model.pth'
 
 state_dict_fmfp = torch.load(model_path, map_location=device)
 

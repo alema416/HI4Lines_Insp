@@ -133,9 +133,9 @@ def objective(trial):
     run_name = f'{modelname}_{method}_{input_size}_{epochs}'
 
     if not os.path.exists(save_path):
-        os.makedirs(save_path)
-        os.makedirs(os.path.join(save_path, 'logs'))
-        os.makedirs(os.path.join(save_path, 'model_state_dict'))
+        os.makedirs(save_path, mode=0o777)
+        os.makedirs(os.path.join(save_path, 'logs'), mode=0o777)
+        os.makedirs(os.path.join(save_path, 'model_state_dict'), mode=0o777)
 
     writer = SummaryWriter(log_dir=os.path.join(save_path, 'logs'))
     dataset_path = cfg.training.data_path
