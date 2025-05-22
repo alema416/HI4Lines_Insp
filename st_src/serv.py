@@ -66,7 +66,6 @@ def get_quantized_models_dir(run_id: int,
         check=False
     )
     output = proc.stdout
-
     # look for the line containing "Model available at : <path>"
     m = re.search(r"Model available at\s*:\s*(\S+)", output)
     dirs = re.findall(r"(/[^\s]+/quantized_models)", output)
@@ -213,5 +212,24 @@ def validate():
             f.write(str(e))
         return jsonify({'error': str(e)}), 400
     return respon, 200
+
+#### FOR REAL TIME QUANT
+'''
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5002)
+'''
+#### FOR POST TRAINING QUANT
+'''
+if __name__ == '__main__':
+    run_id = 56
+    pth_file = f'/home/alema416/BASELINE_{run_id}.pth'
+    model = load_checkpoint1(pth_file)
+    export_and_simplify(model, f'bsln_{run_id}.onnx', opset=13)
+    print('pth --> onnx done')
+    #app.run(host='0.0.0.0', port=5002)
+    script = "/home/alema416/dev/work/ST_stm32ai-modelzoo-services/image_classification/src/stm32ai_main.py"
+    cfg_path = "/home/alema416/dev/work/HI4Lines_Insp/configs/"
+    cfg_name = "quantization_config"
+    mdl_path = f"/home/alema416/dev/work/HI4Lines_Insp/st_src/bsln_{run_id}.onnx"
+    print(get_quantized_models_dir(run_id, script, cfg_path, cfg_name, mdl_path))
+'''
