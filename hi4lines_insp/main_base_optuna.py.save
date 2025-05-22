@@ -106,7 +106,7 @@ def objective(trial):
 
     server1 = True
     server2 = not server1
-    epochs = cfg.training.epochs
+    epochs = #cfg.training.epochs
     plot = cfg.training.validate_freq
     rank_weight = cfg.training.rank_weight
     port = 5002 if server2 else 5000
@@ -132,9 +132,9 @@ def objective(trial):
     run_name = f'trial_{trial.number}'
 
     if not os.path.exists(save_path):
-        os.makedirs(save_path, mode=0o777)
-        os.makedirs(os.path.join(save_path, 'logs'), mode=0o777)
-        os.makedirs(os.path.join(save_path, 'model_state_dict'), mode=0o777)
+        os.makedirs(save_path)
+        os.makedirs(os.path.join(save_path, 'logs'))
+        os.makedirs(os.path.join(save_path, 'model_state_dict'))
 
     with mlflow.start_run(run_name=run_name, nested=True):
 

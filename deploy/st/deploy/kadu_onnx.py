@@ -29,7 +29,7 @@ def preprocess_image(path: str, input_shape, input_dtype):
     # add batch dimension
     return np.expand_dims(arr, axis=0)  # → (1,C,H,W) or (1,H,W,C)
 
-def run_eval(model_path: str, data_root: str):
+def run_eval(id: int, model_path: str, data_root: str):
     # --- 1) Create ONNX Runtime session with VSI NPU EP ---
     sess_opts = ort.SessionOptions()
     sess_opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
@@ -101,7 +101,7 @@ def run_eval(model_path: str, data_root: str):
                     probs = softmax(arr)
                     pred = int(np.argmax(probs))
                     conf = float(probs[pred])
-                    print(conf)
+                    #print(conf)
                 '''
                 else:
                     print('multi')
@@ -130,10 +130,10 @@ def run_eval(model_path: str, data_root: str):
         print(f"Accuracy : {correct}/{total} = {acc * 100:.2f}%")
 
         # 5) Dump to files
-        with open(f"labels_{split}.txt", "w") as f_lbl:
+        with open(f"b_labels_{id}_{split}.txt", "w") as f_lbl:
             for v in file_lbls:
                 f_lbl.write(f"{v}\n")
-        with open(f"confs_{split}.txt", "w") as f_conf:
+        with open(f"b_confs_{id}_{split}.txt", "w") as f_conf:
             for v in file_confs:
                 f_conf.write(f"{v:.6f}\n")
         df = pd.DataFrame(rows)
@@ -146,4 +146,5 @@ def run_eval(model_path: str, data_root: str):
     print(f"Avg latency: {np.mean(latencies):.1f} ms  (over {len(latencies)} inferences)")
 
 if __name__ == "__main__":
-    run_eval('../../../models/temporal_optimization_model_st/temporal_optimization_model.onnx', '../../../data/processed/IDID_cropped_224')
+    for id in [32, 49, 56]:
+        run_eval(id, f'MODEL_{id}.ONNX', '../../../data/processed/IDID_cropped_224')
