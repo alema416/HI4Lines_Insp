@@ -2,6 +2,7 @@ import pandas as pd
 from nmetr import AUGRC
 import argparse
 import torch
+import time
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import gaussian_kde
@@ -13,6 +14,7 @@ import argparse
 
 parser = argparse.ArgumentParser(description='Rethinking CC for FP')
 parser.add_argument('--run_id', required=True, type=int, help='')
+parser.add_argument('--idel', required=True, type=str, help='')
 args = parser.parse_args()
 
 def custom_seaborn(df_pos, df_neg, model_id, split, prefix, AUGRC, ACC, mean, std, cc):
@@ -39,12 +41,11 @@ def custom_seaborn(df_pos, df_neg, model_id, split, prefix, AUGRC, ACC, mean, st
                 bw_method='scott', 
                 cut=3,
                 label='misclassifications')
-    modelname = 'mobilenet' #input('Model Name: ') #'ResNet18'
+    modelname = 'resnet' #'mobilenet' #input('Model Name: ') #'ResNet18'
     plt.xlabel('confidence')
     plt.ylabel('density')
     plt.xlim(0.0, 1.2)
     info = f"Model: {modelname}\nID: {id}\n"
-    a = 1.19
     if split == 'test':
         info += f"AUGRC: {AUGRC['test']:.2f}\n"
         info += f"success mean: {mean['s_test']:.2f}, success st: {std['s_test']:.2f}\n"
@@ -83,8 +84,9 @@ def custom_seaborn(df_pos, df_neg, model_id, split, prefix, AUGRC, ACC, mean, st
         sigma_tot = np.sqrt(sigma_tot_sq)
         info += f"error mean: {mu_tot:.2f}, error std: {sigma_tot:.2f}\n"
 
-
+    print(prefix)	
     name = 'Baseline' if prefix=='b_' else 'FMFP'
+    print(name)
     plt.gca().text(
         0.02, 0.68, info,
         transform=plt.gca().transAxes,
@@ -102,7 +104,7 @@ def custom_seaborn(df_pos, df_neg, model_id, split, prefix, AUGRC, ACC, mean, st
     plt.close()
 
 id = args.run_id
-idel = ''
+idel = args.idel
 
 import degirum as dg
 import degirum_tools
@@ -114,7 +116,8 @@ from hydra import initialize, compose
 with initialize(config_path="../../../configs/"):
     cfg = compose(config_name="hw_classifier")  # exp1.yaml with defaults key
 
-model_name = cfg.classifier.modelname
+addon = '' if args.idel == '' else '_bsln' 
+model_name = f'{cfg.classifier.modelname}_{args.run_id}{addon}'
 
 model = dg.load_model(
     model_name=model_name,
@@ -145,7 +148,13 @@ results_train, tr_mean_tr, tr_std_tr, tr_mean_err, tr_std_err, tr_tr, tr_fa = ev
 print(f'WORKING ON: val set')
 results_eval, val_mean_tr, val_std_tr, val_mean_err, val_std_err, val_tr, val_fa = evaluator_v.evaluate(cfg.classifier.val_set_dir, None, -1)
 print(f'WORKING ON: test set')
+start = time.time()
 results_test, test_mean_tr, test_std_tr, test_mean_err, test_std_err, test_tr, test_fa = evaluator_te.evaluate(cfg.classifier.test_set_dir, None, -1)
+end = time.time()
+length = end - start
+
+# Show the results : this can be altered however you like
+print("It took", length, "seconds!")
 
 ide = idel
 print(f'train_set top1 acc: {results_train[0][0]:.5f}%')
@@ -210,7 +219,7 @@ print(ACC_dict)
 
 if True:
     if True:
-        for ide in ['']:
+        for ide in [idel]:
             # Replace 'confidences.txt' and 'labels.txt' with your actual file paths
             confidences = pd.read_csv(f'{ide}confs_{id}_train.txt', header=None, names=['confidence'])
             labels = pd.read_csv(f'{ide}labels_{id}_train.txt', header=None, names=['correct'])
@@ -240,7 +249,7 @@ if True:
 
 if True:
     if True:
-        for ide in ['']:
+        for ide in [idel]:
             # Replace 'confidences.txt' and 'labels.txt' with your actual file paths
             confidences = pd.read_csv(f'{ide}confs_{id}_test.txt', header=None, names=['confidence'])
             labels = pd.read_csv(f'{ide}labels_{id}_test.txt', header=None, names=['correct'])
