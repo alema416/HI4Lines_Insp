@@ -21,7 +21,7 @@ class ImageClassificationModelEvaluator(ModelEvaluatorBase):
     This class computes the Top-k Accuracy for Classification models.
     """
 
-    def __init__(self, model: dg.model.Model, split: str, **kwargs):
+    def __init__(self, model: dg.model.Model, split: str, id: int, ide: str, **kwargs):
         """
         Constructor.
 
@@ -41,6 +41,8 @@ class ImageClassificationModelEvaluator(ModelEvaluatorBase):
         # List of `k` values in top-k, default:[1,5].
         self.top_k: list = [1, 5]
         self.split = split
+        self.id = id
+        self.ide = ide
         # Mapping of model category IDs to image folder names.
         # For example: {0: "person", 1: "car"}
         self.foldermap: Optional[dict] = None
@@ -157,7 +159,6 @@ class ImageClassificationModelEvaluator(ModelEvaluatorBase):
                         
                     else:
                         fa += 1
-                        print(tmp_score)
                         fa_conf.append(tmp_score)
                 FILE_CNF.append(tmp_score)
                 FILE_LBL.append(1 if category_folder in top_classes else 0)
@@ -226,12 +227,12 @@ class ImageClassificationModelEvaluator(ModelEvaluatorBase):
                 ]
             )
             progress.message = accuracy_str
-        with open(f'labels_{self.split}.txt', "w") as file:
+        with open(f'{self.ide}labels_{self.id}_{self.split}.txt', "w") as file:
             for line in FILE_LBL:
                 file.write(str(line) + "\n")  # Adding newline character
-        with open(f'confs_{self.split}.txt', "w") as file:
+        with open(f'{self.ide}confs_{self.id}_{self.split}.txt', "w") as file:
             for line in FILE_CNF:
                 file.write(str(line) + "\n")  # Adding newline character
         df = pd.DataFrame(rows)
         df.to_csv(f'per_sample_{self.split}.csv', index=False)
-        return [accuracies, all_per_class_accuracies]
+        return [accuracies, all_per_class_accuracies], mean_tr, std_tr, mean_err, std_err, tr, fa
