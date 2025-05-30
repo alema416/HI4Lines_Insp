@@ -1,5 +1,13 @@
 import torch
+import mlflow
+import pynvml
+pynvml.nvmlInit()
+gpu_handle = pynvml.nvmlDeviceGetHandleByIndex(0)  # if you only use GPU 0
+import time
 import gc
+from torchvision.models import mobilenet_v2
+from torchvision.models import resnet18
+
 import distutils
 import optuna
 from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
@@ -50,7 +58,7 @@ import resource
 from collections import OrderedDict
 from model import resnet
 import requests
-from model import resnet18
+#from model import resnet18
 from utils import data as dataset
 from utils import crl_utils
 from utils import metrics
@@ -61,6 +69,52 @@ from hydra import initialize, compose
 
 rlimit = resource.getrlimit(resource.RLIMIT_NOFILE)
 resource.setrlimit(resource.RLIMIT_NOFILE, (2048, rlimit[1]))
+
+
+
+def get_gpu_temps(handle=gpu_handle):
+    """Return (core_temp, mem_temp or None)."""
+    core = pynvml.nvmlDeviceGetTemperature(handle,
+                                           pynvml.NVML_TEMPERATURE_GPU)
+    # Try the named constant, else fall back to sensor ID 1, else None
+    mem = None
+    try:
+        mem = pynvml.nvmlDeviceGetTemperature(handle,
+                                              pynvml.NVML_TEMPERATURE_MEMORY)
+    except AttributeError:
+        try:
+            mem = pynvml.nvmlDeviceGetTemperature(handle, 1)
+        except Exception:
+            # sensor not available
+            mem = None
+    return core, mem
+
+def wait_for_cooldown(handle=gpu_handle, *, thresh=85, cool_to=75, interval=5):
+    """
+    Pause if either core or memory temps exceed 'thresh',
+    and wait until they drop below 'cool_to'.
+    If mem is None, only watch core.
+    """
+    core, mem = get_gpu_temps(handle)
+    # decide whether to pause
+    over_core = core >= thresh
+    over_mem  = (mem is not None and mem >= thresh)
+    if not (over_core or over_mem):
+        return
+
+    print(f"[GPU COOL] core {core}°C{' and mem '+str(mem)+'°C' if mem is not None else ''} ≥ {thresh}°C; pausing…")
+    # wait loop
+    while True:
+        time.sleep(interval)
+        core, mem = get_gpu_temps(handle)
+        msg = f"[GPU COOL] core {core}°C"
+        if mem is not None:
+            msg += f", mem {mem}°C"
+        print(msg)
+        if core <= cool_to and (mem is None or mem <= cool_to):
+            break
+
+    print("[GPU COOL] temperatures back below threshold; resuming.")
 
 def validate(loader, model, criterion):
     model.eval()
@@ -106,15 +160,15 @@ def objective(trial):
 
     server1 = True
     server2 = not server1
-    epochs = cfg.training.epochs
+    epochs = 200 #cfg.training.epochs
     plot = cfg.training.validate_freq
     rank_weight = cfg.training.rank_weight
     port = 5002 if server2 else 5000
-    base_lr = 0.010928038284004158 #trial.suggest_loguniform('lr', cfg.training.base_lr_low, cfg.training.base_lr_high) 
+    base_lr = trial.suggest_loguniform('lr', cfg.training.base_lr_low, cfg.training.base_lr_high)
     lr_strat = [80, 130, 170]
     lr_factor =  0.1 #cfg.training.lr_factor # Learning rate decrease factor
-    custom_weight_decay = 2.4926036108880553e-05 #trial.suggest_loguniform('weight_decay', cfg.training.weight_decay_low, cfg.training.weight_decay_high)  
-    custom_momentum = 0.8510598062782649 #trial.suggest_uniform('momentum', cfg.training.momentum_low, cfg.training.momentum_high)
+    custom_weight_decay = trial.suggest_loguniform('weight_decay', cfg.training.weight_decay_low, cfg.training.weight_decay_high)
+    custom_momentum = trial.suggest_uniform('momentum', cfg.training.momentum_low, cfg.training.momentum_high)
 
     save_path = cfg.training.save_path
     batch_size = cfg.training.batch_size
@@ -145,7 +199,9 @@ def objective(trial):
         
         model_dict = { "num_classes": num_class, 'weights': 'MobileNet_V2_Weights'}
         print(100*'#')
-        model = mobilenet_v2(pretrained=False, num_classes=2).to(device)
+        
+        #model = #mobilenet_v2(pretrained=False, num_classes=2).to(device)
+        model = resnet18(pretrained=False, num_classes=2).to(device)
 
         cls_criterion = nn.CrossEntropyLoss().to(device)
         optimizer = torch.optim.SGD(model.parameters(), lr=base_lr, momentum=custom_momentum,
@@ -170,6 +226,7 @@ def objective(trial):
             
             mlflow.log_metric('train_loss', train_loss, step=epoch)
             mlflow.log_metric('train_acc', train_acc, step=epoch)
+            wait_for_cooldown(thresh=75, cool_to=65, interval=5)
 
             # save model
             if epoch == epochs:
@@ -190,10 +247,10 @@ def objective(trial):
 
         epoch = epochs
         mlflow.log_param('lr', base_lr)
-        mlflow.log_param('swa_start', swa_start)
+        #mlflow.log_param('swa_start', swa_start)
         mlflow.log_param('weight_decay', custom_weight_decay)
         mlflow.log_param('momentum', custom_momentum)
-        mlflow.log_param('swa_lr', swa_lr)
+        #mlflow.log_param('swa_lr', swa_lr)
         mlflow.log_param('epochs', epochs)
         mlflow.log_param('batch_size', batch_size)
         mlflow.log_param('model_name', modelname)
@@ -235,7 +292,7 @@ def objective(trial):
         print(f'ckpt test acc: {acc}')
         print(f'ckpt test augrc: {augrc}')
         mlflow.pytorch.log_model(model, artifact_path="model")
-
+        
         
         ccc = 0
         hailo_ip = cfg.training.ds_device_ip
@@ -258,16 +315,18 @@ def objective(trial):
                 mlflow.log_metric(key, val)
         
         augrc_hw_val = result.get("augrc_hw_val")
-        
+        acc_hw_val = result.get('acc_hw_val')
         
         gc.collect()
         torch.cuda.empty_cache()
-        return float(augrc_hw_val)
+        wait_for_cooldown(thresh=75, cool_to=65, interval=5)
+
+        return float(acc_hw_val)
     
 def main():
     study_name = cfg.training.study_name #input('study_name: ')
     storage = f'sqlite:///{study_name}_storage.db'
-    study = optuna.create_study(direction='minimize', load_if_exists=True, study_name = study_name, storage=storage)
+    study = optuna.create_study(direction='maximize', load_if_exists=True, study_name = study_name, storage=storage)
     print(f"Sampler is {study.sampler.__class__.__name__}")
     study.optimize(objective, n_trials=1, n_jobs=1)
 

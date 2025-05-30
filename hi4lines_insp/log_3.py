@@ -7,12 +7,15 @@ from datetime import datetime
 from mlflow.tracking import MlflowClient
 
 # 1) Point at your local mlruns/
-here      = os.path.dirname(__file__)
+here      = os.path.join(os.path.dirname(__file__), 'fresh')
+print(here)
 mlruns    = os.path.join(here, "mlruns")
 client    = MlflowClient(tracking_uri=f"file://{os.path.abspath(mlruns)}")
 
 # 2) Experiment and the eight parent names
-EXP_ID    = "994808004837205094"
+#EXP_ID    = "994808004837205094"
+#fmfp mobilenet
+'''
 PARENTS   = {
     "smiling-roo-885",
     "wise-robin-426",
@@ -23,6 +26,13 @@ PARENTS   = {
     "monumental-lynx-469",
     "spiffy-bat-195",
 }
+'''
+# baseline
+#PARENTS = {'monumental-auk-615', 'stately-goose-783', 'gaudy-fly-506'}
+EXP_ID = '318616371009277715'
+#fmfp mobilenet from hugging
+PARENTS = 	{'skittish-squid-825','unique-mare-674','auspicious-crow-63','silent-sloth-441','receptive-swan-979','traveling-stag-598','charming-cow-770','redolent-toad-192','able-mink-481','rebellious-auk-479','monumental-roo-667','skittish-skink-665','shivering-shrike-700','skillful-tern-606','salty-midge-280','legendary-deer-80','monumental-cub-742','masked-rat-503','burly-ray-263','enthused-hawk-968','mysterious-mouse-41','charming-snail-726','delicate-asp-802','beautiful-shoat-984','languid-penguin-878','able-stag-856','adorable-stork-551'}
+
 
 # 3) Fetch every run in that experiment
 all_runs = client.search_runs([EXP_ID], filter_string="")
@@ -40,6 +50,7 @@ rows = []
 df_diff = pd.DataFrame(columns=['run_name', 'diff_of_last_epochs_averages', 'val_hw_augrc', 'val_loss', 'lr', 'wd', 'mom'])
 for run in all_runs:
     pid = run.data.tags.get("mlflow.parentRunId")
+    print(run.data.metrics)
     if pid in parent_ids:
         rows.append({
             "started":        datetime.fromtimestamp(run.info.start_time/1000),
@@ -61,8 +72,8 @@ for run in all_runs:
             "augrc_hw_val":   run.data.metrics.get("augrc_hw_val"),
             "augrc_hw_test":  run.data.metrics.get("augrc_hw_test"),
         })
-        if run.data.tags.get('mlflow.runName', run.info.run_id) == 'trial_32':
-            print(f"lr: {run.data.params.get('lr')}, weight: {run.data.params.get('weight_decay')}, mom: {run.data.params.get('momentum')}")
+        #if run.data.tags.get('mlflow.runName', run.info.run_id) == 'trial_32':
+        #    print(f"lr: {run.data.params.get('lr')}, weight: {run.data.params.get('weight_decay')}, mom: {run.data.params.get('momentum')}")
         #print(f"\nRun ID: {run.info.run_id}")
         metrics_train_loss = client.get_metric_history(run.info.run_id, "train_loss")
         metrics_val_loss = client.get_metric_history(run.info.run_id, "val_loss")
@@ -98,8 +109,8 @@ for run in all_runs:
             plt.plot(train_steps, train_values, label="train_loss")
             plt.plot(val_steps, val_values, label="val_loss")
             plt.plot(common_steps, diff_loss, label="train_loss - val_loss", linestyle='--')
-            if run.data.params.get("swa_start"):
-                plt.axvline(x=int(run.data.params.get("swa_start")), color='green', linestyle='--', label='swa_start')
+            #if run.data.params.get("swa_start"):
+            #    plt.axvline(x=int(run.data.params.get("swa_start")), color='green', linestyle='--', label='swa_start')
             plt.title(f"Loss Curve - {run.data.tags.get('mlflow.runName', run.info.run_id)}")
             plt.xlabel("Epoch")
             plt.ylabel("Loss")

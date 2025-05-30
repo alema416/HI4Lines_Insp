@@ -1,6 +1,7 @@
 import torch
+from torchvision.models import resnet18
 from model import resnet18_custom
-from model import resnet18
+#from model import resnet18
 from collections import OrderedDict
 import argparse
 import os
@@ -24,15 +25,20 @@ num_class = 2
 onnx_dir = f'../models/{exp_name}/{args.run_id}'
 model_dict = {"num_classes": num_class}
 
-ours = False
+ours = True
+model_name = f'model_{args.run_id}'
 
 if ours:
-  model = resnet18.ResNet18(num_classes=2).to(device)
+  #model = resnet18.ResNet18(num_classes=2).to(device)
+  model = resnet18(pretrained=False, num_classes=2)
+  model_path = f'../models/{exp_name}/{args.run_id}/model_state_dict/model.pth'
+
 else:
   model = mobilenet_v2(weights=None, num_classes=2)
+  model_path = f'../models/{exp_name}/{args.run_id}/model_state_dict/model.pth'
 
-model_name = f'model_{args.run_id}'
-model_path = f'../models/{exp_name}/{args.run_id}/model_state_dict/model.pth'
+#model_name = f'model_{args.run_id}'
+#model_path = f'../models/{exp_name}/{args.run_id}/model_state_dict/model.pth'
 
 state_dict_fmfp = torch.load(model_path, map_location=device)
 

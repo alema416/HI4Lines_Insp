@@ -1,9 +1,14 @@
 import torch
 # Patch for distutils.version.LooseVersion if missing
+import pynvml
+pynvml.nvmlInit()
+gpu_handle = pynvml.nvmlDeviceGetHandleByIndex(0)  # if you only use GPU 0
+import time
+import multiprocessing as mp
 import distutils
 import requests
 import base64
-
+from torchvision.models import resnet18
 import gc
 import threading
 from torchvision.models import mobilenet_v2
@@ -59,7 +64,7 @@ from collections import OrderedDict
 from model import resnet
 from model import mobilenet
 from model import resnet18_custom
-from model import resnet18
+#from model import resnet18
 from utils import data as dataset
 from utils import crl_utils
 from utils import metrics
@@ -70,8 +75,93 @@ from torch.optim.swa_utils import AveragedModel, SWALR
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from utils.sam import SAM
 from hydra import initialize, compose
+'''
+def get_gpu_temps(handle=gpu_handle):
+    core = pynvml.nvmlDeviceGetTemperature(
+              handle, pynvml.NVML_TEMPERATURE_GPU)
+    return core, None
+
+def get_gpu_temps(handle=gpu_handle):
+    # always works:
+    core = pynvml.nvmlDeviceGetTemperature(handle,
+                                           pynvml.NVML_TEMPERATURE_GPU)
+    # memory sensor is ID 1 if the binding constant is missing
+    try:
+        mem = pynvml.nvmlDeviceGetTemperature(handle,
+                                              pynvml.NVML_TEMPERATURE_MEMORY)
+    except AttributeError:
+        mem = pynvml.nvmlDeviceGetTemperature(handle, 1)
+    return core, mem
+
+def get_gpu_temps(handle=gpu_handle):
+    """Returns (core_temp, memory_temp) in °C"""
+    core = pynvml.nvmlDeviceGetTemperature(handle, pynvml.NVML_TEMPERATURE_GPU)
+    mem  = pynvml.nvmlDeviceGetTemperature(handle, pynvml.NVML_TEMPERATURE_MEMORY)
+    return core, mem
+
+def wait_for_cooldown(handle=gpu_handle, thresh=85, cool_to=75, interval=10):
+    """
+    If memory temp ≥ thresh, sleep in a loop until it drops below cool_to.
+    """
+    _, mem = get_gpu_temps(handle)
+    if int(mem) < int(thresh):
+        return
+    print(f"[GPU COOLER] memory temp {mem}°C ≥ {thresh}°C; pausing training…")
+    while mem > cool_to:
+        time.sleep(interval)
+        _, mem = get_gpu_temps(handle)
+        print(f"[GPU COOLER] memory temp now {mem}°C; waiting until ≤ {cool_to}°C")
+    print("[GPU COOLER] OK, resuming training.")
+'''
+
+def get_gpu_temps(handle=gpu_handle):
+    """Return (core_temp, mem_temp or None)."""
+    core = pynvml.nvmlDeviceGetTemperature(handle,
+                                           pynvml.NVML_TEMPERATURE_GPU)
+    # Try the named constant, else fall back to sensor ID 1, else None
+    mem = None
+    try:
+        mem = pynvml.nvmlDeviceGetTemperature(handle,
+                                              pynvml.NVML_TEMPERATURE_MEMORY)
+    except AttributeError:
+        try:
+            mem = pynvml.nvmlDeviceGetTemperature(handle, 1)
+        except Exception:
+            # sensor not available
+            mem = None
+    return core, mem
+
+def wait_for_cooldown(handle=gpu_handle, *, thresh=85, cool_to=75, interval=5):
+    """
+    Pause if either core or memory temps exceed 'thresh',
+    and wait until they drop below 'cool_to'.
+    If mem is None, only watch core.
+    """
+    core, mem = get_gpu_temps(handle)
+    # decide whether to pause
+    over_core = core >= thresh
+    over_mem  = (mem is not None and mem >= thresh)
+    if not (over_core or over_mem):
+        return
+
+    print(f"[GPU COOL] core {core}°C{' and mem '+str(mem)+'°C' if mem is not None else ''} ≥ {thresh}°C; pausing…")
+    # wait loop
+    while True:
+        time.sleep(interval)
+        core, mem = get_gpu_temps(handle)
+        msg = f"[GPU COOL] core {core}°C"
+        if mem is not None:
+            msg += f", mem {mem}°C"
+        print(msg)
+
+        if core <= cool_to and (mem is None or mem <= cool_to):
+            break
+
+    print("[GPU COOL] temperatures back below threshold; resuming.")
+
 
 def validate(loader, model, criterion):
+    device = 'cuda'
     model.eval()
     total_loss = 0.0
     total_correct = 0
@@ -112,16 +202,53 @@ def csv_writter(path, dic, start):
 class Counter(dict):
     def __missing__(self, key):
         return None
-
+'''
 with initialize(config_path="../configs/"):
     cfg = compose(config_name="fmfp")  # exp1.yaml with defaults key
 
 device = cfg.training.device #torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
+'''
+#project_root = os.path.dirname(os.path.abspath(__file__))             # e.g. .../hi4lines_insp
+#mlruns_parent = project_root                                         # <-- this folder has ./mlruns
 
-mlflow.set_experiment(cfg.training.experiment_name if hasattr(cfg.training, 'experiment_name') else 'fmfp_experiment')
+# 2) Tell MLflow “my tracking URI is the 'file://' URL to that folder”
+
+#mlflow.set_experiment(cfg.training.experiment_name if hasattr(cfg.training, 'experiment_name') else 'fmfp_experiment')
+
+#mlflow.set_tracking_uri(f"file://{mlruns_parent}")
+#mlflow.set_experiment(cfg.training.experiment_name if hasattr(cfg.training, 'experiment_name') else 'fmfp_experiment')
+#project_root = os.path.dirname(os.path.abspath(__file__))
+#print(project_root)
+#mlruns_dir   = os.path.join(project_root, "mlruns")
+#os.makedirs(mlruns_dir, exist_ok=True)
+
+# 2) Point MLflow at that directory
+
+#mlflow.set_tracking_uri(f"file://{mlruns_dir}")
+
+project_root = os.getcwd()            # now points to ~/HI4Lines_Insp/fresh_study
+mlruns_dir   = os.path.join(project_root, 'fresh', "mlruns")
+os.makedirs(mlruns_dir, exist_ok=True)
+
+mlflow.set_tracking_uri(f"file://{mlruns_dir}")
+mlflow.set_experiment(
+  "fresh_fmfp_experiment")
+cfg = None
 
 def objective(trial):
+    global cfg
+    if cfg is None:
+        from hydra import initialize, compose
+        with initialize(config_path="../configs/", version_base="1.1"):
+            cfg = compose(config_name="fmfp")
+        device = cfg.training.device
+    #with initialize(config_path="../configs/"):
+    #    cfg = compose(config_name="fmfp")  # exp1.yaml with defaults key
+
+    device = cfg.training.device #torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Using device: {device}")
+
     server1 = True
     server2 = not server1
     epochs = trial.suggest_int("epochs", cfg.training.epochs_low, cfg.training.epochs_high)
@@ -162,9 +289,13 @@ def objective(trial):
         
         num_class = cfg.training.classnumber  
         model_dict = { "num_classes": num_class, 'weights': 'MobileNet_V2_Weights'}
-        
+        model_dict1 = { "num_classes": num_class}
+
         print(100 * '#')
-        model = mobilenet_v2(pretrained=False, num_classes=2).to(device)
+        print(f'{modelname}!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+        model = resnet18(pretrained=False, num_classes=2).to(device)
+        #model = resnet18.ResNet18(**model_dict1).to(device)
+        #model = mobilenet_v2(pretrained=False, num_classes=2).to(device)
         cls_criterion = nn.CrossEntropyLoss().to(device)
 
         
@@ -192,7 +323,7 @@ def objective(trial):
                     
             mlflow.log_metric('train_loss', train_loss, step=epoch)
             mlflow.log_metric('train_acc', train_acc, step=epoch)
-
+            wait_for_cooldown(thresh=75, cool_to=65, interval=5)
             # save model
             if epoch == epochs:
                 torch.save(model.state_dict(), os.path.join(save_path, 'model_state_dict', 'model.pth'))
@@ -268,7 +399,7 @@ def objective(trial):
         mlflow.log_metric('test_augrc', augrc, step=epoch)
         print(f'ckpt test acc: {acc}')
         print(f'ckpt test augrc: {augrc}')
-        mlflow.pytorch.log_model(model, artifact_path="model")
+        #mlflow.pytorch.log_model(model, artifact_path="model")
         
         #RPI CODE
         ccc = 0
@@ -326,18 +457,29 @@ def objective(trial):
         augrc_hw_val = result.get("augrc_hw_val")
         '''
         gc.collect()
-        torch.cuda.empty_cache()
-
+        del model, optimizer, scheduler, ranking_criterion   # etc.
+        torch.cuda.synchronize()                     # finish all kernels
+        torch.cuda.empty_cache()                     # drop cached allocations
+        #torch.cuda.empty_cache()
+        wait_for_cooldown(thresh=75, cool_to=65, interval=5)
         return float(augrc_hw_val)
     
 
 def main():
+    global cfg
+    with initialize(config_path="../configs/"):
+        cfg = compose(config_name="fmfp")  # exp1.yaml with defaults key
+
+    device = cfg.training.device #torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Using device: {device}")
+
+    #mp.set_start_method("forkserver", force=True)
     study_name = cfg.training.study_name #input('study_name: ')
-    storage = f'sqlite:///{study_name}_storage.db'
+    storage = f"sqlite:///{os.path.join(os.getcwd(), 'fresh_study_db.sqlite')}"
     study = optuna.create_study(direction='minimize', load_if_exists=True, study_name = study_name, storage=storage)
     print(f"Sampler is {study.sampler.__class__.__name__}")
     mlflow.log_param('sampler', study.sampler.__class__.__name__)
-    study.optimize(objective, n_trials=500, n_jobs=1)
+    study.optimize(objective, n_trials=1, n_jobs=1)
 
     print("Best hyperparameters:", study.best_params)
     print("Best accuracy:", study.best_value)

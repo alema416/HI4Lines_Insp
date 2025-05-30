@@ -249,7 +249,7 @@ aaa = visualize_results(image_dataset[:, :, :, :], valall_path, 'val', native_sc
 
 model_script_lines = [
     "normalization1 = normalization([128.68140225, 117.6060306, 109.43819699999999 ], [46.829990099999996, 48.069616499999995,  50.7004974])\n",
-    "model_optimization_flavor(optimization_level=2, compression_level=2, batch_size=1)\n"
+    "model_optimization_flavor(optimization_level=0, compression_level=0, batch_size=1)\n"
 ]
 
 # Load the model script to ClientRunner so it will be considered on optimization
