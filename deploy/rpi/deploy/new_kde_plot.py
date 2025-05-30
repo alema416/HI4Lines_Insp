@@ -118,7 +118,8 @@ with initialize(config_path="../../../configs/"):
 
 addon = '' if args.idel == '' else '_bsln' 
 model_name = f'{cfg.classifier.modelname}_{args.run_id}{addon}'
-
+#model_name = cfg.classifier.modelname
+print(model_name)
 model = dg.load_model(
     model_name=model_name,
     inference_host_address='@local',
