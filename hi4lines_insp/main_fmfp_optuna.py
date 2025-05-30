@@ -293,7 +293,20 @@ def objective(trial):
 
         print(100 * '#')
         print(f'{modelname}!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-        model = resnet18(pretrained=False, num_classes=2).to(device)
+        resss = True
+        if resss:
+            model = resnet18(pretrained=False, num_classes=2).to(device)
+        else:
+            model = mobilenet_v2(pretrained=False, num_classes=2).to(device)
+
+        drop = True
+        if drop:
+            old_fc = model.fc
+            model.fc = nn.Sequential(
+                nn.Dropout(p=0.4),    # drop 40% of activations
+                old_fc
+            ).to(device)
+        
         #model = resnet18.ResNet18(**model_dict1).to(device)
         #model = mobilenet_v2(pretrained=False, num_classes=2).to(device)
         cls_criterion = nn.CrossEntropyLoss().to(device)
@@ -311,6 +324,11 @@ def objective(trial):
         
         args = None
         
+        best_val_loss = float('inf')
+        patience = 10
+        num_bad_epochs = 0
+        last_ep = 0
+        ac_ep = 0
         for epoch in range(1, epochs + 1):
             train_loss, train_acc  = train_fmfp.train(RUN_ID, train_loader, \
                                                     model, cls_criterion, ranking_criterion, optimizer, epoch, correctness_history, plot, method)
@@ -325,29 +343,47 @@ def objective(trial):
             mlflow.log_metric('train_acc', train_acc, step=epoch)
             wait_for_cooldown(thresh=75, cool_to=65, interval=5)
             # save model
+            '''
             if epoch == epochs:
                 torch.save(model.state_dict(), os.path.join(save_path, 'model_state_dict', 'model.pth'))
-            
+            '''
             # calc measure
             if epoch % val_freq == 0:
-                val_loss, val_acc = validate(valid_loader, model, cls_criterion)
+
+                if epoch > swa_start:      
+                    val_loss, val_acc = validate(valid_loader, swa_model, cls_criterion)
+                    acc, auroc, aupr_success, aupr, fpr, tnr, aurc, eaurc, augrc = metrics.calc_metrics(args, valid_loader,
+                                                                                    swa_model,cls_criterion, save_path, 'DELETE')
+
+                    if val_loss < best_val_loss - 1e-4:    # a tiny delta to avoid float noise
+                        best_val_loss = val_loss
+                        num_bad_epochs = 0
+                        torch.save(swa_model.state_dict(), os.path.join(save_path, 'model_state_dict', 'best_model_runner.pth'))
+                    else:
+                        num_bad_epochs += 1
+                        print(f"No improvement in val_loss for {num_bad_epochs}/{patience} checks.")
+                        if num_bad_epochs >= patience:
+                            print(f"Stopping early at epoch {epoch} (best_val_loss={best_val_loss:.4f}).")
+                            last_ep = epoch
+                            break
+                else:
+                    val_loss, val_acc = validate(valid_loader, model, cls_criterion)
+                    acc, auroc, aupr_success, aupr, fpr, tnr, aurc, eaurc, augrc = metrics.calc_metrics(args, valid_loader,
+                                                                                    model,cls_criterion, save_path, 'DELETE')
                 mlflow.log_metric('val_loss', val_loss, step=epoch)
                 mlflow.log_metric('val_acc', val_acc, step=epoch)
-
-                acc, auroc, aupr_success, aupr, fpr, tnr, aurc, eaurc, augrc = metrics.calc_metrics(args, valid_loader,
-                                                                                    model,
-                                                                                    cls_criterion, save_path, 'DELETE')
+                                                                    
                 mlflow.log_metric('val_augrc', augrc, step=epoch)
                 print(f'val loss: {val_loss}, val acc: {val_acc}, val augrc: {augrc}')
                 print('Validation Loss: {0}\t'
                     'Validation Acc: {1})\t'
                     'Validation AUGRC: {2})\t'.format(val_loss, val_acc, augrc))
-                used    = torch.cuda.memory_allocated()  / 1024**2
-                reserved= torch.cuda.memory_reserved()   / 1024**2
-                mlflow.log_metric("gpu_mem_allocated_MB", used,     step=epoch)
-                mlflow.log_metric("gpu_mem_reserved_MB", reserved, step=epoch)
+                ac_ep = epoch
                 torch.cuda.empty_cache()
-        epoch = epochs
+        if last_ep > ac_ep:
+            epoch = last_ep
+        else:
+            epoch = ac_ep
         mlflow.log_param('lr', base_lr)
         mlflow.log_param('swa_start', swa_start)
         mlflow.log_param('weight_decay', custom_weight_decay)
@@ -356,6 +392,7 @@ def objective(trial):
         mlflow.log_param('epochs', epochs)
         mlflow.log_param('batch_size', batch_size)
         mlflow.log_param('model_name', modelname)
+        swa_model.load_state_dict(torch.load(os.path.join(save_path, 'model_state_dict', 'best_model_runner.pth'), map_location=device))
         torch.optim.swa_utils.update_bn(train_loader, swa_model.cpu())
         model = swa_model.to(device)
         torch.save(model.state_dict(), os.path.join(save_path, 'model_state_dict', 'model.pth'))
