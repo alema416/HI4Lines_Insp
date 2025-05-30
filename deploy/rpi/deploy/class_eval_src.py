@@ -235,4 +235,4 @@ class ImageClassificationModelEvaluator(ModelEvaluatorBase):
                 file.write(str(line) + "\n")  # Adding newline character
         df = pd.DataFrame(rows)
         df.to_csv(f'per_sample_{self.split}.csv', index=False)
-        return [accuracies, all_per_class_accuracies]
+        return [accuracies, all_per_class_accuracies], mean_tr, std_tr, mean_err, std_err, tr, fa

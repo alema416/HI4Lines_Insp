@@ -10,7 +10,7 @@ from hydra import initialize, compose
 #@app.route('/validate', methods=['POST'])
 #def validate():
 app = Flask(__name__)
-with initialize(config_path="../../configs/"):
+with initialize(config_path="../../../configs/"):
     cfg = compose(config_name="hw_eval_server")  # exp1.yaml with defaults key
 @app.route('/validate', methods=['POST'])
 def validate():
@@ -40,8 +40,8 @@ def validate():
             f.write(file_content)
         print(f"File {file_path} received and saved.")
 
-    for j in ['class_eval', 'metric']:
-        scripts.append({"file": f"{j}.py", "args": ["--model", cfg.server.temp_model_flnm]})
+    for j in ['new_kde_plot']:
+        scripts.append({"file": f"{j}.py", "args": ['--idel', 'b_', "--run_id", run_id]})
     
     augrc_hw_train = None
     acc_hw_train = None
