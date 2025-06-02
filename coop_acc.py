@@ -49,7 +49,7 @@ def read_csv(pi_csv_path, srv_csv_path):
     return df
 
 def main():
-    DIRNAME = '/home/alema416/dev/work/HI4Lines_Insp/reports/figures/HAILO/new_resnet/fmfp/data'
+    DIRNAME = '' #'/home/alema416/dev/work/HI4Lines_Insp/reports/figures/HAILO/new_resnet/fmfp/data'
     results = {}
     device = 'rpi'
     model = 'idk'
