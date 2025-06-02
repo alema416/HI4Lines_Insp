@@ -301,12 +301,28 @@ def objective(trial):
 
         drop = True
         if drop:
+            drop_p_stage = 0.2
+            drop_p_fc    = 0.4
+
+            # 1) Wrap each stage (layer1–4) with a Dropout2d
+            for name, module in list(model.named_children()):
+                if name.startswith('layer'):
+                    wrapped = nn.Sequential(
+                        module,
+                        nn.Dropout2d(p=drop_p_stage)
+                    )
+                    setattr(model, name, wrapped)
+
+                # 2) Wrap the avgpool output
+            model.avgpool = nn.Sequential(
+                model.avgpool,
+                nn.Dropout(p=drop_p_stage)
+            )
             old_fc = model.fc
             model.fc = nn.Sequential(
                 nn.Dropout(p=0.4),    # drop 40% of activations
                 old_fc
             ).to(device)
-        
         #model = resnet18.ResNet18(**model_dict1).to(device)
         #model = mobilenet_v2(pretrained=False, num_classes=2).to(device)
         cls_criterion = nn.CrossEntropyLoss().to(device)
@@ -341,7 +357,7 @@ def objective(trial):
                     
             mlflow.log_metric('train_loss', train_loss, step=epoch)
             mlflow.log_metric('train_acc', train_acc, step=epoch)
-            wait_for_cooldown(thresh=75, cool_to=65, interval=5)
+            wait_for_cooldown(thresh=80, cool_to=75, interval=5)
             # save model
             '''
             if epoch == epochs:
@@ -351,9 +367,9 @@ def objective(trial):
             if epoch % val_freq == 0:
 
                 if epoch > swa_start:      
-                    val_loss, val_acc = validate(valid_loader, swa_model, cls_criterion)
+                    val_loss, val_acc = validate(valid_loader, model, cls_criterion)
                     acc, auroc, aupr_success, aupr, fpr, tnr, aurc, eaurc, augrc = metrics.calc_metrics(args, valid_loader,
-                                                                                    swa_model,cls_criterion, save_path, 'DELETE')
+                                                                                    model,cls_criterion, save_path, 'DELETE')
 
                     if val_loss < best_val_loss - 1e-4:    # a tiny delta to avoid float noise
                         best_val_loss = val_loss
