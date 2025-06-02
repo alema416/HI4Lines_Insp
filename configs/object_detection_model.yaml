@@ -1,9 +1,0 @@
-path: ../data/processed/yolo_m1_JOIN_1280_debug # _preserve (dataset root dir)
-
-train: train/images # train images (relative to 'path') 128 images
-val: val/images #test images (optional)
-test: test/images # val images (relative to 'path') 128 images
-# Classes
-names:
-  0: broken
-  1: healthy

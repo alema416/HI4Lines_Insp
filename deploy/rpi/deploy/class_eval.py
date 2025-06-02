@@ -5,7 +5,7 @@ import class_eval_src
 import argparse
 from hydra import initialize, compose
 
-with initialize(config_path="../../configs/"):
+with initialize(config_path="../../../configs/"):
     cfg = compose(config_name="hw_classifier")  # exp1.yaml with defaults key
 
 model_name = cfg.classifier.modelname
@@ -15,22 +15,23 @@ model = dg.load_model(
     inference_host_address='@local',
     zoo_url= cfg.classifier.model_zoo_dir
 )
+id = int(input('model id: '))
 
 evaluator_tr = class_eval_src.ImageClassificationModelEvaluator(
     model,
-    show_progress=False, split='train',
+    show_progress=False, split='train', id=id, ide='',
     top_k=[1],  # Evaluate top-1 and top-5 accuracy
     foldermap={0: "broken", 1: "healthy"}  # Mapping class IDs to folders
 )
 evaluator_v = class_eval_src.ImageClassificationModelEvaluator(
     model,
-    show_progress=False, split='val',
+    show_progress=False, split='val', id=id, ide='',
     top_k=[1],  # Evaluate top-1 and top-5 accuracy
     foldermap={0: "broken", 1: "healthy"}  # Mapping class IDs to folders
 )
 evaluator_te = class_eval_src.ImageClassificationModelEvaluator(
     model,
-    show_progress=False, split='test',
+    show_progress=False, split='test',id=id, ide='',
     top_k=[1],  # Evaluate top-1 and top-5 accuracy
     foldermap={0: "broken", 1: "healthy"}  # Mapping class IDs to folders
 )

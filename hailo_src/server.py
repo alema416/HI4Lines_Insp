@@ -13,21 +13,23 @@ with initialize(config_path="../configs/"):
     cfg = compose(config_name="optimizer")  # exp1.yaml with defaults key
 
 exp_name = cfg.optimizer.exp_name
-
+online = True
 @app.route('/validate', methods=['POST'])
-
-def validate():
-    
+def validate(): #run_id_given):
     scripts = []
-    data = request.get_json()
-    run_id = data.get('run_id')
-    print(f'received run_id {run_id}')
-    
+    if online:
+        data = request.get_json()
+        run_id = data.get('run_id')
+        print(f'received run_id {run_id}')
+    else:
+        run_id = run_id_given
+        print(f'received run_id {run_id}')
+
     for j in ['ckpt2onnx', 'parser', 'optimizer']:
         scripts.append({"file": f"{j}.py", "args": ["--run_id", str(run_id)]})
     scripts.append({"file": f"compiler.py", "args": ["--run_id", str(run_id)]})
     
-    augrc_emu = 0.0
+    augrc_emu = 9999.999
     acc_emu = 9999.999
     for script in scripts:
         command = ["python", script["file"]] + script["args"]
@@ -62,7 +64,7 @@ def validate():
         print(f'done in {((time.time() - start_time)/60):.1f} min') 
     print(f'emulator AUGRC: {augrc_emu}')
     print(f'emulator acc: {acc_emu}')
-    '''
+    
     # Define the server URL (change if running on a different host)
     rpi_ip = cfg.optimizer.rpi_ip #input('RPI IP address: ')
     SERVER_URL = f"http://{rpi_ip}:5001/validate"  # Update with actual server address 
@@ -79,7 +81,7 @@ def validate():
             encoded_file = base64.b64encode(file_content).decode('utf-8')
             print(f'sending {FILE_PATH}')
             payload = {
-              'run_id': run_id,
+              'run_id': str(run_id),
               'file': encoded_file
             }
     
@@ -119,11 +121,18 @@ def validate():
         print("Error:", response.status_code, response.text)
     #print({'acc_emu': float(acc_emu), 'augrc_emu': float(augrc_emu), 'augrc_hw': float(augrc_hw), 'acc_hw': float(acc_hw)})
     #return jsonify({'acc_emu': float(1.2), 'augrc_emu': float(1.2), 'augrc_hw': float(1.2), 'acc_hw': float(1.2)})
-    '''
-    return jsonify({'acc_emu': float(acc_emu), 'augrc_emu': float(augrc_emu), 'augrc_hw_train': float(0), 'acc_hw_train': float(0), 'augrc_hw_val': float(augrc_emu), 'acc_hw_val': float(0), 'augrc_hw_test': float(0), 'acc_hw_test': float(0)}), 200
-
+    
+    if float(augrc_emu) > float(1000):
+        a = input('problem: ')
+    return jsonify({'acc_emu': float(acc_emu), 'augrc_emu': float(augrc_emu), 'augrc_hw_train': augrc_hw_train, 'acc_hw_train': acc_hw_train, 'augrc_hw_val': augrc_hw_val, 'acc_hw_val': acc_hw_val, 'augrc_hw_test': augrc_hw_test, 'acc_hw_test': acc_hw_test}), 200
+    #return {'acc_emu': float(acc_emu), 'augrc_emu': float(augrc_emu)}
 if __name__ == '__main__':
+    
     server2 = False
     port = 5001 if server2 else 5000
     app.run(host='0.0.0.0', port=port)
     #validate()
+    '''
+    for i in [1, 2, 3, 4, 8, 9, 12, 13, 14, 17, 22, 26, 33, 35, 40, 44, 48, 51, 54, 69, 74, 75, 83, 88]:
+        print(validate(i))
+    '''

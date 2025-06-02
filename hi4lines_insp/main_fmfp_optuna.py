@@ -1,9 +1,14 @@
 import torch
 # Patch for distutils.version.LooseVersion if missing
+import pynvml
+pynvml.nvmlInit()
+gpu_handle = pynvml.nvmlDeviceGetHandleByIndex(0)  # if you only use GPU 0
+import time
+import multiprocessing as mp
 import distutils
 import requests
 import base64
-
+from torchvision.models import resnet18
 import gc
 import threading
 from torchvision.models import mobilenet_v2
@@ -59,7 +64,7 @@ from collections import OrderedDict
 from model import resnet
 from model import mobilenet
 from model import resnet18_custom
-from model import resnet18
+#from model import resnet18
 from utils import data as dataset
 from utils import crl_utils
 from utils import metrics
@@ -70,8 +75,93 @@ from torch.optim.swa_utils import AveragedModel, SWALR
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from utils.sam import SAM
 from hydra import initialize, compose
+'''
+def get_gpu_temps(handle=gpu_handle):
+    core = pynvml.nvmlDeviceGetTemperature(
+              handle, pynvml.NVML_TEMPERATURE_GPU)
+    return core, None
+
+def get_gpu_temps(handle=gpu_handle):
+    # always works:
+    core = pynvml.nvmlDeviceGetTemperature(handle,
+                                           pynvml.NVML_TEMPERATURE_GPU)
+    # memory sensor is ID 1 if the binding constant is missing
+    try:
+        mem = pynvml.nvmlDeviceGetTemperature(handle,
+                                              pynvml.NVML_TEMPERATURE_MEMORY)
+    except AttributeError:
+        mem = pynvml.nvmlDeviceGetTemperature(handle, 1)
+    return core, mem
+
+def get_gpu_temps(handle=gpu_handle):
+    """Returns (core_temp, memory_temp) in °C"""
+    core = pynvml.nvmlDeviceGetTemperature(handle, pynvml.NVML_TEMPERATURE_GPU)
+    mem  = pynvml.nvmlDeviceGetTemperature(handle, pynvml.NVML_TEMPERATURE_MEMORY)
+    return core, mem
+
+def wait_for_cooldown(handle=gpu_handle, thresh=85, cool_to=75, interval=10):
+    """
+    If memory temp ≥ thresh, sleep in a loop until it drops below cool_to.
+    """
+    _, mem = get_gpu_temps(handle)
+    if int(mem) < int(thresh):
+        return
+    print(f"[GPU COOLER] memory temp {mem}°C ≥ {thresh}°C; pausing training…")
+    while mem > cool_to:
+        time.sleep(interval)
+        _, mem = get_gpu_temps(handle)
+        print(f"[GPU COOLER] memory temp now {mem}°C; waiting until ≤ {cool_to}°C")
+    print("[GPU COOLER] OK, resuming training.")
+'''
+
+def get_gpu_temps(handle=gpu_handle):
+    """Return (core_temp, mem_temp or None)."""
+    core = pynvml.nvmlDeviceGetTemperature(handle,
+                                           pynvml.NVML_TEMPERATURE_GPU)
+    # Try the named constant, else fall back to sensor ID 1, else None
+    mem = None
+    try:
+        mem = pynvml.nvmlDeviceGetTemperature(handle,
+                                              pynvml.NVML_TEMPERATURE_MEMORY)
+    except AttributeError:
+        try:
+            mem = pynvml.nvmlDeviceGetTemperature(handle, 1)
+        except Exception:
+            # sensor not available
+            mem = None
+    return core, mem
+
+def wait_for_cooldown(handle=gpu_handle, *, thresh=85, cool_to=75, interval=5):
+    """
+    Pause if either core or memory temps exceed 'thresh',
+    and wait until they drop below 'cool_to'.
+    If mem is None, only watch core.
+    """
+    core, mem = get_gpu_temps(handle)
+    # decide whether to pause
+    over_core = core >= thresh
+    over_mem  = (mem is not None and mem >= thresh)
+    if not (over_core or over_mem):
+        return
+
+    print(f"[GPU COOL] core {core}°C{' and mem '+str(mem)+'°C' if mem is not None else ''} ≥ {thresh}°C; pausing…")
+    # wait loop
+    while True:
+        time.sleep(interval)
+        core, mem = get_gpu_temps(handle)
+        msg = f"[GPU COOL] core {core}°C"
+        if mem is not None:
+            msg += f", mem {mem}°C"
+        print(msg)
+
+        if core <= cool_to and (mem is None or mem <= cool_to):
+            break
+
+    print("[GPU COOL] temperatures back below threshold; resuming.")
+
 
 def validate(loader, model, criterion):
+    device = 'cuda'
     model.eval()
     total_loss = 0.0
     total_correct = 0
@@ -88,7 +178,11 @@ def validate(loader, model, criterion):
     avg_loss = total_loss / total_samples
     acc = 100.0 * total_correct / total_samples
     return avg_loss, acc
-
+def chmod_recursive_777(path):
+    for root, dirs, files in os.walk(path):
+        os.chmod(root, 0o777)
+        for fname in files:
+            os.chmod(os.path.join(root, fname), 0o777)
 
 def csv_writter(path, dic, start):
     if os.path.isdir(path) == False: os.makedirs(path)
@@ -108,23 +202,60 @@ def csv_writter(path, dic, start):
 class Counter(dict):
     def __missing__(self, key):
         return None
-
+'''
 with initialize(config_path="../configs/"):
     cfg = compose(config_name="fmfp")  # exp1.yaml with defaults key
 
 device = cfg.training.device #torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
+'''
+#project_root = os.path.dirname(os.path.abspath(__file__))             # e.g. .../hi4lines_insp
+#mlruns_parent = project_root                                         # <-- this folder has ./mlruns
 
-mlflow.set_experiment(cfg.training.experiment_name if hasattr(cfg.training, 'experiment_name') else 'fmfp_experiment')
+# 2) Tell MLflow “my tracking URI is the 'file://' URL to that folder”
+
+#mlflow.set_experiment(cfg.training.experiment_name if hasattr(cfg.training, 'experiment_name') else 'fmfp_experiment')
+
+#mlflow.set_tracking_uri(f"file://{mlruns_parent}")
+#mlflow.set_experiment(cfg.training.experiment_name if hasattr(cfg.training, 'experiment_name') else 'fmfp_experiment')
+#project_root = os.path.dirname(os.path.abspath(__file__))
+#print(project_root)
+#mlruns_dir   = os.path.join(project_root, "mlruns")
+#os.makedirs(mlruns_dir, exist_ok=True)
+
+# 2) Point MLflow at that directory
+
+#mlflow.set_tracking_uri(f"file://{mlruns_dir}")
+
+project_root = os.getcwd()            # now points to ~/HI4Lines_Insp/fresh_study
+mlruns_dir   = os.path.join(project_root, 'fresh', "mlruns")
+os.makedirs(mlruns_dir, exist_ok=True)
+
+mlflow.set_tracking_uri(f"file://{mlruns_dir}")
+mlflow.set_experiment(
+  "fresh_fmfp_experiment")
+cfg = None
 
 def objective(trial):
+    global cfg
+    if cfg is None:
+        from hydra import initialize, compose
+        with initialize(config_path="../configs/", version_base="1.1"):
+            cfg = compose(config_name="fmfp")
+        device = cfg.training.device
+    #with initialize(config_path="../configs/"):
+    #    cfg = compose(config_name="fmfp")  # exp1.yaml with defaults key
+
+    device = cfg.training.device #torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Using device: {device}")
+
     server1 = True
     server2 = not server1
     epochs = trial.suggest_int("epochs", cfg.training.epochs_low, cfg.training.epochs_high)
     val_freq = cfg.training.validate_freq
     plot = cfg.training.print_freq
     batch_size = cfg.training.batch_size 
-    port = 5002 #5001 if server2 else 5000
+    port = 5000 #5001 if server2 else 5000
     save_path = cfg.training.save_path
 
     base_lr = trial.suggest_loguniform('lr', cfg.training.base_lr_low, cfg.training.base_lr_high)
@@ -147,10 +278,10 @@ def objective(trial):
     run_name = f'trial_{trial.number}'
     
     if not os.path.exists(save_path):
-        os.makedirs(save_path)
-        os.makedirs(os.path.join(save_path, 'model_state_dict'))
-        os.makedirs(os.path.join(save_path, 'logs'))
-
+        os.makedirs(save_path, mode=0o777)
+        os.makedirs(os.path.join(save_path, 'model_state_dict'), mode=0o777)
+        os.makedirs(os.path.join(save_path, 'logs'), mode=0o777)
+    chmod_recursive_777(save_path)
     with mlflow.start_run(run_name=run_name, nested=True):
         
         dataset_path = cfg.training.data_path
@@ -158,9 +289,42 @@ def objective(trial):
         
         num_class = cfg.training.classnumber  
         model_dict = { "num_classes": num_class, 'weights': 'MobileNet_V2_Weights'}
-        
+        model_dict1 = { "num_classes": num_class}
+
         print(100 * '#')
-        model = mobilenet_v2(pretrained=False, num_classes=2).to(device)
+        print(f'{modelname}!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+        resss = True
+        if resss:
+            model = resnet18(pretrained=False, num_classes=2).to(device)
+        else:
+            model = mobilenet_v2(pretrained=False, num_classes=2).to(device)
+
+        drop = True
+        if drop:
+            drop_p_stage = 0.2
+            drop_p_fc    = 0.4
+
+            # 1) Wrap each stage (layer1–4) with a Dropout2d
+            for name, module in list(model.named_children()):
+                if name.startswith('layer'):
+                    wrapped = nn.Sequential(
+                        module,
+                        nn.Dropout2d(p=drop_p_stage)
+                    )
+                    setattr(model, name, wrapped)
+
+                # 2) Wrap the avgpool output
+            model.avgpool = nn.Sequential(
+                model.avgpool,
+                nn.Dropout(p=drop_p_stage)
+            )
+            old_fc = model.fc
+            model.fc = nn.Sequential(
+                nn.Dropout(p=0.4),    # drop 40% of activations
+                old_fc
+            ).to(device)
+        #model = resnet18.ResNet18(**model_dict1).to(device)
+        #model = mobilenet_v2(pretrained=False, num_classes=2).to(device)
         cls_criterion = nn.CrossEntropyLoss().to(device)
 
         
@@ -176,6 +340,11 @@ def objective(trial):
         
         args = None
         
+        best_val_loss = float('inf')
+        patience = 10
+        num_bad_epochs = 0
+        last_ep = 0
+        ac_ep = 0
         for epoch in range(1, epochs + 1):
             train_loss, train_acc  = train_fmfp.train(RUN_ID, train_loader, \
                                                     model, cls_criterion, ranking_criterion, optimizer, epoch, correctness_history, plot, method)
@@ -188,31 +357,49 @@ def objective(trial):
                     
             mlflow.log_metric('train_loss', train_loss, step=epoch)
             mlflow.log_metric('train_acc', train_acc, step=epoch)
-
+            wait_for_cooldown(thresh=80, cool_to=75, interval=5)
             # save model
+            '''
             if epoch == epochs:
                 torch.save(model.state_dict(), os.path.join(save_path, 'model_state_dict', 'model.pth'))
-            
+            '''
             # calc measure
             if epoch % val_freq == 0:
-                val_loss, val_acc = validate(valid_loader, model, cls_criterion)
+
+                if epoch > swa_start:      
+                    val_loss, val_acc = validate(valid_loader, model, cls_criterion)
+                    acc, auroc, aupr_success, aupr, fpr, tnr, aurc, eaurc, augrc = metrics.calc_metrics(args, valid_loader,
+                                                                                    model,cls_criterion, save_path, 'DELETE')
+
+                    if val_loss < best_val_loss - 1e-4:    # a tiny delta to avoid float noise
+                        best_val_loss = val_loss
+                        num_bad_epochs = 0
+                        torch.save(swa_model.state_dict(), os.path.join(save_path, 'model_state_dict', 'best_model_runner.pth'))
+                    else:
+                        num_bad_epochs += 1
+                        print(f"No improvement in val_loss for {num_bad_epochs}/{patience} checks.")
+                        if num_bad_epochs >= patience:
+                            print(f"Stopping early at epoch {epoch} (best_val_loss={best_val_loss:.4f}).")
+                            last_ep = epoch
+                            break
+                else:
+                    val_loss, val_acc = validate(valid_loader, model, cls_criterion)
+                    acc, auroc, aupr_success, aupr, fpr, tnr, aurc, eaurc, augrc = metrics.calc_metrics(args, valid_loader,
+                                                                                    model,cls_criterion, save_path, 'DELETE')
                 mlflow.log_metric('val_loss', val_loss, step=epoch)
                 mlflow.log_metric('val_acc', val_acc, step=epoch)
-
-                acc, auroc, aupr_success, aupr, fpr, tnr, aurc, eaurc, augrc = metrics.calc_metrics(args, valid_loader,
-                                                                                    model,
-                                                                                    cls_criterion, save_path, 'DELETE')
+                                                                    
                 mlflow.log_metric('val_augrc', augrc, step=epoch)
                 print(f'val loss: {val_loss}, val acc: {val_acc}, val augrc: {augrc}')
                 print('Validation Loss: {0}\t'
                     'Validation Acc: {1})\t'
                     'Validation AUGRC: {2})\t'.format(val_loss, val_acc, augrc))
-                used    = torch.cuda.memory_allocated()  / 1024**2
-                reserved= torch.cuda.memory_reserved()   / 1024**2
-                mlflow.log_metric("gpu_mem_allocated_MB", used,     step=epoch)
-                mlflow.log_metric("gpu_mem_reserved_MB", reserved, step=epoch)
+                ac_ep = epoch
                 torch.cuda.empty_cache()
-        epoch = epochs
+        if last_ep > ac_ep:
+            epoch = last_ep
+        else:
+            epoch = ac_ep
         mlflow.log_param('lr', base_lr)
         mlflow.log_param('swa_start', swa_start)
         mlflow.log_param('weight_decay', custom_weight_decay)
@@ -221,6 +408,7 @@ def objective(trial):
         mlflow.log_param('epochs', epochs)
         mlflow.log_param('batch_size', batch_size)
         mlflow.log_param('model_name', modelname)
+        swa_model.load_state_dict(torch.load(os.path.join(save_path, 'model_state_dict', 'best_model_runner.pth'), map_location=device))
         torch.optim.swa_utils.update_bn(train_loader, swa_model.cpu())
         model = swa_model.to(device)
         torch.save(model.state_dict(), os.path.join(save_path, 'model_state_dict', 'model.pth'))
@@ -264,7 +452,7 @@ def objective(trial):
         mlflow.log_metric('test_augrc', augrc, step=epoch)
         print(f'ckpt test acc: {acc}')
         print(f'ckpt test augrc: {augrc}')
-        mlflow.pytorch.log_model(model, artifact_path="model")
+        #mlflow.pytorch.log_model(model, artifact_path="model")
         
         #RPI CODE
         ccc = 0
@@ -322,18 +510,29 @@ def objective(trial):
         augrc_hw_val = result.get("augrc_hw_val")
         '''
         gc.collect()
-        torch.cuda.empty_cache()
-
+        del model, optimizer, scheduler, ranking_criterion   # etc.
+        torch.cuda.synchronize()                     # finish all kernels
+        torch.cuda.empty_cache()                     # drop cached allocations
+        #torch.cuda.empty_cache()
+        wait_for_cooldown(thresh=75, cool_to=65, interval=5)
         return float(augrc_hw_val)
     
 
 def main():
+    global cfg
+    with initialize(config_path="../configs/"):
+        cfg = compose(config_name="fmfp")  # exp1.yaml with defaults key
+
+    device = cfg.training.device #torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Using device: {device}")
+
+    #mp.set_start_method("forkserver", force=True)
     study_name = cfg.training.study_name #input('study_name: ')
-    storage = f'sqlite:///{study_name}_storage.db'
+    storage = f"sqlite:///{os.path.join(os.getcwd(), 'fresh_study_db.sqlite')}"
     study = optuna.create_study(direction='minimize', load_if_exists=True, study_name = study_name, storage=storage)
     print(f"Sampler is {study.sampler.__class__.__name__}")
     mlflow.log_param('sampler', study.sampler.__class__.__name__)
-    study.optimize(objective, n_trials=500, n_jobs=1)
+    study.optimize(objective, n_trials=1, n_jobs=1)
 
     print("Best hyperparameters:", study.best_params)
     print("Best accuracy:", study.best_value)

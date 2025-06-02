@@ -205,11 +205,11 @@ def visualize_results(images, images_path, split, scores=None, inf_labels=None, 
 # -------------
 # load HAR file and prepare dataset
 # -------------
-exp_name = 'test' #cfg.optimizer.exp_name
+exp_name = cfg.optimizer.exp_name
 
-onnx_dir = f'../models/send' #f'../models/{exp_name}/{args.run_id}'
-har_dir = f'../models/send' #f'../models/{exp_name}/{args.run_id}'
-quantized_har_dir = f'../models/send' #f'../models/{exp_name}/{args.run_id}'
+onnx_dir = f'../models/{exp_name}/{args.run_id}'
+har_dir = f'../models/{exp_name}/{args.run_id}'
+quantized_har_dir = f'../models/{exp_name}/{args.run_id}'
 
 model_name = f'model_{args.run_id}'
 onnx_model_name = model_name
@@ -249,7 +249,7 @@ aaa = visualize_results(image_dataset[:, :, :, :], valall_path, 'val', native_sc
 
 model_script_lines = [
     "normalization1 = normalization([128.68140225, 117.6060306, 109.43819699999999 ], [46.829990099999996, 48.069616499999995,  50.7004974])\n",
-    "model_optimization_flavor(optimization_level=2, compression_level=2, batch_size=1)\n"
+    "model_optimization_flavor(optimization_level=0, compression_level=0, batch_size=1)\n"
 ]
 
 # Load the model script to ClientRunner so it will be considered on optimization
