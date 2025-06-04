@@ -21,6 +21,7 @@ Abstract:
 ## Project Organization
 
 ```
+├── L-ML               <- Source code for L-ML part.
 ├── configs            <- Store project-wide editable variables and configurations.
 ├── data
 │   ├── raw            <- The original, immutable data dump.
@@ -35,10 +36,10 @@ Abstract:
 ├── notebooks          <- Jupyter notebooks. Naming convention is a number (for ordering),
 │                         the creator's initials, and a short `-` delimited description, e.g.
 │                         '1.0-jqp-initial-data-exploration'.
+├── reports            <- Generated analysis as HTML, PDF, LaTeX, etc.
+├── st_src             <- Source code for ST convertions.
 ├── pyproject.toml
 ├── README.md          <- The top-level README for developers using this project.
-├── reports            <- Generated analysis as HTML, PDF, LaTeX, etc.
-├── st_src	       <- Source code for ST convertions.
 └── requirements.txt   <- The requirements file for reproducing the data-science analysis environment.
 ```
 

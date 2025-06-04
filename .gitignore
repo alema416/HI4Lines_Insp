@@ -36,4 +36,4 @@ deploy/st/deploy/*.txt
 deploy/st/deploy/*.onnx
 deploy/st/deploy/*.ONNX
 hi4lines_insp/*.png
-configs/*
+configs/*.yaml
