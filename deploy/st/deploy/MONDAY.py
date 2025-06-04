@@ -10,7 +10,6 @@ import pandas as pd
 import seaborn as sns
 import tqdm
 import matplotlib.pyplot as plt
-
 import argparse
 from PIL import Image
 import onnxruntime as ort
@@ -77,6 +76,11 @@ def run_eval(id: int, model_path: str, data_root: str):
     latencies = []
     
     # --- 3) Loop over splits ---
+    ACC_dict   = {}      # accuracy per split
+    AUGRC_dict = {}      # AUGRC per split
+    mean       = {}      # mean confidences
+    std        = {}      # std confidences
+    cc         = {}      # counts of successes/errors
     for split in ['train', 'val', 'test']:
         total = correct = 0
         file_lbls = []
@@ -137,6 +141,25 @@ def run_eval(id: int, model_path: str, data_root: str):
 
         # 4) Report
         acc = correct / total if total else 0.0
+        ACC_dict[split] = acc * 100.0
+        successes_conf = [c for c,lbl in zip(file_confs, file_lbls) if lbl == 1]
+        errors_conf    = [c for c,lbl in zip(file_confs, file_lbls) if lbl == 0]
+        
+        if split == 'train':
+            cc['succ_tr'] = len(successes_conf)
+            cc['err_tr']  = len(errors_conf)
+        elif split == 'val':
+            cc['succ_val'] = len(successes_conf)
+            cc['err_val']  = len(errors_conf)
+        else:  # split == 'test'
+            cc['succ_test'] = len(successes_conf)
+            cc['err_test']  = len(errors_conf)
+        
+        mean[f's_{split}'] = np.mean(successes_conf) if len(successes_conf) > 0 else 0.0
+        std[f's_{split}']  = np.std(successes_conf)  if len(successes_conf) > 0 else 0.0
+        mean[f'e_{split}'] = np.mean(errors_conf)    if len(errors_conf) > 0 else 0.0
+        std[f'e_{split}']  = np.std(errors_conf)     if len(errors_conf) > 0 else 0.0
+        
         #print(f"Evaluated {total} images in {split}")
         #print(f"SPECIAL_#printacc{split} {acc * 100:.2f}")
         #print(f"Accuracy : {correct}/{total} = {acc * 100:.2f}%")
@@ -148,10 +171,71 @@ def run_eval(id: int, model_path: str, data_root: str):
         with open(f"{ide}confs_{id}_{split}.txt", "w") as f_conf:
             for v in file_confs:
                 f_conf.write(f"{v:.6f}\n")
+        with open(f'labels_{id}_{split}.txt', "r") as f_lbl:
+            labels_list = [int(line.strip()) for line in f_lbl]
+        with open(f'confs_{id}_{split}.txt', "r") as f_conf:
+            confs_list = [float(line.strip()) for line in f_conf]
+
+        probs_tensor  = torch.tensor(confs_list, dtype=torch.float32)
+        labels_tensor = torch.tensor(labels_list, dtype=torch.long)
+        augrc_metric = AUGRC()
+        augrc_metric.update(probs_tensor, labels_tensor)
+        augrc_value = augrc_metric.compute()
+        AUGRC_dict[split] = 1000.0 * augrc_value.item()        
+        
+        
+        
         df = pd.DataFrame(rows)
         df.to_csv(f'per_sample_{split}.csv', index=False)
 
     prof_file = session.end_profiling()
+    
+    print(f"ID={id}  →  ACC(train)={ACC_dict['train']:.2f}%,  ACC(val)={ACC_dict['val']:.2f}%,  ACC(test)={ACC_dict['test']:.2f}%")
+    print(f"ID={id}  →  AUGRC(train)={AUGRC_dict['train']:.2f},  AUGRC(val)={AUGRC_dict['val']:.2f},  AUGRC(test)={AUGRC_dict['test']:.2f}")
+
+    # ───────────────────────────────────────────────────────────────────
+    # ─── (3) Combine train & val, then call custom_seaborn ──────────────
+    df_tr_confs  = pd.read_csv(f'confs_{id}_train.txt', header=None, names=['confidence'])
+    df_tr_lbls   = pd.read_csv(f'labels_{id}_train.txt', header=None, names=['correct'])
+    df_val_confs = pd.read_csv(f'confs_{id}_val.txt',   header=None, names=['confidence'])
+    df_val_lbls  = pd.read_csv(f'labels_{id}_val.txt',   header=None, names=['correct'])
+
+    df_tr  = pd.concat([df_tr_confs,  df_tr_lbls],  axis=1)
+    df_val = pd.concat([df_val_confs, df_val_lbls], axis=1)
+    df_combined = pd.concat([df_tr, df_val], axis=0, ignore_index=True)
+
+    df_zero = df_combined[df_combined['correct'] == 0]
+    df_one  = df_combined[df_combined['correct'] == 1]
+
+    custom_seaborn(
+        df_one, df_zero,
+        model_id = id,
+        split    = 'train-val',
+        prefix   = '',
+        AUGRC    = AUGRC_dict,
+        mean     = mean,
+        std      = std,
+        cc       = cc
+    )
+
+    # ─── (4) Now do the test split plot ──────────────
+    df_test_confs = pd.read_csv(f'confs_{id}_test.txt',  header=None, names=['confidence'])
+    df_test_lbls  = pd.read_csv(f'labels_{id}_test.txt',  header=None, names=['correct'])
+    df_test       = pd.concat([df_test_confs, df_test_lbls], axis=1)
+
+    df_zero_t = df_test[df_test['correct'] == 0]
+    df_one_t  = df_test[df_test['correct'] == 1]
+
+    custom_seaborn(
+        df_one_t, df_zero_t,
+        model_id = id,
+        split    = 'test',
+        prefix   = '',
+        AUGRC    = AUGRC_dict,
+        mean     = mean,
+        std      = std,
+        cc       = cc
+    )
     #print("Profiling data written to", prof_file)
 
     # 6) Overall latency
@@ -164,7 +248,7 @@ parser.add_argument('--run_id', required=True, type=int, help='')
 parser.add_argument('--idel', required=True, type=str, help='')
 args = parser.parse_args()
 '''
-def custom_seaborn(df_pos, df_neg, model_id, split, prefix, AUGRC): #, mean, std, cc):
+def custom_seaborn(df_pos, df_neg, model_id, split, prefix, AUGRC, mean, std, cc):
     if len(df_pos) < 2 or len(df_neg) < 2:
         return
 
@@ -188,11 +272,11 @@ def custom_seaborn(df_pos, df_neg, model_id, split, prefix, AUGRC): #, mean, std
                 bw_method='scott', 
                 cut=3,
                 label='misclassifications')
-    modelname = 'resnet' #'mobilenet' #input('Model Name: ') #'ResNet18'
+    modelname = 'mobilenet' #input('Model Name: ') #'ResNet18'
     plt.xlabel('confidence')
     plt.ylabel('density')
     plt.xlim(0.0, 1.2)
-    '''
+    
     info = f"Model: {modelname}\nID: {id}\n"
     if split == 'test':
         info += f"AUGRC: {AUGRC['test']:.2f}\n"
@@ -231,11 +315,11 @@ def custom_seaborn(df_pos, df_neg, model_id, split, prefix, AUGRC): #, mean, std
         sigma_tot_sq = num/(n1+n2) - mu_tot**2
         sigma_tot = np.sqrt(sigma_tot_sq)
         info += f"error mean: {mu_tot:.2f}, error std: {sigma_tot:.2f}\n"
-    '''
+    
     #print(prefix)	
     name = 'Baseline' if prefix=='b_' else 'FMFP'
     #print(name)
-    '''
+    
     plt.gca().text(
         0.02, 0.68, info,
         transform=plt.gca().transAxes,
@@ -243,14 +327,14 @@ def custom_seaborn(df_pos, df_neg, model_id, split, prefix, AUGRC): #, mean, std
         fontsize=7,
         bbox=dict(boxstyle='round,pad=0.2', facecolor='white', alpha=0.6)
     )
-    '''
+    
     if split == 'test':
         plt.title(f'{name} - {modelname} - id={model_id} - {split} set')
     else:
         plt.title(f'{name} - {modelname} - id={model_id} - {split} sets')
     plt.legend(loc='upper left')
     plt.tight_layout()
-    plt.savefig(f'./MONDAY/post/custom_{prefix}{model_id}_{split}.png', dpi=300)
+    plt.savefig(f'./MONDAY/post_withtitles/custom_{prefix}{model_id}_{split}.png', dpi=300)
     plt.close()
 
 '''
@@ -258,30 +342,11 @@ for id in range(60):
     #print(id)
     if os.path.isfile(f'./MONDAY/model_{id}_opset17_quant_qdq_pc.onnx'):
         run_eval(id, f'./MONDAY/model_{id}_opset17_quant_qdq_pc.onnx', '../../../data/processed/IDID_cropped_224')
-'''
-for id in tqdm.tqdm(range(60)):
+
+for id in tqdm.tqdm():
     #print(id)
     idel = '' #args.idel
     if os.path.isfile(f'./MONDAY/model_{id}_opset17_quant_qdq_pc.onnx'):
-        AUGRC_dict = {}
-        for split in ['train', 'val', 'test']:
-            with open(f'{idel}labels_{id}_{split}.txt', "r") as file:
-                labels = [int(line.strip()) for line in file]
-            with open(f'{idel}confs_{id}_{split}.txt', "r") as file:
-                confs = [float(line.strip()) for line in file]  
-            
-            probs = torch.tensor(confs, dtype=torch.float32)  # Now shape (N, C)
-            numeric_labels_tensor = torch.tensor(labels, dtype=torch.long)
-            augrc_metric = AUGRC()
-        
-            augrc_metric.update(probs, numeric_labels_tensor)
-            
-            augrc_value = augrc_metric.compute()
-            #print(f'SPECIAL_#printaugrc{split} {1000*augrc_value.item()}')
-            AUGRC_dict[f'{split}'] = 1000*augrc_value.item()
-        #print(AUGRC_dict)
-        ##print(ACC_dict)
-
         if True:
             if True:
                 for ide in [idel]:
@@ -308,9 +373,9 @@ for id in tqdm.tqdm(range(60)):
                     #plt.xlim(x_min, x_max)
 
                     #plt.tight_layout()
-                    custom_seaborn(df_one, df_zero, id, 'train-val', ide, AUGRC_dict) #, mean, std, cc)
-                    df_zero.to_csv(f'./MONDAY/post/output_{idel}{id}_valtrain_error.csv', index=False)
-                    df_one.to_csv(f'./MONDAY/post/output_{idel}{id}_valtrain_success.csv', index=False)
+                    custom_seaborn(df_one, df_zero, id, 'train-val', ide, AUGRC_dict, mean, std, cc)
+                    df_zero.to_csv(f'./MONDAY/post_withtitles/output_{idel}{id}_valtrain_error.csv', index=False)
+                    df_one.to_csv(f'./MONDAY/post_withtitles/output_{idel}{id}_valtrain_success.csv', index=False)
 
         if True:
             if True:
@@ -325,7 +390,10 @@ for id in tqdm.tqdm(range(60)):
                     df_zero = df[df['correct'] == 0]
                     df_one = df[df['correct'] == 1]
 
-                    custom_seaborn(df_one, df_zero, id, 'test', ide, AUGRC_dict) #, mean, std, cc)
+                    custom_seaborn(df_one, df_zero, id, 'test', ide, AUGRC_dict, mean, std, cc)
 
-                    df_zero.to_csv(f'./MONDAY/post/output_{idel}{id}_test_error.csv', index=False)
-                    df_one.to_csv(f'./MONDAY/post/output_{idel}{id}_test_success.csv', index=False)
+                    df_zero.to_csv(f'./MONDAY/post_withtitles/output_{idel}{id}_test_error.csv', index=False)
+                    df_one.to_csv(f'./MONDAY/post_withtitles/output_{idel}{id}_test_success.csv', index=False)
+'''
+for id in tqdm.tqdm([0]):
+    run_eval(id, f'./MONDAY/model_{id}_opset17_quant_qdq_pc.onnx', '../../../data/processed/IDID_cropped_224')
