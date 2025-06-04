@@ -192,7 +192,9 @@ def run_eval(id: int, model_path: str, data_root: str):
     
     print(f"ID={id}  →  ACC(train)={ACC_dict['train']:.2f}%,  ACC(val)={ACC_dict['val']:.2f}%,  ACC(test)={ACC_dict['test']:.2f}%")
     print(f"ID={id}  →  AUGRC(train)={AUGRC_dict['train']:.2f},  AUGRC(val)={AUGRC_dict['val']:.2f},  AUGRC(test)={AUGRC_dict['test']:.2f}")
-
+    print(mean)
+    print(std)
+    print(cc)
     # ───────────────────────────────────────────────────────────────────
     # ─── (3) Combine train & val, then call custom_seaborn ──────────────
     df_tr_confs  = pd.read_csv(f'confs_{id}_train.txt', header=None, names=['confidence'])
