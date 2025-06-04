@@ -62,7 +62,8 @@ def main():
     for i in results:
         print(i)
         print(results[i])
-    
+        spl = input('split: ')
+        results[i].to_csv(f'coop_{spl}.csv', sep='\t')
     '''
     results = {}
     for device in ['rpi', 'st']:
