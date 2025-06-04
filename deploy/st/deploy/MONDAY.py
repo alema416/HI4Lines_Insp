@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from scipy.stats import gaussian_kde
 import pandas as pd
 import seaborn as sns
+import tqdm
 import matplotlib.pyplot as plt
 
 import argparse
@@ -258,7 +259,7 @@ for id in range(60):
     if os.path.isfile(f'./MONDAY/model_{id}_opset17_quant_qdq_pc.onnx'):
         run_eval(id, f'./MONDAY/model_{id}_opset17_quant_qdq_pc.onnx', '../../../data/processed/IDID_cropped_224')
 '''
-for id in range(60):
+for id in tqdm.tqdm(range(60)):
     #print(id)
     idel = '' #args.idel
     if os.path.isfile(f'./MONDAY/model_{id}_opset17_quant_qdq_pc.onnx'):
