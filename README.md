@@ -102,3 +102,7 @@ make create_environment && make requirements_rpi && make data
 cd deploy
 python3 run_classifier_optimization.py
 ```
+
+## Model Zoo 
+
+https://drive.google.com/drive/folders/19vf1JSU2l2wGV99UFSCr1N1evp4B0wyJ?usp=sharing
