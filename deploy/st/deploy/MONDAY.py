@@ -99,7 +99,7 @@ def run_eval(id: int, model_path: str, data_root: str):
 
                 # decide prediction & confidence
                 if arr.ndim == 0:
-                    print('single')
+                    #print('single')
                     # single score in [0,1]
                     score = float(arr)
                     pred  = 1 if score > 0.5 else 0
@@ -112,10 +112,10 @@ def run_eval(id: int, model_path: str, data_root: str):
                     probs = softmax(arr)
                     pred = int(np.argmax(probs))
                     conf = float(probs[pred])
-                    #print(conf)
+                    ##print(conf)
                 '''
                 else:
-                    print('multi')
+                    #print('multi')
                     # multiclass: pick the highest-scoring class
                     # (if these are logits, you may want to softmax first)
                     pred = int(np.argmax(arr))
@@ -136,9 +136,9 @@ def run_eval(id: int, model_path: str, data_root: str):
 
         # 4) Report
         acc = correct / total if total else 0.0
-        print(f"Evaluated {total} images in {split}")
-        print(f"SPECIAL_PRINTacc{split} {acc * 100:.2f}")
-        print(f"Accuracy : {correct}/{total} = {acc * 100:.2f}%")
+        #print(f"Evaluated {total} images in {split}")
+        #print(f"SPECIAL_#printacc{split} {acc * 100:.2f}")
+        #print(f"Accuracy : {correct}/{total} = {acc * 100:.2f}%")
         ide = ''
         # 5) Dump to files
         with open(f"{ide}labels_{id}_{split}.txt", "w") as f_lbl:
@@ -151,10 +151,10 @@ def run_eval(id: int, model_path: str, data_root: str):
         df.to_csv(f'per_sample_{split}.csv', index=False)
 
     prof_file = session.end_profiling()
-    print("Profiling data written to", prof_file)
+    #print("Profiling data written to", prof_file)
 
     # 6) Overall latency
-    print(f"Avg latency: {np.mean(latencies):.1f} ms  (over {len(latencies)} inferences)")
+    #print(f"Avg latency: {np.mean(latencies):.1f} ms  (over {len(latencies)} inferences)")
 
 '''
 
@@ -231,9 +231,9 @@ def custom_seaborn(df_pos, df_neg, model_id, split, prefix, AUGRC): #, mean, std
         sigma_tot = np.sqrt(sigma_tot_sq)
         info += f"error mean: {mu_tot:.2f}, error std: {sigma_tot:.2f}\n"
     '''
-    print(prefix)	
+    #print(prefix)	
     name = 'Baseline' if prefix=='b_' else 'FMFP'
-    print(name)
+    #print(name)
     '''
     plt.gca().text(
         0.02, 0.68, info,
@@ -254,12 +254,12 @@ def custom_seaborn(df_pos, df_neg, model_id, split, prefix, AUGRC): #, mean, std
 
 '''
 for id in range(60):
-    print(id)
+    #print(id)
     if os.path.isfile(f'./MONDAY/model_{id}_opset17_quant_qdq_pc.onnx'):
         run_eval(id, f'./MONDAY/model_{id}_opset17_quant_qdq_pc.onnx', '../../../data/processed/IDID_cropped_224')
 '''
 for id in range(60):
-    print(id)
+    #print(id)
     idel = '' #args.idel
     if os.path.isfile(f'./MONDAY/model_{id}_opset17_quant_qdq_pc.onnx'):
         AUGRC_dict = {}
@@ -276,10 +276,10 @@ for id in range(60):
             augrc_metric.update(probs, numeric_labels_tensor)
             
             augrc_value = augrc_metric.compute()
-            print(f'SPECIAL_PRINTaugrc{split} {1000*augrc_value.item()}')
+            #print(f'SPECIAL_#printaugrc{split} {1000*augrc_value.item()}')
             AUGRC_dict[f'{split}'] = 1000*augrc_value.item()
-        print(AUGRC_dict)
-        #print(ACC_dict)
+        #print(AUGRC_dict)
+        ##print(ACC_dict)
 
         if True:
             if True:
@@ -298,10 +298,10 @@ for id in range(60):
                     df2 = pd.concat([confidences, labels], axis=1)
 
 
-                    #print(len(df1))
-                    #print(len(df2))
+                    ##print(len(df1))
+                    ##print(len(df2))
                     df = pd.concat([df1, df2], axis=0, ignore_index=True)
-                    print(len(df))
+                    #print(len(df))
                     df_zero = df[df['correct'] == 0]
                     df_one = df[df['correct'] == 1]
                     #plt.xlim(x_min, x_max)
@@ -320,7 +320,7 @@ for id in range(60):
 
                     # Combine into a single DataFrame
                     df = pd.concat([confidences, labels], axis=1)
-                    print(len(df))
+                    #print(len(df))
                     df_zero = df[df['correct'] == 0]
                     df_one = df[df['correct'] == 1]
 
