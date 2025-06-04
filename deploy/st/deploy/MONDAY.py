@@ -249,14 +249,16 @@ def custom_seaborn(df_pos, df_neg, model_id, split, prefix, AUGRC): #, mean, std
         plt.title(f'{name} - {modelname} - id={model_id} - {split} sets')
     plt.legend(loc='upper left')
     plt.tight_layout()
-    plt.savefig(f'custom_{prefix}{model_id}_{split}.png', dpi=300)
+    plt.savefig(f'./MONDAY/post/custom_{prefix}{model_id}_{split}.png', dpi=300)
     plt.close()
 
+'''
 for id in range(60):
     print(id)
     if os.path.isfile(f'./MONDAY/model_{id}_opset17_quant_qdq_pc.onnx'):
         run_eval(id, f'./MONDAY/model_{id}_opset17_quant_qdq_pc.onnx', '../../../data/processed/IDID_cropped_224')
 '''
+
 id = 56 #args.run_id
 idel = '' #args.idel
 
@@ -306,8 +308,8 @@ if True:
 
             #plt.tight_layout()
             custom_seaborn(df_one, df_zero, id, 'train-val', ide, AUGRC_dict) #, mean, std, cc)
-            df_zero.to_csv(f'output_{idel}{id}_valtrain_error.csv', index=False)
-            df_one.to_csv(f'output_{idel}{id}_valtrain_success.csv', index=False)
+            df_zero.to_csv(f'./MONDAY/post/output_{idel}{id}_valtrain_error.csv', index=False)
+            df_one.to_csv(f'./MONDAY/post/output_{idel}{id}_valtrain_success.csv', index=False)
 
 if True:
     if True:
@@ -324,6 +326,5 @@ if True:
 
             custom_seaborn(df_one, df_zero, id, 'test', ide, AUGRC_dict) #, mean, std, cc)
 
-            df_zero.to_csv(f'output_{idel}{id}_test_error.csv', index=False)
-            df_one.to_csv(f'output_{idel}{id}_test_success.csv', index=False)
-'''
+            df_zero.to_csv(f'./MONDAY/post/output_{idel}{id}_test_error.csv', index=False)
+            df_one.to_csv(f'./MONDAY/post/output_{idel}{id}_test_success.csv', index=False)
