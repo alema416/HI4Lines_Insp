@@ -259,72 +259,74 @@ for id in range(60):
         run_eval(id, f'./MONDAY/model_{id}_opset17_quant_qdq_pc.onnx', '../../../data/processed/IDID_cropped_224')
 '''
 
-id = 56 #args.run_id
-idel = '' #args.idel
+for id in range(60):
+    print(id)
+    if os.path.isfile(f'./MONDAY/model_{id}_opset17_quant_qdq_pc.onnx'):
+        idel = '' #args.idel
 
-AUGRC_dict = {}
-for split in ['train', 'val', 'test']:
-    with open(f'{idel}labels_{id}_{split}.txt', "r") as file:
-      labels = [int(line.strip()) for line in file]
-    with open(f'{idel}confs_{id}_{split}.txt', "r") as file:
-      confs = [float(line.strip()) for line in file]  
-    
-    probs = torch.tensor(confs, dtype=torch.float32)  # Now shape (N, C)
-    numeric_labels_tensor = torch.tensor(labels, dtype=torch.long)
-    augrc_metric = AUGRC()
-  
-    augrc_metric.update(probs, numeric_labels_tensor)
-    
-    augrc_value = augrc_metric.compute()
-    print(f'SPECIAL_PRINTaugrc{split} {1000*augrc_value.item()}')
-    AUGRC_dict[f'{split}'] = 1000*augrc_value.item()
-print(AUGRC_dict)
-#print(ACC_dict)
+        AUGRC_dict = {}
+        for split in ['train', 'val', 'test']:
+            with open(f'{idel}labels_{id}_{split}.txt', "r") as file:
+            labels = [int(line.strip()) for line in file]
+            with open(f'{idel}confs_{id}_{split}.txt', "r") as file:
+            confs = [float(line.strip()) for line in file]  
+            
+            probs = torch.tensor(confs, dtype=torch.float32)  # Now shape (N, C)
+            numeric_labels_tensor = torch.tensor(labels, dtype=torch.long)
+            augrc_metric = AUGRC()
+        
+            augrc_metric.update(probs, numeric_labels_tensor)
+            
+            augrc_value = augrc_metric.compute()
+            print(f'SPECIAL_PRINTaugrc{split} {1000*augrc_value.item()}')
+            AUGRC_dict[f'{split}'] = 1000*augrc_value.item()
+        print(AUGRC_dict)
+        #print(ACC_dict)
 
-if True:
-    if True:
-        for ide in [idel]:
-            # Replace 'confidences.txt' and 'labels.txt' with your actual file paths
-            confidences = pd.read_csv(f'{idel}confs_{id}_train.txt', header=None, names=['confidence'])
-            labels = pd.read_csv(f'{idel}labels_{id}_train.txt', header=None, names=['correct'])
+        if True:
+            if True:
+                for ide in [idel]:
+                    # Replace 'confidences.txt' and 'labels.txt' with your actual file paths
+                    confidences = pd.read_csv(f'{idel}confs_{id}_train.txt', header=None, names=['confidence'])
+                    labels = pd.read_csv(f'{idel}labels_{id}_train.txt', header=None, names=['correct'])
 
-            # Combine into a single DataFrame
-            df1 = pd.concat([confidences, labels], axis=1)
+                    # Combine into a single DataFrame
+                    df1 = pd.concat([confidences, labels], axis=1)
 
-            confidences = pd.read_csv(f'{idel}confs_{id}_val.txt', header=None, names=['confidence'])
-            labels = pd.read_csv(f'{idel}labels_{id}_val.txt', header=None, names=['correct'])
+                    confidences = pd.read_csv(f'{idel}confs_{id}_val.txt', header=None, names=['confidence'])
+                    labels = pd.read_csv(f'{idel}labels_{id}_val.txt', header=None, names=['correct'])
 
-            # Combine into a single DataFrame
-            df2 = pd.concat([confidences, labels], axis=1)
+                    # Combine into a single DataFrame
+                    df2 = pd.concat([confidences, labels], axis=1)
 
 
-            #print(len(df1))
-            #print(len(df2))
-            df = pd.concat([df1, df2], axis=0, ignore_index=True)
-            print(len(df))
-            df_zero = df[df['correct'] == 0]
-            df_one = df[df['correct'] == 1]
-            #plt.xlim(x_min, x_max)
+                    #print(len(df1))
+                    #print(len(df2))
+                    df = pd.concat([df1, df2], axis=0, ignore_index=True)
+                    print(len(df))
+                    df_zero = df[df['correct'] == 0]
+                    df_one = df[df['correct'] == 1]
+                    #plt.xlim(x_min, x_max)
 
-            #plt.tight_layout()
-            custom_seaborn(df_one, df_zero, id, 'train-val', ide, AUGRC_dict) #, mean, std, cc)
-            df_zero.to_csv(f'./MONDAY/post/output_{idel}{id}_valtrain_error.csv', index=False)
-            df_one.to_csv(f'./MONDAY/post/output_{idel}{id}_valtrain_success.csv', index=False)
+                    #plt.tight_layout()
+                    custom_seaborn(df_one, df_zero, id, 'train-val', ide, AUGRC_dict) #, mean, std, cc)
+                    df_zero.to_csv(f'./MONDAY/post/output_{idel}{id}_valtrain_error.csv', index=False)
+                    df_one.to_csv(f'./MONDAY/post/output_{idel}{id}_valtrain_success.csv', index=False)
 
-if True:
-    if True:
-        for ide in [idel]:
-            # Replace 'confidences.txt' and 'labels.txt' with your actual file paths
-            confidences = pd.read_csv(f'{idel}confs_{id}_test.txt', header=None, names=['confidence'])
-            labels = pd.read_csv(f'{idel}labels_{id}_test.txt', header=None, names=['correct'])
+        if True:
+            if True:
+                for ide in [idel]:
+                    # Replace 'confidences.txt' and 'labels.txt' with your actual file paths
+                    confidences = pd.read_csv(f'{idel}confs_{id}_test.txt', header=None, names=['confidence'])
+                    labels = pd.read_csv(f'{idel}labels_{id}_test.txt', header=None, names=['correct'])
 
-            # Combine into a single DataFrame
-            df = pd.concat([confidences, labels], axis=1)
-            print(len(df))
-            df_zero = df[df['correct'] == 0]
-            df_one = df[df['correct'] == 1]
+                    # Combine into a single DataFrame
+                    df = pd.concat([confidences, labels], axis=1)
+                    print(len(df))
+                    df_zero = df[df['correct'] == 0]
+                    df_one = df[df['correct'] == 1]
 
-            custom_seaborn(df_one, df_zero, id, 'test', ide, AUGRC_dict) #, mean, std, cc)
+                    custom_seaborn(df_one, df_zero, id, 'test', ide, AUGRC_dict) #, mean, std, cc)
 
-            df_zero.to_csv(f'./MONDAY/post/output_{idel}{id}_test_error.csv', index=False)
-            df_one.to_csv(f'./MONDAY/post/output_{idel}{id}_test_success.csv', index=False)
+                    df_zero.to_csv(f'./MONDAY/post/output_{idel}{id}_test_error.csv', index=False)
+                    df_one.to_csv(f'./MONDAY/post/output_{idel}{id}_test_success.csv', index=False)
