@@ -397,5 +397,5 @@ for id in tqdm.tqdm():
                     df_zero.to_csv(f'./MONDAY/post_withtitles/output_{idel}{id}_test_error.csv', index=False)
                     df_one.to_csv(f'./MONDAY/post_withtitles/output_{idel}{id}_test_success.csv', index=False)
 '''
-for id in tqdm.tqdm([0]):
+for id in tqdm.tqdm([4, 13, 20, 22, 25, 32, 39, 42, 44, 46, 50, 56]):
     run_eval(id, f'./MONDAY/model_{id}_opset17_quant_qdq_pc.onnx', '../../../data/processed/IDID_cropped_224')
