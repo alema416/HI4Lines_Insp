@@ -31,15 +31,16 @@ Abstract:
 ├── docs               <- A default mkdocs project.
 ├── hailo_src          <- Source code for HAILO convertions.
 ├── hi4lines_insp      <- Source code for Data-Science part.
-├── Makefile           <- Makefile with convenience commands for installation.
 ├── models             <- Placeholder for the model zoo.
 ├── notebooks          <- Jupyter notebooks. Naming convention is a number (for ordering),
 │                         the creator's initials, and a short `-` delimited description, e.g.
 │                         '1.0-jqp-initial-data-exploration'.
 ├── reports            <- Generated analysis as HTML, PDF, LaTeX, etc.
 ├── st_src             <- Source code for ST convertions.
-├── pyproject.toml
+├── .gitignore
+├── Makefile           <- Makefile with convenience commands for installation.
 ├── README.md          <- The top-level README for developers using this project.
+├── pyproject.toml
 └── requirements.txt   <- The requirements file for reproducing the data-science analysis environment.
 ```
 
