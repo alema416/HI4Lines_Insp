@@ -186,7 +186,7 @@ def run_eval(id: int, model_path: str, data_root: str):
         
         
         df = pd.DataFrame(rows)
-        df.to_csv(f'per_sample_{split}.csv', index=False)
+        df.to_csv(f'per_sample_{split}_{id}.csv', index=False)
 
     prof_file = session.end_profiling()
     
@@ -339,63 +339,5 @@ def custom_seaborn(df_pos, df_neg, model_id, split, prefix, AUGRC, mean, std, cc
     plt.savefig(f'./MONDAY/post_withtitles/custom_{prefix}{model_id}_{split}.png', dpi=300)
     plt.close()
 
-'''
-for id in range(60):
-    #print(id)
-    if os.path.isfile(f'./MONDAY/model_{id}_opset17_quant_qdq_pc.onnx'):
-        run_eval(id, f'./MONDAY/model_{id}_opset17_quant_qdq_pc.onnx', '../../../data/processed/IDID_cropped_224')
-
-for id in tqdm.tqdm():
-    #print(id)
-    idel = '' #args.idel
-    if os.path.isfile(f'./MONDAY/model_{id}_opset17_quant_qdq_pc.onnx'):
-        if True:
-            if True:
-                for ide in [idel]:
-                    # Replace 'confidences.txt' and 'labels.txt' with your actual file paths
-                    confidences = pd.read_csv(f'{idel}confs_{id}_train.txt', header=None, names=['confidence'])
-                    labels = pd.read_csv(f'{idel}labels_{id}_train.txt', header=None, names=['correct'])
-
-                    # Combine into a single DataFrame
-                    df1 = pd.concat([confidences, labels], axis=1)
-
-                    confidences = pd.read_csv(f'{idel}confs_{id}_val.txt', header=None, names=['confidence'])
-                    labels = pd.read_csv(f'{idel}labels_{id}_val.txt', header=None, names=['correct'])
-
-                    # Combine into a single DataFrame
-                    df2 = pd.concat([confidences, labels], axis=1)
-
-
-                    ##print(len(df1))
-                    ##print(len(df2))
-                    df = pd.concat([df1, df2], axis=0, ignore_index=True)
-                    #print(len(df))
-                    df_zero = df[df['correct'] == 0]
-                    df_one = df[df['correct'] == 1]
-                    #plt.xlim(x_min, x_max)
-
-                    #plt.tight_layout()
-                    custom_seaborn(df_one, df_zero, id, 'train-val', ide, AUGRC_dict, mean, std, cc)
-                    df_zero.to_csv(f'./MONDAY/post_withtitles/output_{idel}{id}_valtrain_error.csv', index=False)
-                    df_one.to_csv(f'./MONDAY/post_withtitles/output_{idel}{id}_valtrain_success.csv', index=False)
-
-        if True:
-            if True:
-                for ide in [idel]:
-                    # Replace 'confidences.txt' and 'labels.txt' with your actual file paths
-                    confidences = pd.read_csv(f'{idel}confs_{id}_test.txt', header=None, names=['confidence'])
-                    labels = pd.read_csv(f'{idel}labels_{id}_test.txt', header=None, names=['correct'])
-
-                    # Combine into a single DataFrame
-                    df = pd.concat([confidences, labels], axis=1)
-                    #print(len(df))
-                    df_zero = df[df['correct'] == 0]
-                    df_one = df[df['correct'] == 1]
-
-                    custom_seaborn(df_one, df_zero, id, 'test', ide, AUGRC_dict, mean, std, cc)
-
-                    df_zero.to_csv(f'./MONDAY/post_withtitles/output_{idel}{id}_test_error.csv', index=False)
-                    df_one.to_csv(f'./MONDAY/post_withtitles/output_{idel}{id}_test_success.csv', index=False)
-'''
-for id in tqdm.tqdm([4, 13, 20, 22, 25, 32, 39, 42, 44, 46, 50, 56]):
+for id in tqdm.tqdm([20, 22, 25, 32, 39, 44, 46, 50, 56]):
     run_eval(id, f'./MONDAY/model_{id}_opset17_quant_qdq_pc.onnx', '../../../data/processed/IDID_cropped_224')
