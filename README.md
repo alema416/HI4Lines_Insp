@@ -7,7 +7,7 @@
 
 End-to-End MLOps Pipeline for Trustworthy Power-Lines-Inspection
 
-![optim_diagram(16) drawio(1)](https://github.com/user-attachments/assets/65c0bc14-4d2a-466c-a593-b6ce7cafc6e1)
+![optim_diagram(16) drawio(2)](https://github.com/user-attachments/assets/1799e476-9775-4202-a6e8-657846810fa5)
 
 ![image](https://github.com/user-attachments/assets/80c2dbd1-43da-4402-987e-30a17e18db5e)
 
