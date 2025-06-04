@@ -258,18 +258,16 @@ for id in range(60):
     if os.path.isfile(f'./MONDAY/model_{id}_opset17_quant_qdq_pc.onnx'):
         run_eval(id, f'./MONDAY/model_{id}_opset17_quant_qdq_pc.onnx', '../../../data/processed/IDID_cropped_224')
 '''
-
 for id in range(60):
     print(id)
+    idel = '' #args.idel
     if os.path.isfile(f'./MONDAY/model_{id}_opset17_quant_qdq_pc.onnx'):
-        idel = '' #args.idel
-
         AUGRC_dict = {}
         for split in ['train', 'val', 'test']:
             with open(f'{idel}labels_{id}_{split}.txt', "r") as file:
-            labels = [int(line.strip()) for line in file]
+                labels = [int(line.strip()) for line in file]
             with open(f'{idel}confs_{id}_{split}.txt', "r") as file:
-            confs = [float(line.strip()) for line in file]  
+                confs = [float(line.strip()) for line in file]  
             
             probs = torch.tensor(confs, dtype=torch.float32)  # Now shape (N, C)
             numeric_labels_tensor = torch.tensor(labels, dtype=torch.long)
