@@ -41,3 +41,4 @@ hi4lines_insp/*.png
 configs/*.yaml
 deploy/rpi/deploy/MOBILENET_AGAIN/
 deploy/rpi/deploy/mixed_plot.py
+deploy/rpi/deploy/hailo_mobilenet/
