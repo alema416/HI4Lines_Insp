@@ -1,11 +1,12 @@
 from nmetr import AUGRC
 import argparse
 import torch
-
+ide = ''
+id = input('id: ')
 for split in ['train', 'val', 'test']:
-    with open(f'labels_{split}.txt', "r") as file:
+    with open(f'{ide}labels_{id}_{split}.txt', "r") as file:
       labels = [int(line.strip()) for line in file]
-    with open(f'confs_{split}.txt', "r") as file:
+    with open(f'{ide}confs_{id}_{split}.txt', "r") as file:
       confs = [float(line.strip()) for line in file]  
     
     probs = torch.tensor(confs, dtype=torch.float32)  # Now shape (N, C)

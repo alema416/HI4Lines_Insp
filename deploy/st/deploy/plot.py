@@ -14,7 +14,7 @@ def load_data(labels_path, confs_path):
     if labels.shape != confs.shape:
         sys.exit("Error: labels and confidences must have the same number of entries.")
     return labels, confs
-
+ide = 'b_'
 def plot_density(id, split, labels, confs, bins=30):
     """Plot density histograms of confidences for correct vs wrong."""
     correct = confs[labels == 1]
@@ -34,7 +34,7 @@ def plot_density(id, split, labels, confs, bins=30):
     plt.title('Confidence Density Plot')
     plt.legend()
     plt.tight_layout()
-    plt.savefig(f'plot_b_{id}_{split}.png')
+    plt.savefig(f'plot_{ide}{id}_{split}.png')
 
 def main():
     '''
@@ -48,7 +48,7 @@ def main():
     '''
     for id in [32, 49, 56]:
         for split in ['train', 'val', 'test']:    
-            labels, confs = load_data(f'b_labels_{id}_{split}.txt', f'b_confs_{id}_{split}.txt')
+            labels, confs = load_data(f'{ide}labels_{id}_{split}.txt', f'{ide}confs_{id}_{split}.txt')
             plot_density(id, split, labels, confs, bins=100)
 
 if __name__ == '__main__':

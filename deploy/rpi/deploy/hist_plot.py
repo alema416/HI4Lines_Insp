@@ -18,15 +18,16 @@ ide = ''
 def plot_density(id, split, labels, confs, bins=30):
     """Plot density histograms of confidences for correct vs wrong."""
     correct = confs[labels == 1]
+    print(correct)
     wrong   = confs[labels == 0]
-
+    print(wrong)
     # shared bins from 0 to 1
     bins = np.linspace(0, 1, bins + 1)
 
     plt.figure(figsize=(8, 5))
-    plt.hist(correct, bins=bins, density=True,
+    plt.hist(correct, bins=bins, density=False,
              color='green', alpha=0.6, label='Correct')
-    plt.hist(wrong, bins=bins, density=True,
+    plt.hist(wrong, bins=bins, density=False,
              color='red',   alpha=0.6, label='Wrong')
     plt.xlim([0.5, 1])
     plt.xlabel('Confidence')
@@ -37,17 +38,18 @@ def plot_density(id, split, labels, confs, bins=30):
     plt.savefig(f'plot_{ide}{id}_{split}.png')
 
 def main():
-    '''
+    
     parser = argparse.ArgumentParser(
         description="Plot confidence density for correct vs wrong classifications.")
-    parser.add_argument('labels', help="Path to labels.txt (lines of 1 or 0)")
-    parser.add_argument('confs',  help="Path to confs.txt (lines of floats 0–1)")
-    parser.add_argument('-b','--bins', type=int, default=30,
-                        help="Number of histogram bins (default: 30)")
+    parser.add_argument('--run_id', help='id')
+    #parser.add_argument('labels', help="Path to labels.txt (lines of 1 or 0)")
+    #parser.add_argument('confs',  help="Path to confs.txt (lines of floats 0–1)")
+    #parser.add_argument('-b','--bins', type=int, default=30,
+    #                    help="Number of histogram bins (default: 30)")
     args = parser.parse_args()
-    '''
-    id = input('id: ')
-    for split in ['train', 'val', 'test']:    
+    
+    id = args.run_id #input('id: ')
+    for split in ['train', 'val', 'test']:
         labels, confs = load_data(f'{ide}labels_{id}_{split}.txt', f'{ide}confs_{id}_{split}.txt')
         plot_density(id, split, labels, confs, bins=100)
 

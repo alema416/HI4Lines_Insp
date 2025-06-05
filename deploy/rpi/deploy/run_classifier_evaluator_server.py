@@ -41,7 +41,7 @@ def validate():
         print(f"File {file_path} received and saved.")
 
     for j in ['new_kde_plot']:
-        scripts.append({"file": f"{j}.py", "args": ['--idel', 'b_', "--run_id", run_id]})
+        scripts.append({"file": f"{j}.py", "args": ['--idel', '', "--run_id", run_id]})
     
     augrc_hw_train = None
     acc_hw_train = None

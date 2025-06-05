@@ -155,7 +155,7 @@ end = time.time()
 length = end - start
 
 # Show the results : this can be altered however you like
-print("It took", length, "seconds!")
+print("It took", length*1000, "ms!")
 
 ide = idel
 print(f'train_set top1 acc: {results_train[0][0]:.5f}%')

@@ -19,7 +19,8 @@ deploy/deploy/labels_train.txt
 deploy/deploy/labels_val.txt
 deploy/deploy/sasaa.txt
 reports/figures/
-
+deploy/rpi/deploy/*.txt
+deploy/rpi/deploy/*.png
 deploy/st/deploy/confs_test.txt
 deploy/st/deploy/confs_train.txt
 deploy/st/deploy/confs_val.txt
@@ -36,4 +37,5 @@ deploy/st/deploy/*.txt
 deploy/st/deploy/*.onnx
 deploy/st/deploy/*.ONNX
 hi4lines_insp/*.png
+
 configs/*.yaml
