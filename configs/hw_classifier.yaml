@@ -1,5 +1,5 @@
 classifier:
-  modelname: 'temporal_optimization_model'
+  modelname: 'best_model'
   model_zoo_dir: "../../../models/"
   train_set_dir: '../../../data/processed/IDID_cropped_224/train/'
   val_set_dir: '../../../data/processed/IDID_cropped_224/val/'

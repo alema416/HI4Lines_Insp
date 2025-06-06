@@ -2,7 +2,7 @@
 # GLOBALS                                                                       #
 #################################################################################
 
-PROJECT_NAME = HI4Lines_Insp11
+PROJECT_NAME = HI4Lines_Insp
 PYTHON_VERSION = 3.9
 PYTHON_INTERPRETER = python
 
@@ -21,7 +21,7 @@ requirements:
 PHONY: requirements_rpi
 requirements_rpi:
 	$(PYTHON_INTERPRETER) -m pip install -U pip
-	$(PYTHON_INTERPRETER) -m pip install -r ./deploy/requirements.txt
+	$(PYTHON_INTERPRETER) -m pip install -r ./deploy/rpi/requirements.txt
 
 ## Delete all compiled Python files
 .PHONY: clean
@@ -32,7 +32,7 @@ clean:
 ## Download and split dataset
 .PHONY: data
 data:
-	cd ./data/raw && wget https://publicstorageaccnt.blob.core.windows.net/idid/Train_IDID_V1.2.zip && unzip Train_IDID_V1.2.zip -d ididv12
+	mkdir ./data/raw && cd ./data/raw && wget https://publicstorageaccnt.blob.core.windows.net/idid/Train_IDID_V1.2.zip && unzip Train_IDID_V1.2.zip -d ididv12
 	echo 'IDIDv1.2 dataset Downloaded & Extracted !'	
 
 ## Lint using ruff (use `make format` to do formatting)

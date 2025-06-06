@@ -38,7 +38,7 @@ deploy/st/deploy/*.onnx
 deploy/st/deploy/*.ONNX
 hi4lines_insp/*.png
 
-configs/*.yaml
+#configs/*.yaml
 deploy/rpi/deploy/MOBILENET_AGAIN/
 #deploy/rpi/deploy/mixed_plot.py
 deploy/rpi/deploy/hailo_mobilenet/
