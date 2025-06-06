@@ -112,7 +112,7 @@ import class_eval_src
 import argparse
 from hydra import initialize, compose
 
-with initialize(config_path="../../../../configs/"):
+with initialize(config_path="../../../configs/"):
     cfg = compose(config_name="hw_classifier")  # exp1.yaml with defaults key
 
 addon = '' #if args.idel == '' else '_bsln' 
@@ -148,8 +148,8 @@ start = time.time()
 print(f'START INFERENCE ON: train set AT: {start}')
 results_train, tr_mean_tr, tr_std_tr, tr_mean_err, tr_std_err, tr_tr, tr_fa = evaluator_tr.evaluate(cfg.classifier.train_set_dir, None, -1)
 end = time.time()
-print(f'START INFERENCE ON: train set AT: {end}')
-print(f'IT TOOK {end - start} ms ')
+print(f'END INFERENCE ON: train set AT: {end}')
+print(f'IT TOOK {end - start} seconds ')
 '''
 print(f'START INFERENCE ON: train set AT: {start}')
 results_eval, val_mean_tr, val_std_tr, val_mean_err, val_std_err, val_tr, val_fa = evaluator_v.evaluate(cfg.classifier.val_set_dir, None, -1)
@@ -175,28 +175,28 @@ print(f'test_set per_class accuracies: {results_test[1][0][0]:.5f}%, {results_te
 print(f'SPECIAL_PRINTacctrain {results_train[0][0]:.3f}')
 print(f'SPECIAL_PRINTaccval {results_eval[0][0]:.3f}')
 print(f'SPECIAL_PRINTacctest {results_test[0][0]:.3f}')
-'''
+
 cc = {}
 mean = {}
 std = {}
 
 cc['succ_tr'] = tr_tr
-cc['succ_val'] = val_tr
-cc['succ_test'] = test_tr
+#cc['succ_val'] = val_tr
+#cc['succ_test'] = test_tr
 mean['s_train'] = tr_mean_tr
-mean['s_val'] = val_mean_tr
-mean['s_test'] = test_mean_tr
+#mean['s_val'] = val_mean_tr
+#mean['s_test'] = test_mean_tr
 std['s_train'] = tr_std_tr
-std['s_val'] = val_std_tr
-std['s_test'] = test_std_tr
+#std['s_val'] = val_std_tr
+#std['s_test'] = test_std_tr
 cc['err_tr'] = tr_fa
-cc['err_val'] = val_fa
-cc['err_test'] = test_fa
+#cc['err_val'] = val_fa
+#cc['err_test'] = test_fa
 mean['e_train'] = tr_mean_err
-mean['e_val'] = val_mean_err
-mean['e_test'] = test_mean_err
+#mean['e_val'] = val_mean_err
+#mean['e_test'] = test_mean_err
 std['e_train'] = tr_std_err
-std['e_val'] = val_std_err
+#std['e_val'] = val_std_err
 std['e_test'] = test_std_err
 
 ACC_dict = {'train': results_train[0][0], 'val': results_eval[0][0], 'test': results_test[0][0]}
@@ -272,3 +272,4 @@ if True:
             df_zero.to_csv(f'output_{ide}{id}_test_error.csv', index=False)
             df_one.to_csv(f'output_{ide}{id}_test_success.csv', index=False)
 
+'''
