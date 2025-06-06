@@ -29,7 +29,7 @@ model_dict = {"num_classes": num_class}
 
 ours = True
 model_name = f'model_{args.run_id}'
-dropp = True
+dropp = False
 if ours:
   #model = resnet18.ResNet18(num_classes=2).to(device)
   model = resnet18(pretrained=False, num_classes=2)
@@ -61,13 +61,6 @@ if ours:
                 nn.Dropout(p=0.4),    # drop 40% of activations
                 old_fc
             ).to(device)
-    '''
-    old_fc = model.fc
-    model.fc = nn.Sequential(
-      nn.Dropout(p=0.4),    # drop 40% of activations
-      old_fc
-    ).to(device)
-    '''
 else:
   model = mobilenet_v2(weights=None, num_classes=2)
   model_path = f'../models/{exp_name}/{args.run_id}/model_state_dict/model.pth'
