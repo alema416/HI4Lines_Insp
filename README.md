@@ -98,8 +98,8 @@ python3 server.py
 Install virtualenv & download data via:
 
 ```
-make create_environment && make requirements_rpi && make data
-cd deploy
+make create_environment && conda activate HI4Lines_Insp && make requirements_rpi && make data
+cd deploy/rpi/deploy
 python3 run_classifier_optimization.py
 ```
 
