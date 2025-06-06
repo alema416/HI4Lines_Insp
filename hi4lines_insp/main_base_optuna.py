@@ -1,5 +1,4 @@
 import torch
-import mlflow
 import pynvml
 pynvml.nvmlInit()
 gpu_handle = pynvml.nvmlDeviceGetHandleByIndex(0)  # if you only use GPU 0
@@ -7,7 +6,6 @@ import time
 import gc
 from torchvision.models import mobilenet_v2
 from torchvision.models import resnet18
-
 import distutils
 import optuna
 from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
@@ -41,6 +39,8 @@ import torch.optim as optim
 import torch.backends.cudnn as cudnn
 from torch.optim.lr_scheduler import MultiStepLR
 from torchvision import datasets, transforms
+from torch.utils.tensorboard import SummaryWriter
+
 from scipy.spatial import distance
 from scipy.stats import chi2
 from scipy import stats
@@ -160,8 +160,9 @@ def objective(trial):
 
     server1 = True
     server2 = not server1
-    epochs = 200 #cfg.training.epochs
-    plot = cfg.training.validate_freq
+    epochs = 10 #cfg.training.epochs
+    val_freq = cfg.training.validate_freq
+    plot = cfg.training.print_freq
     rank_weight = cfg.training.rank_weight
     port = 5002 if server2 else 5000
     base_lr = trial.suggest_loguniform('lr', cfg.training.base_lr_low, cfg.training.base_lr_high)
@@ -178,7 +179,7 @@ def objective(trial):
     input_size = cfg.training.input_size
     os.environ['CUDA_VISIBLE_DEVICES'] = cfg.training.gpu
     cudnn.benchmark = True
-
+    print(f'{trial.number}')
     save_path = os.path.join(save_path, f'{trial.number}')
     RUN_ID = trial.number
     method = 'Baseline'
@@ -189,146 +190,145 @@ def objective(trial):
         os.makedirs(save_path, mode=0o777)
         os.makedirs(os.path.join(save_path, 'logs'), mode=0o777)
         os.makedirs(os.path.join(save_path, 'model_state_dict'), mode=0o777)
+    
+    writer = SummaryWriter(log_dir=save_path) #run_name
 
-    with mlflow.start_run(run_name=run_name, nested=True):
+    dataset_path = cfg.training.data_path
 
-        dataset_path = cfg.training.data_path
+    train_loader, valid_loader, test_loader = custom_data.get_loader_local(dataset_path, batch_size=batch_size, input_size=224)
+    num_class = cfg.training.classnumber
+    
+    model_dict = { "num_classes": num_class, 'weights': 'MobileNet_V2_Weights'}
+    print(100*'#')
+    
+    #model = #mobilenet_v2(pretrained=False, num_classes=2).to(device)
+    model = resnet18(pretrained=False, num_classes=2).to(device)
 
-        train_loader, valid_loader, test_loader = custom_data.get_loader_local(dataset_path, batch_size=batch_size, input_size=224)
-        num_class = cfg.training.classnumber
+    cls_criterion = nn.CrossEntropyLoss().to(device)
+    optimizer = torch.optim.SGD(model.parameters(), lr=base_lr, momentum=custom_momentum,
+                                weight_decay=custom_weight_decay)
+    scheduler = MultiStepLR(optimizer, milestones=lr_strat, gamma=lr_factor)
+
+    correctness_history = crl_utils.History(len(train_loader.dataset))
+    ranking_criterion = nn.MarginRankingLoss(margin=0.0).to(device)
+    args = None
+    # start Train
+    for epoch in range(1, epochs + 1):
         
-        model_dict = { "num_classes": num_class, 'weights': 'MobileNet_V2_Weights'}
-        print(100*'#')
+        train_loss, train_acc = train_base.train(train_loader,
+                    model,
+                    cls_criterion,
+                    ranking_criterion,
+                    optimizer,
+                    epoch,
+                    correctness_history,
+                    plot, method, rank_weight, classnumber)
+        scheduler.step()
         
-        #model = #mobilenet_v2(pretrained=False, num_classes=2).to(device)
-        model = resnet18(pretrained=False, num_classes=2).to(device)
-
-        cls_criterion = nn.CrossEntropyLoss().to(device)
-        optimizer = torch.optim.SGD(model.parameters(), lr=base_lr, momentum=custom_momentum,
-                                    weight_decay=custom_weight_decay)
-        scheduler = MultiStepLR(optimizer, milestones=lr_strat, gamma=lr_factor)
-
-        correctness_history = crl_utils.History(len(train_loader.dataset))
-        ranking_criterion = nn.MarginRankingLoss(margin=0.0).to(device)
-        args = None
-        # start Train
-        for epoch in range(1, epochs + 1):
-            
-            train_loss, train_acc = train_base.train(train_loader,
-                        model,
-                        cls_criterion,
-                        ranking_criterion,
-                        optimizer,
-                        epoch,
-                        correctness_history,
-                        plot, method, rank_weight, classnumber)
-            scheduler.step()
-            
-            mlflow.log_metric('train_loss', train_loss, step=epoch)
-            mlflow.log_metric('train_acc', train_acc, step=epoch)
-            wait_for_cooldown(thresh=75, cool_to=65, interval=5)
-
-            # save model
-            if epoch == epochs:
-                torch.save(model.state_dict(),
-                            os.path.join(save_path, 'model_state_dict', 'model.pth'))
-            # finish train
-
-            # calc measure
-            if epoch % plot == 0:
-                val_loss, val_acc = validate(valid_loader, model, cls_criterion)
-                mlflow.log_metric('val_loss', val_loss, step=epoch)
-                mlflow.log_metric('val_acc', val_acc, step=epoch)
-
-                acc, auroc, aupr_success, aupr, fpr, tnr, aurc, eaurc, augrc = metrics.calc_metrics(args, valid_loader,
-                                                                                    model,
-                                                                                    cls_criterion, save_path, 'DELETE')
-                mlflow.log_metric('val_augrc', augrc, step=epoch)
-
-        epoch = epochs
-        mlflow.log_param('lr', base_lr)
-        #mlflow.log_param('swa_start', swa_start)
-        mlflow.log_param('weight_decay', custom_weight_decay)
-        mlflow.log_param('momentum', custom_momentum)
-        #mlflow.log_param('swa_lr', swa_lr)
-        mlflow.log_param('epochs', epochs)
-        mlflow.log_param('batch_size', batch_size)
-        mlflow.log_param('model_name', modelname)
-
-        torch.save(model.state_dict(), os.path.join(save_path, 'model_state_dict', 'model.pth'))
-        
-        acc, auroc, aupr_success, aupr, fpr, tnr, aurc, eaurc, augrc = metrics.calc_metrics(args, train_loader, model, cls_criterion, save_path, 'train') 
-        mlflow.log_metric('train_acc', auroc, step=epoch)
-        mlflow.log_metric('train_auroc', auroc, step=epoch)
-        mlflow.log_metric('train_aupr_success', auroc, step=epoch)
-        mlflow.log_metric('train_aupr', aupr, step=epoch)
-        mlflow.log_metric('train_aurc', aurc, step=epoch)
-        mlflow.log_metric('train_eaurc', eaurc, step=epoch)
-        mlflow.log_metric('train_augrc', augrc, step=epoch)
-        mlflow.log_param('run_id', RUN_ID)
-        print(f'ckpt train acc: {acc}')
-        print(f'ckpt train augrc: {augrc}')
-
-        acc, auroc, aupr_success, aupr, fpr, tnr, aurc, val_eaurc, val_augrc = metrics.calc_metrics(args, valid_loader, model, cls_criterion, save_path, 'val')
-        mlflow.log_metric('val_acc', auroc, step=epoch)
-        mlflow.log_metric('val_auroc', auroc, step=epoch)
-        mlflow.log_metric('val_aupr_success', auroc, step=epoch)
-        mlflow.log_metric('val_aupr', aupr, step=epoch)
-        mlflow.log_metric('val_aurc', aurc, step=epoch)
-        mlflow.log_metric('val_eaurc', val_eaurc, step=epoch)
-        mlflow.log_metric('val_augrc', val_augrc, step=epoch)
-        print(f'ckpt val acc: {acc}')
-        print(f'ckpt val augrc: {augrc}')
-
-
-        acc, auroc, aupr_success, aupr, fpr, tnr, aurc, eaurc, augrc = metrics.calc_metrics(args, test_loader, model, cls_criterion, save_path, 'test')
-        mlflow.log_metric('test_acc', auroc, step=epoch)
-        mlflow.log_metric('test_auroc', auroc, step=epoch)
-        mlflow.log_metric('test_aupr_success', auroc, step=epoch)
-        mlflow.log_metric('test_aupr', aupr, step=epoch)
-        mlflow.log_metric('test_aurc', aurc, step=epoch)
-        mlflow.log_metric('test_eaurc', eaurc, step=epoch)
-        mlflow.log_metric('test_augrc', augrc, step=epoch)
-        print(f'ckpt test acc: {acc}')
-        print(f'ckpt test augrc: {augrc}')
-        mlflow.pytorch.log_model(model, artifact_path="model")
-        
-        
-        ccc = 0
-        hailo_ip = cfg.training.ds_device_ip
-        while ccc < 10:
-            try:
-                response = requests.post(f"http://{hailo_ip}:{port}/validate", json={"run_id": RUN_ID})
-                response.raise_for_status()
-                break
-            except requests.RequestException as e:
-                print(e)
-                print(f"================ERROR #{ccc}================")
-                ccc += 1
-                continue
-
-
-        result = response.json()
-
-        for key, val in result.items():
-            if isinstance(val, (int, float)):
-                mlflow.log_metric(key, val)
-        
-        augrc_hw_val = result.get("augrc_hw_val")
-        acc_hw_val = result.get('acc_hw_val')
-        
-        gc.collect()
-        torch.cuda.empty_cache()
+        writer.add_scalar('train_loss', train_loss, epoch)
+        writer.add_scalar('train_acc', train_acc, epoch)
         wait_for_cooldown(thresh=75, cool_to=65, interval=5)
 
-        return float(acc_hw_val)
+        # save model
+        if epoch == epochs:
+            torch.save(model.state_dict(),
+                        os.path.join(save_path, 'model_state_dict', 'model.pth'))
+        # finish train
+
+        # calc measure
+        if epoch % val_freq == 0:
+            val_loss, val_acc = validate(valid_loader, model, cls_criterion)
+            writer.add_scalar('val_loss', val_loss, epoch)
+            writer.add_scalar('val_acc', val_acc, epoch)
+
+            acc, auroc, aupr_success, aupr, fpr, tnr, aurc, eaurc, augrc = metrics.calc_metrics(args, valid_loader,
+                                                                                model,
+                                                                                cls_criterion, save_path, 'DELETE')
+            writer.add_scalar('val_augrc', augrc, epoch)
+
+    epoch = epochs
+    writer.add_scalar('params/lr', base_lr)
+    #writer.add_scalar('params/swa_start', swa_start)
+    writer.add_scalar('params/weight_decay', custom_weight_decay)
+    writer.add_scalar('params/momentum', custom_momentum)
+    #writer.add_scalar('params/swa_lr', swa_lr)
+    writer.add_scalar('epochs', epochs)
+    writer.add_scalar('params/batch_size', batch_size)
+    #writer.add_scalar('params/model_name', modelname)
+
+    torch.save(model.state_dict(), os.path.join(save_path, 'model_state_dict', 'model.pth'))
+    
+    acc, auroc, aupr_success, aupr, fpr, tnr, aurc, eaurc, augrc = metrics.calc_metrics(args, train_loader, model, cls_criterion, save_path, 'train') 
+    writer.add_scalar('train_acc', auroc, epoch)
+    writer.add_scalar('train_auroc', auroc, epoch)
+    writer.add_scalar('train_aupr_success', auroc, epoch)
+    writer.add_scalar('train_aupr', aupr, epoch)
+    writer.add_scalar('train_aurc', aurc, epoch)
+    writer.add_scalar('train_eaurc', eaurc, epoch)
+    writer.add_scalar('train_augrc', augrc, epoch)
+    writer.add_scalar('params/run_id', RUN_ID)
+    print(f'ckpt train acc: {acc}')
+    print(f'ckpt train augrc: {augrc}')
+
+    acc, auroc, aupr_success, aupr, fpr, tnr, aurc, val_eaurc, val_augrc = metrics.calc_metrics(args, valid_loader, model, cls_criterion, save_path, 'val')
+    writer.add_scalar('val_acc', auroc, epoch)
+    writer.add_scalar('val_auroc', auroc, epoch)
+    writer.add_scalar('val_aupr_success', auroc, epoch)
+    writer.add_scalar('val_aupr', aupr, epoch)
+    writer.add_scalar('val_aurc', aurc, epoch)
+    writer.add_scalar('val_eaurc', val_eaurc, epoch)
+    writer.add_scalar('val_augrc', val_augrc, epoch)
+    print(f'ckpt val acc: {acc}')
+    print(f'ckpt val augrc: {augrc}')
+
+
+    acc, auroc, aupr_success, aupr, fpr, tnr, aurc, eaurc, augrc = metrics.calc_metrics(args, test_loader, model, cls_criterion, save_path, 'test')
+    writer.add_scalar('test_acc', auroc, epoch)
+    writer.add_scalar('test_auroc', auroc, epoch)
+    writer.add_scalar('test_aupr_success', auroc, epoch)
+    writer.add_scalar('test_aupr', aupr, epoch)
+    writer.add_scalar('test_aurc', aurc, epoch)
+    writer.add_scalar('test_eaurc', eaurc, epoch)
+    writer.add_scalar('test_augrc', augrc, epoch)
+    print(f'ckpt test acc: {acc}')
+    print(f'ckpt test augrc: {augrc}')
+    #mlflow.pytorch.log_model(model, artifact_path="model")
+    '''
+    ccc = 0
+    hailo_ip = cfg.training.ds_device_ip
+    while ccc < 10:
+        try:
+            response = requests.post(f"http://{hailo_ip}:{port}/validate", json={"run_id": RUN_ID})
+            response.raise_for_status()
+            break
+        except requests.RequestException as e:
+            print(e)
+            print(f"================ERROR #{ccc}================")
+            ccc += 1
+            continue
+
+
+    result = response.json()
+
+    for key, val in result.items():
+        if isinstance(val, (int, float)):
+            writer.add_scalar(key, val)
+    
+    augrc_hw_val = result.get("augrc_hw_val")
+    acc_hw_val = result.get('acc_hw_val')
+    '''
+    gc.collect()
+    torch.cuda.empty_cache()
+    wait_for_cooldown(thresh=75, cool_to=65, interval=5)
+    writer.close()
+    return float(1) #float(acc_hw_val)
     
 def main():
     study_name = cfg.training.study_name #input('study_name: ')
     storage = f'sqlite:///{study_name}_storage.db'
     study = optuna.create_study(direction='maximize', load_if_exists=True, study_name = study_name, storage=storage)
     print(f"Sampler is {study.sampler.__class__.__name__}")
-    study.optimize(objective, n_trials=1, n_jobs=1)
+    study.optimize(objective, n_trials=100, n_jobs=1)
 
     print("Best hyperparameters:", study.best_params)
     print("Best accuracy:", study.best_value)
