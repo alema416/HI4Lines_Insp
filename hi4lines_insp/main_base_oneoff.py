@@ -267,7 +267,7 @@ def objective(trial_number, epochs, base_lr, custom_weight_decay, custom_momentu
     print(f'ckpt test acc: {acc}')
     print(f'ckpt test augrc: {augrc}')
 
-    '''
+    
     ccc = 0
     hailo_ip = cfg.training.ds_device_ip
     while ccc < 10:
@@ -284,21 +284,19 @@ def objective(trial_number, epochs, base_lr, custom_weight_decay, custom_momentu
 
     result = response.json()
 
-    for key, val in result.items():`
+    for key, val in result.items():
         if isinstance(val, (int, float)):
             writer.add_scalar(f'hw_metrics_{key}', val)
-    
-    augrc_hw_val = result.get("augrc_hw_val")
-    acc_hw_val = result.get('acc_hw_val')
-    '''
+     
     gc.collect()
     torch.cuda.empty_cache()
     wait_for_cooldown(thresh=75, cool_to=65, interval=5)
     writer.close()
     
 def main():
-    specs = [[0, 20, 0.01, 1e-6, 0.99], [1, 20, 0.2, 1e-2, 0.92], [2, 20, 0.01, 1e-2, 0.8], [3, 20, 0.001, 1e-4, 0.9]]
     
+    specs = [[18, 142, 0.00435206826, 0.0008877800721, 0.8993821592], [14, 200, 0.02989949609, 0.0003520777959, 0.8564929062]]
+    # trial_number, epochs, base_lr, custom_weight_decay, custom_momentum):
     for spec in specs:
         print(spec)
         objective(spec[0], spec[1], spec[2], spec[3], spec[4])
