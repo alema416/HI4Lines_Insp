@@ -272,7 +272,7 @@ def objective(trial_number, epochs, base_lr, custom_weight_decay, custom_momentu
     hailo_ip = cfg.training.ds_device_ip
     while ccc < 10:
         try:
-            response = requests.post(f"http://{hailo_ip}:{port}/validate", json={"run_id": RUN_ID})
+            response = requests.post(f"http://{hailo_ip}:{port}/validate", json={"run_id": trial_number})
             response.raise_for_status()
             break
         except requests.RequestException as e:
