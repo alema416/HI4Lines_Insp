@@ -1,0 +1,28 @@
+training:
+  base_lr_low: 1e-3
+  base_lr_high: 1e-1
+  lr_factor: 0.1
+  weight_decay_low: 1e-5
+  weight_decay_high: 1e-3
+  rank_weight: 1.0
+  momentum_low: 0.85
+  momentum_high: 0.99
+  batch_size: 16
+  learning_rate: 0.001
+  epochs_low: 1 #100
+  epochs_high: 2 #200
+  validate_freq: 1
+  classnumber: 2
+  input_size: 224
+  data_path: '../data/processed/IDID_cropped_224'
+  save_path: '../models/tmux_baselines' #acc_baseline' #hailo_resnet_again_foreign_v4' #_zeroes'
+  model_name: 'resnet' #'mobilenet'
+  print_freq: 287
+  port: 5000
+  gpu: '0'
+  device: 'cuda'
+  ds_device_ip: '192.168.188.202'
+  ds_device_ip_st: #192.168.2.97 #'192.168.188.202'
+  study_name: 'tmux_baselines' #'hailo_resnet_again_foreign_v4' #'hailo_mobilenet_zeroes_v3' #'haio_only_optimization_22_05_2025_v7'
+  st_dev_ip: #192.168.1.11
+  st_port: #5000

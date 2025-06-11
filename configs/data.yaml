@@ -1,0 +1,6 @@
+data:
+  scene_width: 1280
+  classifier_width: 224
+  base_dir_og: '../data/raw/ididv12/Train/'
+  base_dir_m1: '../data/processed/yolo_m1_JOIN_{modal}_debug'
+  base_dir_m2: '../data/processed/IDID_cropped_224'

@@ -1,0 +1,6 @@
+optimizer:
+  classifier_data_path: '../data/processed/IDID_cropped_224'
+  all_path: '../data/interim/IDID_cropped_224'
+  exp_name: 'baselines_tmux' #'es_dropout_test_many' #acc_baseline' #hailo_resnet_again_foreign_v4'
+  rpi_ip: '192.168.2.13' #192.168.2.84'
+  model_size: 224
