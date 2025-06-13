@@ -21,6 +21,8 @@ training:
   port: 5000
   gpu: '0'
   device: 'cuda'
+  orca_dev_ip: 192.168.1.15 # fix
+  orca_port: 5002
   ds_device_ip: '192.168.188.202'
   ds_device_ip_st: #192.168.2.97 #'192.168.188.202'
   study_name: 'tmux_baselines' #'hailo_resnet_again_foreign_v4' #'hailo_mobilenet_zeroes_v3' #'haio_only_optimization_22_05_2025_v7'
