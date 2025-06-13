@@ -274,7 +274,7 @@ def objective(trial):
 
     print(100 * '#')
     print(f'{modelname}!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-    resss = True
+    resss = False
     if resss:
         model = resnet18(pretrained=False, num_classes=2).to(device)
     else:
@@ -388,7 +388,6 @@ def objective(trial):
     writer.add_scalar('params/swa_lr', swa_lr)
     writer.add_scalar('params/epochs', epochs)
     writer.add_scalar('params/batch_size', batch_size)
-    writer.add_scalar('params/model_name', modelname)
     swa_model.load_state_dict(torch.load(os.path.join(save_path, 'model_state_dict', 'best_model_runner.pth'), map_location=device))
     torch.optim.swa_utils.update_bn(train_loader, swa_model.cpu())
     model = swa_model.to(device)
