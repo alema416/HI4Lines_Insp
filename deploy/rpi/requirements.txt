@@ -1,5 +1,8 @@
 pip
 python-dotenv
+matplotlib
+seaborn
+tqdm
 ruff
 notebook
 ipykernel

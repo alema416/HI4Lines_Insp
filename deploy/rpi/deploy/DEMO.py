@@ -11,10 +11,10 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import argparse
 
-#parser = argparse.ArgumentParser(description='Rethinking CC for FP')
-#parser.add_argument('--run_id', required=True, type=int, help='')
+parser = argparse.ArgumentParser(description='Rethinking CC for FP')
+parser.add_argument('--run_id', required=True, type=int, help='')
 #parser.add_argument('--idel', required=True, type=str, help='')
-#args = parser.parse_args()
+args = parser.parse_args()
 
 def custom_seaborn(df_pos, df_neg, model_id, split, prefix, AUGRC, ACC, mean, std, cc):
     if len(df_pos) < 2 or len(df_neg) < 2:
@@ -102,7 +102,7 @@ def custom_seaborn(df_pos, df_neg, model_id, split, prefix, AUGRC, ACC, mean, st
     plt.savefig(f'custom_{prefix}{model_id}_{split}.png', dpi=300)
     plt.close()
 
-id = 14 #args.run_id
+id = args.run_id
 idel = '' #args.idel
 
 import degirum as dg
@@ -145,25 +145,30 @@ evaluator_te = class_eval_src.ImageClassificationModelEvaluator(
 
 start = time.time()
 
-print(f'START INFERENCE ON: train set AT: {start}')
+print(f'START INFERENCE ON: test set AT: {start}')
+'''
 results_train, tr_mean_tr, tr_std_tr, tr_mean_err, tr_std_err, tr_tr, tr_fa = evaluator_tr.evaluate(cfg.classifier.train_set_dir, None, -1)
 end = time.time()
 print(f'END INFERENCE ON: train set AT: {end}')
 print(f'IT TOOK {end - start} seconds ')
-'''
+
 print(f'START INFERENCE ON: train set AT: {start}')
 results_eval, val_mean_tr, val_std_tr, val_mean_err, val_std_err, val_tr, val_fa = evaluator_v.evaluate(cfg.classifier.val_set_dir, None, -1)
 end = time.time()
 print(f'IT TOOK {end - start}')me()
+'''
 results_test, test_mean_tr, test_std_tr, test_mean_err, test_std_err, test_tr, test_fa = evaluator_te.evaluate(cfg.classifier.test_set_dir, None, -1)
 end = time.time()
-length = end - start
+#length = end - start
+print(f'END INFERENCE ON: test set AT: {end}')
+print(f'IT TOOK {end - start} seconds ')
+
 '''
 # Show the results : this can be altered however you like
 #print("It took", length*1000, "ms!")
 
 ide = idel
-'''
+
 print(f'train_set top1 acc: {results_train[0][0]:.5f}%')
 print(f'validation_set top1 acc: {results_eval[0][0]:.5f}%')
 print(f'test_set top1 acc: {results_test[0][0]:.5f}%')

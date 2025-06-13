@@ -46,7 +46,7 @@ Abstract:
 
 --------
 
-## Installation & Execution Instructions
+## Installation Instructions
 
 
 ### Data Science Server 
@@ -56,12 +56,10 @@ Abstract:
 Install virtualenv & download data via:
 
 ```
-make create_environment
-make requirements
-make data
+make create_environment && make requirements && make data
 ```
 
-#### Step 2: Setup Quantizer/Emulator
+#### Step 2: Setup HAILO Quantizer/Emulator
 
 * Install HAILO AI SW Suite via the instructions: 
 
@@ -86,10 +84,10 @@ And this:
 Finally, from inside the docker container run: 
 ```
 cd /local/<your_repo_path>/hailo_src
-python3 -m pip install requirements.txt flask torchmetrics
-sudo chmod -R a+w ..
-python3 server.py
+python3 -m pip install requirements.txt
 ```
+
+#### Step 3: Setup ST Quantizer/Emulator
 
 ### Raspberry Pi
 
@@ -102,6 +100,37 @@ make create_environment && conda activate HI4Lines_Insp && make requirements_rpi
 cd deploy/rpi/deploy
 python3 run_classifier_optimization.py
 ```
+### ST
+
+#### Setup Edge Device
+
+Install STM32 Model Zoo Services & add installation path to st_src corresponding config yaml.
+
+## Execution Instructions
+
+Step 1:
+
+on Rpi activate the installed conda env & run:
+
+```
+tmux new-session -A -s server_rpi
+cd <repo>/deploy/rpi/deploy/
+python3 run_classifier_evaluator_server.py
+```
+
+Step 2:
+
+on STM32MP257F-EV1 run:
+
+Step 3:
+
+on Data-Science Server activate the installed conda env & run:
+
+./START_TRAINING.sh
+on the bottom right pane ssh to the RPi and attach to the server_rpi session for monitoring.
+
+#### Setup Edge Device
+
 
 ## Model Zoo 
 
