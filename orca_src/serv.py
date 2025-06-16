@@ -24,8 +24,8 @@ import onnx
 from onnxsim import simplify
 
 # 1) Import your modified ResNet18 (with torch.flatten)
-from model.resnet18 import ResNet18
-from model.mobilenet import mobilenet
+#from model.resnet18 import ResNet18
+#from model.mobilenet import mobilenet
 
 from torchvision.models import mobilenet_v2
 from torchvision.models import efficientnet_b0
@@ -33,12 +33,29 @@ from torchvision.models import efficientnet_b0
 import subprocess
 import re
 
+def patch_json(run_id):
+    json_file = '../../output_files/sample_params.json'
+    
+    with open(json_file, 'r') as f:
+        data = json.load(f)
+    
+    # Update the model_name field
+    data['model_name'] = f"model_{run_id}"
+    
+    # Write back the updated JSON
+    with open(json_file, 'w') as f:
+        json.dump(data, f, indent=2)
+    
+    print(f"✅ Patched JSON with model_name: model_{run_id}")
+    
 def get_quantized_models_dir(run_id: int) -> str:
+    
+    patch_json(run_id)
     cmd = [
         "python3",
         '/app/yolov5-8_cloud_api/dg_compiler_api_usage.py',
         "--json_file", '../../output_files/sample_params.json',
-        "--model_file", f'../../output_files/model_{run_id}.onnx',
+        "--model_file", f'../../output_files/models/model_{run_id}.onnx',
         "--class_file", '../../output_files/labels.yaml',
         '--calib_images_folder', '../../output_files/data/processed/IDID_cropped_224/val/broken/'
     ]
@@ -50,7 +67,8 @@ def get_quantized_models_dir(run_id: int) -> str:
         text=True,
         check=False
     )
-    return 'path'
+    print(proc)
+    return f'/output_files/model_{run_id}--224x224_quant_n2x_orca1_1/model_{run_id}--224x224_quant_n2x_orca1_1.n2x'
 
 def load_checkpoint1(pth_path: str):
     # 1) instantiate the exact torchvision MobileNetV2
@@ -104,21 +122,20 @@ def export_and_simplify(model: torch.nn.Module, onnx_path: str, opset: int):
     print(f"✅ Simplified ONNX saved → {onnx_path}")
 
 def main_onnx(run_id, pth_file, out):
-    
+    print('main onnx enter')
     model = load_checkpoint1(pth_file)
     export_and_simplify(model, out, opset=13)
     print('pth --> onnx done')
     
     quant_dir = get_quantized_models_dir(run_id)
     print("Quantized models directory:", quant_dir)
+    return quant_dir
 
-    qonnxpath = os.path.join(quant_dir, f'model_{run_id}_opset17_quant_qdq_pc.onnx') #input('quantized onnx abs path: ')
-    print('ONNX quantization done')
-    print('ready to send quantized ONNX model...')
-    return qonnxpath
-
+# fix so it sends folder and not model
 def send_file(filename, run_id, url=f"http://{cfg.training.orca_dev_ip}:{cfg.training.orca_port}/validate"):
     # Read and encode the file
+    print(f'send file enter to {url}')
+
     with open(filename, "rb") as f:
         encoded = base64.b64encode(f.read()).decode("utf-8")
     payload = {
@@ -128,6 +145,8 @@ def send_file(filename, run_id, url=f"http://{cfg.training.orca_dev_ip}:{cfg.tra
     headers = {"Content-Type": "application/json"}
     
     # Send the request
+    print('sending file to rpi...')   
+    
     response = requests.post(url, json=payload, headers=headers)
     
     # Print out status and response
@@ -149,8 +168,7 @@ def send_file(filename, run_id, url=f"http://{cfg.training.orca_dev_ip}:{cfg.tra
         print("Server Response:", response.json())  # Assuming the response is JSON
     else:
         print("Error:", response.status_code, response.text)
-    #print({'acc_emu': float(acc_emu), 'augrc_emu': float(augrc_emu), 'augrc_hw': float(augrc_hw), 'acc_hw': float(acc_hw)})
-    #return jsonify({'acc_emu': float(1.2), 'augrc_emu': float(1.2), 'augrc_hw': float(1.2), 'acc_hw': float(1.2)})
+    print('send file ok')
     return jsonify({'augrc_hw_train': float(augrc_hw_train), 'acc_hw_train': float(acc_hw_train), 'augrc_hw_val': float(augrc_hw_val), 'acc_hw_val': float(acc_hw_val), 'augrc_hw_test': float(augrc_hw_test), 'acc_hw_test': float(acc_hw_test)})
 
 # validation_service.py inside the Docker container
@@ -172,6 +190,7 @@ def validate():
         print(f'received run_id {run_id}')
         # pth --> tflite
         tflite_path = main_onnx(run_id, file_path, os.path.join('../models', f'model_{run_id}.onnx'))
+        print(tflite_path)
         respon = send_file(tflite_path, run_id) #send_file(os.path.join(cfg.training.save_path, str(run_id), 'tflite', 'model.tflite'), run_id)
     except Exception as e:
         #return jsonify({"error": str(e)}), 400

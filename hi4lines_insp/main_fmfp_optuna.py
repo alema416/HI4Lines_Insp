@@ -274,7 +274,7 @@ def objective(trial):
 
     print(100 * '#')
     print(f'{modelname}!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-    resss = True
+    resss = False
     if resss:
         model = resnet18(pretrained=False, num_classes=2).to(device)
     else:
@@ -388,7 +388,6 @@ def objective(trial):
     writer.add_scalar('params/swa_lr', swa_lr)
     writer.add_scalar('params/epochs', epochs)
     writer.add_scalar('params/batch_size', batch_size)
-    writer.add_scalar('params/model_name', modelname)
     swa_model.load_state_dict(torch.load(os.path.join(save_path, 'model_state_dict', 'best_model_runner.pth'), map_location=device))
     torch.optim.swa_utils.update_bn(train_loader, swa_model.cpu())
     model = swa_model.to(device)
@@ -542,7 +541,7 @@ def main():
     storage = f"sqlite:///{os.path.join(os.getcwd(), 'fresh_study_db.sqlite')}"
     study = optuna.create_study(direction='minimize', load_if_exists=True, study_name = study_name, storage=storage)
     print(f"Sampler is {study.sampler.__class__.__name__}")
-    study.optimize(objective, n_trials=1, n_jobs=1)
+    study.optimize(objective, n_trials=10, n_jobs=1)
 
     print("Best hyperparameters:", study.best_params)
     print("Best accuracy:", study.best_value)
