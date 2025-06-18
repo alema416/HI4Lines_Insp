@@ -9,13 +9,13 @@ training:
   momentum_high: 0.99
   batch_size: 16
   learning_rate: 0.001
-  epochs_low: 5 #100
-  epochs_high: 10 #200
+  epochs_low: 100
+  epochs_high: 200
   validate_freq: 1
   classnumber: 2
   input_size: 224
   data_path: '../data/processed/IDID_cropped_224'
-  save_path: '../models/orca_mon_test' #acc_baseline' #hailo_resnet_again_foreign_v4' #_zeroes'
+  save_path: '../models/coral_optim_mbln_wed' #acc_baseline' #hailo_resnet_again_foreign_v4' #_zeroes'
   model_name: 'mobilenet'
   print_freq: 287
   port: 5000
@@ -26,6 +26,6 @@ training:
   ds_device_ip: '192.168.188.202'
   ds_device_ip_orca: '192.168.188.202'
   ds_device_ip_st: #192.168.2.97 #'192.168.188.202'
-  study_name: 'orca_mon_test' #'hailo_resnet_again_foreign_v4' #'hailo_mobilenet_zeroes_v3' #'haio_only_optimization_22_05_2025_v7'
+  study_name: 'coral_optim_mbln_wed' #'hailo_resnet_again_foreign_v4' #'hailo_mobilenet_zeroes_v3' #'haio_only_optimization_22_05_2025_v7'
   st_dev_ip: #192.168.1.11
   st_port: #5000

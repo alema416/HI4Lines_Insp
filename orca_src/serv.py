@@ -26,7 +26,7 @@ from onnxsim import simplify
 # 1) Import your modified ResNet18 (with torch.flatten)
 #from model.resnet18 import ResNet18
 #from model.mobilenet import mobilenet
-
+from torchvision.models import resnet18
 from torchvision.models import mobilenet_v2
 from torchvision.models import efficientnet_b0
 
@@ -54,10 +54,10 @@ def get_quantized_models_dir(run_id: int) -> str:
     cmd = [
         "python3",
         '/app/yolov5-8_cloud_api/dg_compiler_api_usage.py',
-        "--json_file", '../../output_files/sample_params.json',
+        "--json_file", '../../output_files/sample_params_coral.json',
         "--model_file", f'../../output_files/models/model_{run_id}.onnx',
         "--class_file", '../../output_files/labels.yaml',
-        '--calib_images_folder', '../../output_files/data/processed/IDID_cropped_224/val/broken/'
+        '--calib_images_folder', '../../output_files/data/processed/IDID_cropped_224/val/'
     ]
     # run and capture both stdout and stderr as text
     proc = subprocess.run(
