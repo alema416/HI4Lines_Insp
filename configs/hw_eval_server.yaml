@@ -1,0 +1,6 @@
+server:
+  upload_dir: '../../../models/temp_optim_model_coral/'
+  temp_model_flnm: 'temp_optim_model_coral.tflite'
+  lock_file: './LOCK_FILE.txt'
+  modelname: 'temp_optim_model_coral'
+  rpi_ip: '192.168.2.5'

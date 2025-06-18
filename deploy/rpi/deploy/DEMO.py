@@ -108,7 +108,7 @@ idel = '' #args.idel
 import degirum as dg
 import degirum_tools
 from pprint import pprint
-import class_eval_src
+import class_eval_src_demo
 import argparse
 from hydra import initialize, compose
 
@@ -116,7 +116,7 @@ with initialize(config_path="../../../configs/"):
     cfg = compose(config_name="hw_classifier")  # exp1.yaml with defaults key
 
 addon = '' #if args.idel == '' else '_bsln' 
-model_name = f'{cfg.classifier.modelname}_{id}{addon}'
+model_name = 'model_3--224x224_quant_tflite_edgetpu_1' #f'{cfg.classifier.modelname}_{id}{addon}'
 #model_name = cfg.classifier.modelname
 #print(model_name)
 model = dg.load_model(
@@ -124,19 +124,19 @@ model = dg.load_model(
     inference_host_address='@local',
     zoo_url= cfg.classifier.model_zoo_dir
 )
-evaluator_tr = class_eval_src.ImageClassificationModelEvaluator(
+evaluator_tr = class_eval_src_demo.ImageClassificationModelEvaluator(
     model,
     show_progress=False, split='train', id=id, ide=idel,
     top_k=[1],  # Evaluate top-1 and top-5 accuracy
     foldermap={0: "broken", 1: "healthy"}  # Mapping class IDs to folders
 )
-evaluator_v = class_eval_src.ImageClassificationModelEvaluator(
+evaluator_v = class_eval_src_demo.ImageClassificationModelEvaluator(
     model,
     show_progress=False, split='val', id=id, ide=idel,
     top_k=[1],  # Evaluate top-1 and top-5 accuracy
     foldermap={0: "broken", 1: "healthy"}  # Mapping class IDs to folders
 )
-evaluator_te = class_eval_src.ImageClassificationModelEvaluator(
+evaluator_te = class_eval_src_demo.ImageClassificationModelEvaluator(
     model,
     show_progress=False, split='test',id=id, ide=idel,
     top_k=[1],  # Evaluate top-1 and top-5 accuracy
