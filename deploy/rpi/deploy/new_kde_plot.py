@@ -117,8 +117,9 @@ with initialize(config_path="../../../configs/"):
     cfg = compose(config_name="hw_classifier")  # exp1.yaml with defaults key
 
 addon = '' if args.idel == '' else '_bsln' 
-model_name = f'{cfg.classifier.modelname}_{args.run_id}{addon}'
-#model_name = cfg.classifier.modelname
+#model_name = f'{cfg.classifier.modelname}_{args.run_id}{addon}'
+#model_name = 'model_3--224x224_quant_tflite_edgetpu_1' 
+model_name = cfg.classifier.modelname
 print(model_name)
 model = dg.load_model(
     model_name=model_name,
