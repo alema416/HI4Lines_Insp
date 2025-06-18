@@ -34,7 +34,7 @@ import subprocess
 import re
 
 def patch_json(run_id):
-    json_file = '../../output_files/sample_params.json'
+    json_file = '../../output_files/sample_params_coral.json'
     
     with open(json_file, 'r') as f:
         data = json.load(f)
@@ -68,8 +68,8 @@ def get_quantized_models_dir(run_id: int) -> str:
         check=False
     )
     print(proc)
-    return f'/output_files/model_{run_id}--224x224_quant_n2x_orca1_1/model_{run_id}--224x224_quant_n2x_orca1_1.n2x'
-
+    #return f'/output_files/model_{run_id}--224x224_quant_n2x_orca1_1/model_{run_id}--224x224_quant_n2x_orca1_1.n2x'
+    return f'/output_files/model_{run_id}--224x224_quant_tflite_edgetpu_1/model_{run_id}--224x224_quant_tflite_edgetpu_1.tflite'
 def load_checkpoint1(pth_path: str):
     # 1) instantiate the exact torchvision MobileNetV2
     model = mobilenet_v2(num_classes=2) #mobilenet(num_classes=2)
