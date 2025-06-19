@@ -1,7 +1,15 @@
+deploy/rpi/deploy/data/
+deploy/st/deploy/data/
+deploy/st/deploy/mixed.py
+st_src/PATHS.txt
+st_src/experiments_outputs/
+st_src/output.txt
+
 models/
 # 1) ignore absolutely everything under /data
+model_*
 /data/**
-
+/reports/**
 # 2) but do NOT ignore any directory in there
 !/data/**/
 
