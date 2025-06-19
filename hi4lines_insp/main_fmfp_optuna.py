@@ -541,7 +541,7 @@ def main():
     storage = f"sqlite:///{os.path.join(os.getcwd(), 'fresh_study_db.sqlite')}"
     study = optuna.create_study(direction='minimize', load_if_exists=True, study_name = study_name, storage=storage)
     print(f"Sampler is {study.sampler.__class__.__name__}")
-    study.optimize(objective, n_trials=1, n_jobs=1)
+    study.optimize(objective, n_trials=100, n_jobs=1)
 
     print("Best hyperparameters:", study.best_params)
     print("Best accuracy:", study.best_value)

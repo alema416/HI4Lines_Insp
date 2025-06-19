@@ -24,23 +24,40 @@ import onnx
 from onnxsim import simplify
 
 # 1) Import your modified ResNet18 (with torch.flatten)
-from model.resnet18 import ResNet18
-from model.mobilenet import mobilenet
-
+#from model.resnet18 import ResNet18
+#from model.mobilenet import mobilenet
+from torchvision.models import resnet18
 from torchvision.models import mobilenet_v2
 from torchvision.models import efficientnet_b0
 
 import subprocess
 import re
 
+def patch_json(run_id):
+    json_file = '../../output_files/sample_params_coral.json'
+    
+    with open(json_file, 'r') as f:
+        data = json.load(f)
+    
+    # Update the model_name field
+    data['model_name'] = f"model_{run_id}"
+    
+    # Write back the updated JSON
+    with open(json_file, 'w') as f:
+        json.dump(data, f, indent=2)
+    
+    print(f"✅ Patched JSON with model_name: model_{run_id}")
+    
 def get_quantized_models_dir(run_id: int) -> str:
+    
+    patch_json(run_id)
     cmd = [
         "python3",
         '/app/yolov5-8_cloud_api/dg_compiler_api_usage.py',
-        "--json_file", '../../output_files/sample_params.json',
+        "--json_file", '../../output_files/sample_params_coral.json',
         "--model_file", f'../../output_files/models/model_{run_id}.onnx',
         "--class_file", '../../output_files/labels.yaml',
-        '--calib_images_folder', '../../output_files/data/processed/IDID_cropped_224/val/broken/'
+        '--calib_images_folder', '../../output_files/data/processed/IDID_cropped_224/val/'
     ]
     # run and capture both stdout and stderr as text
     proc = subprocess.run(
@@ -51,8 +68,8 @@ def get_quantized_models_dir(run_id: int) -> str:
         check=False
     )
     print(proc)
-    return f'/output_files/model_{run_id}--224x224_quant_n2x_orca1_1'
-
+    #return f'/output_files/model_{run_id}--224x224_quant_n2x_orca1_1/model_{run_id}--224x224_quant_n2x_orca1_1.n2x'
+    return f'/output_files/model_{run_id}--224x224_quant_tflite_edgetpu_1/model_{run_id}--224x224_quant_tflite_edgetpu_1.tflite'
 def load_checkpoint1(pth_path: str):
     # 1) instantiate the exact torchvision MobileNetV2
     model = mobilenet_v2(num_classes=2) #mobilenet(num_classes=2)
@@ -117,7 +134,7 @@ def main_onnx(run_id, pth_file, out):
 # fix so it sends folder and not model
 def send_file(filename, run_id, url=f"http://{cfg.training.orca_dev_ip}:{cfg.training.orca_port}/validate"):
     # Read and encode the file
-    print('send file enter')
+    print(f'send file enter to {url}')
 
     with open(filename, "rb") as f:
         encoded = base64.b64encode(f.read()).decode("utf-8")

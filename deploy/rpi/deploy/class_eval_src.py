@@ -98,7 +98,7 @@ class ImageClassificationModelEvaluator(ModelEvaluatorBase):
         # scan folders for images
         for folder_idx, category_folder in enumerate(self.foldermap.values()):
             image_dir_path = Path(image_folder_path) / category_folder
-
+            #print(image_dir_path)
             all_images = [
                 str(image_path)
                 for image_path in image_dir_path.glob("*")
@@ -108,7 +108,18 @@ class ImageClassificationModelEvaluator(ModelEvaluatorBase):
             total_images_in_folder.append(len(all_images))
 
         total_images = sum(total_images_in_folder)
+        print(">>> DEBUG: foldermap =", self.foldermap)
+        for cls_idx, cls_name in self.foldermap.items():
+            if not images_in_folder[cls_idx]:
+                print(f">>> DEBUG: no images in folder {cls_name}")
+                continue
 
+            sample = images_in_folder[cls_idx][0]
+            preds  = next(self.model.predict_batch([sample]))
+            print(f">>> DEBUG sample for class {cls_idx} ('{cls_name}'): {Path(sample).name}")
+            for r in preds.results:
+                print(f"     → category_id={r['category_id']}, score={r['score']:.4f}")
+        print(">>> END DEBUG ─────────────────────────────────────────────────────")
         #
         # evaluation loop
         #
@@ -126,12 +137,15 @@ class ImageClassificationModelEvaluator(ModelEvaluatorBase):
         FILE_LBL = []
         rows = []
         for folder_idx, category_folder in enumerate(self.foldermap.values()):
-          
+            #print(folder_idx)
+            #print(category_folder)
             per_class_accuracies = [-1.0] * len(self.top_k)
+            #print(per_class_accuracies)
             processed_images_in_class = 0
             #print(images_in_folder[folder_idx])
             for image_path, predictions in zip(images_in_folder[folder_idx], self.model.predict_batch(images_in_folder[folder_idx])):
             #for predictions in self.model.predict_batch(images_in_folder[folder_idx]):
+                #print(predictions)
                 tmp_score = predictions.results[0]['score']
                 # Iterate over each top_k value
                 for k_i, k in enumerate(self.top_k):

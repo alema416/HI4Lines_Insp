@@ -295,7 +295,7 @@ def objective(trial_number, epochs, base_lr, custom_weight_decay, custom_momentu
     
 def main():
     
-    specs = [[18, 142, 0.00435206826, 0.0008877800721, 0.8993821592], [14, 200, 0.02989949609, 0.0003520777959, 0.8564929062]]
+    specs = [[], []]
     # trial_number, epochs, base_lr, custom_weight_decay, custom_momentum):
     for spec in specs:
         print(spec)

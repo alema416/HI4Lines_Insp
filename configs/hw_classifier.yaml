@@ -1,5 +1,5 @@
 classifier:
-  modelname: 'best_model'
+  modelname: 'temp_optim_model_coral' #model_3--224x224_quant_n2x_orca1_1'
   model_zoo_dir: "../../../models/"
   train_set_dir: '../../../data/processed/IDID_cropped_224/train/'
   val_set_dir: '../../../data/processed/IDID_cropped_224/val/'

@@ -1,6 +1,6 @@
 server:
-  upload_dir: '../../../models/temporal_optimization_model/'
-  temp_model_flnm: 'temporal_optimization_model.hef'
+  upload_dir: '../../../models/temp_optim_model_coral/'
+  temp_model_flnm: 'temp_optim_model_coral.tflite'
   lock_file: './LOCK_FILE.txt'
-  modelname: 'temporal_optimization_model'
-  rpi_ip: '192.168.2.75'
+  modelname: 'temp_optim_model_coral'
+  rpi_ip: '192.168.2.5'
