@@ -4,6 +4,7 @@
 # All rights reserved
 #
 import logging
+import time
 import os
 import inspect
 import statistics
@@ -16,8 +17,7 @@ from degirum_tools.ui_support import Progress
 
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s %(levelname)s [%(name)s:%(lineno)d] %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S"
+    format="%(levelname)s: %(message)s",
 )
 
 # 2. In each module, get a logger for that namespace
@@ -115,18 +115,19 @@ class ImageClassificationModelEvaluator(ModelEvaluatorBase):
             total_images_in_folder.append(len(all_images))
 
         total_images = sum(total_images_in_folder)
-        logger.info(">>> DEBUG: foldermap =", self.foldermap)
+        #logger.info(">>> DEBUG: foldermap =", self.foldermap)
         for cls_idx, cls_name in self.foldermap.items():
             if not images_in_folder[cls_idx]:
-                logger.info(f">>> DEBUG: no images in folder {cls_name}")
+                #logger.info(f">>> DEBUG: no images in folder {cls_name}")
                 continue
 
             sample = images_in_folder[cls_idx][0]
             preds  = next(self.model.predict_batch([sample]))
-            logger.info(f">>> DEBUG sample for class {cls_idx} ('{cls_name}'): {Path(sample).name}")
+            #logger.info(f">>> DEBUG sample for class {cls_idx} ('{cls_name}'): {Path(sample).name}")
             for r in preds.results:
-                logger.info(f"     → category_id={r['category_id']}, score={r['score']:.4f}")
-        logger.info(">>> END DEBUG ─────────────────────────────────────────────────────")
+                pass
+                #logger.info(f"     → category_id={r['category_id']}, score={r['score']:.4f}")
+        #logger.info(">>> END DEBUG ─────────────────────────────────────────────────────")
         #
         # evaluation loop
         #
@@ -147,6 +148,7 @@ class ImageClassificationModelEvaluator(ModelEvaluatorBase):
 
             per_class_accuracies = [-1.0] * len(self.top_k)
             processed_images_in_class = 0
+            logger.info(f'START INFERENCE ON {self.split}, {category_folder} at: {time.time()}')
             for image_path, predictions in zip(images_in_folder[folder_idx], self.model.predict_batch(images_in_folder[folder_idx])):
             #for predictions in self.model.predict_batch(images_in_folder[folder_idx]):
                 tmp_score = predictions.results[0]['score']
@@ -210,7 +212,9 @@ class ImageClassificationModelEvaluator(ModelEvaluatorBase):
                 all_per_class_accuracies.append(per_class_accuracies)
                 continue
             break
-        logger.info(f'{tr} success, {fa} error')
+        logger.info(f'END INFERENCE ON {self.split} at: {time.time()}')
+
+        #logger.info(f'{tr} success, {fa} error')
         if len(fa_conf) >= 2:
             std_err = statistics.stdev(fa_conf)
             mean_err = statistics.mean(fa_conf)
@@ -224,8 +228,8 @@ class ImageClassificationModelEvaluator(ModelEvaluatorBase):
         else:
             std_tr = 0.0
             mean_tr = 0.0
-        logger.info(f"SUCCESS - mean: {mean_tr}, std: {std_tr}")
-        logger.info(f"ERROR - mean: {mean_err}, std: {std_err}")
+        #logger.info(f"SUCCESS - mean: {mean_tr}, std: {std_tr}")
+        #logger.info(f"ERROR - mean: {mean_err}, std: {std_err}")
 
         accuracies = [
             sum(total_correct_predictions[k_i]) / processed_images

@@ -1,4 +1,5 @@
 import pandas as pd
+import logging
 from nmetr import AUGRC
 import argparse
 import torch
@@ -10,6 +11,15 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import argparse
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(levelname)s: %(message)s",
+)
+
+# 2. In each module, get a logger for that namespace
+logger = logging.getLogger(__name__)
+
 
 parser = argparse.ArgumentParser(description='Rethinking CC for FP')
 parser.add_argument('--run_id', required=True, type=int, help='')
@@ -116,8 +126,8 @@ with initialize(config_path="../../../configs/"):
     cfg = compose(config_name="hw_classifier")  # exp1.yaml with defaults key
 
 addon = '' #if args.idel == '' else '_bsln' 
-model_name = 'model_3--224x224_quant_tflite_edgetpu_1' #f'{cfg.classifier.modelname}_{id}{addon}'
-#model_name = cfg.classifier.modelname
+model_name = 'best_model' #'model_3--224x224_quant_tflite_edgetpu_1' #f'{cfg.classifier.modelname}_{id}{addon}'
+#model_name = #cfg.classifier.modelname
 #print(model_name)
 model = dg.load_model(
     model_name=model_name,
@@ -144,137 +154,20 @@ evaluator_te = class_eval_src_multi.ImageClassificationModelEvaluator(
 )
 
 start = time.time()
-
-print(f'START INFERENCE ON: test set AT: {start}')
-'''
+logger.info(f'START EXPERIMENT ON: train set AT: {start}')
 results_train, tr_mean_tr, tr_std_tr, tr_mean_err, tr_std_err, tr_tr, tr_fa = evaluator_tr.evaluate(cfg.classifier.train_set_dir, None, -1)
 end = time.time()
-print(f'END INFERENCE ON: train set AT: {end}')
-print(f'IT TOOK {end - start} seconds ')
+logger.info(f'END EXPERIMENT ON: train set AT: {end}')
 
-print(f'START INFERENCE ON: train set AT: {start}')
+start = time.time()
+logger.info(f'START EXPERIMENT ON: val set AT: {start}')
 results_eval, val_mean_tr, val_std_tr, val_mean_err, val_std_err, val_tr, val_fa = evaluator_v.evaluate(cfg.classifier.val_set_dir, None, -1)
 end = time.time()
-print(f'IT TOOK {end - start}')me()
-'''
+logger.info(f'END EXPERIMENT ON: val set AT: {end}')
+
+
+start = time.time()
+logger.info(f'START EXPERIMENT ON: test set AT: {start}')
 results_test, test_mean_tr, test_std_tr, test_mean_err, test_std_err, test_tr, test_fa = evaluator_te.evaluate(cfg.classifier.test_set_dir, None, -1)
 end = time.time()
-#length = end - start
-print(f'END INFERENCE ON: test set AT: {end}')
-print(f'IT TOOK {end - start} seconds ')
-
-'''
-# Show the results : this can be altered however you like
-#print("It took", length*1000, "ms!")
-
-ide = idel
-
-print(f'train_set top1 acc: {results_train[0][0]:.5f}%')
-print(f'validation_set top1 acc: {results_eval[0][0]:.5f}%')
-print(f'test_set top1 acc: {results_test[0][0]:.5f}%')
-
-print(f'train_set per_class accuracies: {results_train[1][0][0]:.5f}%, {results_train[1][1][0]:.5f}%')
-print(f'validation_set per_class accuracies: {results_eval[1][0][0]:.5f}%, {results_eval[1][1][0]:.5f}%')
-print(f'test_set per_class accuracies: {results_test[1][0][0]:.5f}%, {results_test[1][1][0]:.5f}%')
-
-print(f'SPECIAL_PRINTacctrain {results_train[0][0]:.3f}')
-print(f'SPECIAL_PRINTaccval {results_eval[0][0]:.3f}')
-print(f'SPECIAL_PRINTacctest {results_test[0][0]:.3f}')
-
-cc = {}
-mean = {}
-std = {}
-
-cc['succ_tr'] = tr_tr
-#cc['succ_val'] = val_tr
-#cc['succ_test'] = test_tr
-mean['s_train'] = tr_mean_tr
-#mean['s_val'] = val_mean_tr
-#mean['s_test'] = test_mean_tr
-std['s_train'] = tr_std_tr
-#std['s_val'] = val_std_tr
-#std['s_test'] = test_std_tr
-cc['err_tr'] = tr_fa
-#cc['err_val'] = val_fa
-#cc['err_test'] = test_fa
-mean['e_train'] = tr_mean_err
-#mean['e_val'] = val_mean_err
-#mean['e_test'] = test_mean_err
-std['e_train'] = tr_std_err
-#std['e_val'] = val_std_err
-std['e_test'] = test_std_err
-
-ACC_dict = {'train': results_train[0][0], 'val': results_eval[0][0], 'test': results_test[0][0]}
-
-AUGRC_dict = {}
-for split in ['train', 'val', 'test']:
-    with open(f'{ide}labels_{id}_{split}.txt', "r") as file:
-      labels = [int(line.strip()) for line in file]
-    with open(f'{ide}confs_{id}_{split}.txt', "r") as file:
-      confs = [float(line.strip()) for line in file]  
-    
-    probs = torch.tensor(confs, dtype=torch.float32)  # Now shape (N, C)
-    numeric_labels_tensor = torch.tensor(labels, dtype=torch.long)
-    augrc_metric = AUGRC()
-  
-    augrc_metric.update(probs, numeric_labels_tensor)
-    
-    augrc_value = augrc_metric.compute()
-    #print(f'SPECIAL_PRINTaugrc{split} {1000*augrc_value.item()}')
-    AUGRC_dict[f'{split}'] = 1000*augrc_value.item()
-#print(AUGRC_dict)
-#print(ACC_dict)
-
-
-
-
-
-if True:
-    if True:
-        for ide in [idel]:
-            # Replace 'confidences.txt' and 'labels.txt' with your actual file paths
-            confidences = pd.read_csv(f'{ide}confs_{id}_train.txt', header=None, names=['confidence'])
-            labels = pd.read_csv(f'{ide}labels_{id}_train.txt', header=None, names=['correct'])
-
-            # Combine into a single DataFrame
-            df1 = pd.concat([confidences, labels], axis=1)
-
-            confidences = pd.read_csv(f'{ide}confs_{id}_val.txt', header=None, names=['confidence'])
-            labels = pd.read_csv(f'{ide}labels_{id}_val.txt', header=None, names=['correct'])
-
-            # Combine into a single DataFrame
-            df2 = pd.concat([confidences, labels], axis=1)
-
-
-            #print(len(df1))
-            #print(len(df2))
-            df = pd.concat([df1, df2], axis=0, ignore_index=True)
-            print(len(df))
-            df_zero = df[df['correct'] == 0]
-            df_one = df[df['correct'] == 1]
-            #plt.xlim(x_min, x_max)
-
-            #plt.tight_layout()
-            custom_seaborn(df_one, df_zero, id, 'train-val', ide, AUGRC_dict, ACC_dict, mean, std, cc)
-            df_zero.to_csv(f'output_{ide}{id}_valtrain_error.csv', index=False)
-            df_one.to_csv(f'output_{ide}{id}_valtrain_success.csv', index=False)
-
-if True:
-    if True:
-        for ide in [idel]:
-            # Replace 'confidences.txt' and 'labels.txt' with your actual file paths
-            confidences = pd.read_csv(f'{ide}confs_{id}_test.txt', header=None, names=['confidence'])
-            labels = pd.read_csv(f'{ide}labels_{id}_test.txt', header=None, names=['correct'])
-
-            # Combine into a single DataFrame
-            df = pd.concat([confidences, labels], axis=1)
-            print(len(df))
-            df_zero = df[df['correct'] == 0]
-            df_one = df[df['correct'] == 1]
-
-            custom_seaborn(df_one, df_zero, id, 'test', ide, AUGRC_dict, ACC_dict, mean, std, cc)
-
-            df_zero.to_csv(f'output_{ide}{id}_test_error.csv', index=False)
-            df_one.to_csv(f'output_{ide}{id}_test_success.csv', index=False)
-
-'''
+logger.info(f'END EXPERIMENT ON: test set AT: {end}')
