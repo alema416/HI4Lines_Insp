@@ -5,7 +5,7 @@ import torch.nn.functional as F
 from sklearn import metrics
 import csv
 import os
-from utils.nmetr import AUGRC
+from hi4lines_insp.utils.nmetr import AUGRC
 from hydra import initialize, compose
 
 with initialize(config_path="../../configs/"):
