@@ -1,6 +1,7 @@
 from hi4lines_insp.fmfp_pipeline import one_trial_train
 from hydra import initialize, compose
 import optuna
+import psycopg2
 import os
 
 with initialize(config_path="../configs/"):
@@ -18,8 +19,9 @@ def objective(trial):
     return one_trial_train(trial.number, epochs, base_lr, custom_weight_decay, custom_momentum, swa_start, swa_lr, cfg)
 
 def main():
-    study_name = '' #cfg.training.study_name
-    storage = f"sqlite:///{os.path.join(os.getcwd(), f'{study_name}.sqlite')}"
+    study_name = 'postgress' #cfg.training.study_name
+    #storage = f"sqlite:///{os.path.join(os.getcwd(), f'{study_name}.sqlite')}"
+    storage = "postgresql+psycopg2://optuna_user:secretpass@optuna-postgres:5432/optuna_db"
     study = optuna.create_study(direction='minimize', load_if_exists=True, study_name = study_name, storage=storage)
     
     print(f"Sampler is {study.sampler.__class__.__name__}")
