@@ -1,0 +1,63 @@
+# docker-compose.yml: Hi4Lines Optuna + Postgres + Dashboard + Train GPU
+version: '3.8'
+
+services:
+  # 1) Postgres for Optuna RDBStorage
+  postgres:
+    image: postgres:14                     # Official Postgres image
+    container_name: optuna-postgres        # Easy reference by name
+    restart: always
+    environment:
+      POSTGRES_USER: optuna_user           # Credentials match your scripts
+      POSTGRES_PASSWORD: secretpass
+      POSTGRES_DB: optuna_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data    # Persist DB files across restarts
+    networks:
+      - ml-net
+
+  # 2) Optuna Dashboard for live monitoring
+  dashboard:
+    image: ghcr.io/optuna/optuna-dashboard:latest
+    container_name: optuna-dashboard
+    depends_on:
+      - postgres                            # Wait for Postgres to start
+    ports:
+      - '8080:8080'                         # Expose dashboard at localhost:8080
+    entrypoint:                             # Ensure the correct binary is called
+      - "optuna-dashboard"
+    command: [
+      "postgresql+psycopg2://optuna_user:secretpass@optuna-postgres:5432/optuna_db",
+      "--host", "0.0.0.0",
+      "--port", "8080"
+    ]
+    networks:
+      - ml-net
+
+  # 3) Training service (one trial only)
+  train:
+    build:
+      context: .                            # Build from repo root
+      dockerfile: Dockerfile               # Your GPU-enabled Dockerfile
+    image: hi4lines-gpu:latest            # Tag for pulling/running
+    container_name: hi4lines-gpu
+    volumes:
+      - .:/app                             # Mount code & configs
+    working_dir: /app                      # Ensure script runs from /app
+    ipc: host                              # Share host IPC (for datasets/large models)
+    # Note: to enable GPUs, run with `--gpus all`:
+    # docker-compose run --rm --gpus all train python3 scripts/fmfp_opt.py
+    networks:
+      - ml-net
+    entrypoint:
+      - "bash"
+      - "-lc"
+    command:
+      - "pip install -e . && cd scripts && python3 scripts.fmfp_opt.py"
+
+volumes:
+  pgdata:                                  # Named volume for Postgres data
+
+networks:
+  ml-net:                                  # User-defined bridge network
+    driver: bridge

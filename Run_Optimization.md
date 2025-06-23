@@ -48,3 +48,16 @@ docker run --gpus all --network ml-net --rm -it -v "$(pwd)":/app -w /app --ipc=h
 ```
 docker run -it --rm --network ml-net -p 8080:8080 ghcr.io/optuna/optuna-dashboard postgresql+psycopg2://optuna_user:secretpass@optuna-postgres:5432/optuna_db  
 ```
+
+
+
+OR
+
+```
+docker-compose up -d postgres
+docker-compose run -d --rm train
+docker-compose up -d dashboard
+docker-compose down -v
+```
+
+and monitor in localhost:8080
