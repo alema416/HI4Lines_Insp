@@ -1,0 +1,24 @@
+# Dockerfile.api
+FROM degirum/dg_compiler_api:latest
+
+# 1) Switch to a shell so we can pip‐install
+USER root
+WORKDIR /app
+
+# 2) Install your Python dependencies in one go
+#    (flask, hydra-core, requests, torch, etc)
+#    Adjust this list to exactly what your server needs.
+RUN pip install --no-cache-dir \
+      flask \
+      hydra-core \
+      requests \
+      torch onnx onnxsim torchvision
+
+# 3) Copy in *your* server code on top of the compiler API
+#    so that your serv.py (or other modules) live alongside
+#    the DeGirum API.
+# 4) Set the working directory to where your serv.py lives
+WORKDIR /app/orca_src
+
+# 5) Override entrypoint to kick off *your* server
+ENTRYPOINT ["bash", "-lc", "python3 serv.py"]

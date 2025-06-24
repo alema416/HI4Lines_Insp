@@ -24,11 +24,10 @@ docker run -d \
   -v pgdata:/var/lib/postgresql/data \
   postgres:14
 ```
-
-## Make database
+or
 
 ```
-docker run -d   --name optuna-postgres   --network ml-net   -e POSTGRES_USER=optuna_user   -e POSTGRES_PASSWORD=secretpass   -e POSTGRES_DB=optuna_db   postgres:14
+docker run -d --name optuna-postgres --network ml-net -e POSTGRES_USER=optuna_user -e POSTGRES_PASSWORD=secretpass -e POSTGRES_DB=optuna_db postgres:14
 ```
 
 ## Run training
@@ -51,13 +50,27 @@ docker run -it --rm --network ml-net -p 8080:8080 ghcr.io/optuna/optuna-dashboar
 
 
 
-OR
+## OR
 
 ```
+
+docker-compose build compiler_api
+docker-compose build train
+
+
 docker-compose up -d postgres
+
 docker-compose run -d --rm train
-docker-compose up -d dashboard
+
+docker-compose up -d dashboard etc
+```
+
+and to kill:
+
+```
 docker-compose down -v
 ```
 
-and monitor in localhost:8080
+and monitor in: 
+
+localhost:8080

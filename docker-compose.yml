@@ -54,6 +54,38 @@ services:
       - "-lc"
     command:
       - "pip install -e . && cd scripts && python3 scripts.fmfp_opt.py"
+  # 4) TensorBoard for viewing training logs
+  tensorboard:
+    image: tensorflow/tensorflow:latest    # Includes TensorBoard binary
+    restart: always                        # Keep accessible
+    ports:
+      - '6007:6006'                         # Expose TensorBoard UI
+    volumes:
+      - ./logs:/app/logs                    # Local logs directory
+    command:
+      - tensorboard
+      - --logdir=/app/models
+      - --host=0.0.0.0
+      - --port=6006
+    networks:
+      - ml-net
+
+    # 5) DeGirum Compiler API service (runs a specific Python script on start)
+  compiler_api:
+    build:
+      context: .                            # Build from repo root
+      dockerfile: Dockerfile.degirum_api               # Your GPU-enabled Dockerfile
+    image: dg_api:latest
+    volumes:
+      - .:/app                             # Mount code & configs
+    working_dir: /app/orca_src/                      # Ensure script runs from /app
+    ipc: host
+    restart: "no"                        # Automatically restart
+    ports:
+      - '8778:8778'                         # Expose compiler API
+      - '5002:5002'                         # Expose compiler API
+    networks:
+      - ml-net
 
 volumes:
   pgdata:                                  # Named volume for Postgres data
