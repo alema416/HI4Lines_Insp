@@ -64,7 +64,7 @@ import threading
 from torchvision.models import mobilenet_v2
 from torchvision.models import efficientnet_b0
 from hi4lines_insp.model.custom_mob import build_model
-
+from hi4lines_insp.validate_on_device import validate_on_device
 try:
     from distutils.version import LooseVersion
 except ImportError:
@@ -228,7 +228,7 @@ def one_trial_train(trial_number, epochs, base_lr, custom_weight_decay, custom_m
     num_bad_epochs = 0
     last_ep = 0
     ac_ep = 0
-
+    '''
     for epoch in range(1, epochs + 1):
         train_loss, train_acc  = hi4lines_insp.train_fmfp.train(RUN_ID, train_loader, \
                                                 model, cls_criterion, ranking_criterion, optimizer, epoch, correctness_history, plot, method)
@@ -326,8 +326,16 @@ def one_trial_train(trial_number, epochs, base_lr, custom_weight_decay, custom_m
         torch.cuda.empty_cache()
         wait_for_cooldown(thresh=75, cool_to=65, interval=5)
     
-    #validate_on_device()
-    return float(1)
+    '''
+    result = validate_on_device('orca', cfg, RUN_ID)
+    print(result)
+    for key, val in result.items():
+        if isinstance(val, (int, float)):
+            writer.add_scalar(key, val)
+    
+    augrc_hw_val = result.get("augrc_hw_val")
+
+    return augrc_hw_val
     
 
 def main():

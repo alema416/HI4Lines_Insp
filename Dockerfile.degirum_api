@@ -19,6 +19,6 @@ RUN pip install --no-cache-dir \
 #    the DeGirum API.
 # 4) Set the working directory to where your serv.py lives
 WORKDIR /app/orca_src
-
+COPY ./orca_src/dg_compiler_api_usage.py /app/yolov5-8_cloud_api/
 # 5) Override entrypoint to kick off *your* server
 ENTRYPOINT ["bash", "-lc", "python3 serv.py"]

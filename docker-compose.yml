@@ -72,18 +72,14 @@ services:
 
     # 5) DeGirum Compiler API service (runs a specific Python script on start)
   compiler_api:
-    build:
-      context: .                            # Build from repo root
-      dockerfile: Dockerfile.degirum_api               # Your GPU-enabled Dockerfile
-    image: dg_api:latest
+    image: degirum/dg_compiler_api:latest
+    container_name: dg_compiler_api
+    restart: always
     volumes:
-      - .:/app                             # Mount code & configs
-    working_dir: /app/orca_src/                      # Ensure script runs from /app
-    ipc: host
-    restart: "no"                        # Automatically restart
+      - ./models/:/output_files                    # Local logs directory
     ports:
-      - '8778:8778'                         # Expose compiler API
-      - '5002:5002'                         # Expose compiler API
+      - '8535:8535'
+      - '8778:8778'  
     networks:
       - ml-net
 
