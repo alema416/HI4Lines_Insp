@@ -43,6 +43,11 @@ services:
     container_name: hi4lines-gpu
     volumes:
       - .:/app                             # Mount code & configs
+    gpus: all
+#    device_requests:
+#      - driver: nvidia
+#        count: -1          # -1 means “all” GPUs
+#        capabilities: [gpu]
     working_dir: /app                      # Ensure script runs from /app
     ipc: host                              # Share host IPC (for datasets/large models)
     # Note: to enable GPUs, run with `--gpus all`:
