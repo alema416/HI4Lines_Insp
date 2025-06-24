@@ -228,7 +228,7 @@ def one_trial_train(trial_number, epochs, base_lr, custom_weight_decay, custom_m
     num_bad_epochs = 0
     last_ep = 0
     ac_ep = 0
-    '''
+    
     for epoch in range(1, epochs + 1):
         train_loss, train_acc  = hi4lines_insp.train_fmfp.train(RUN_ID, train_loader, \
                                                 model, cls_criterion, ranking_criterion, optimizer, epoch, correctness_history, plot, method)
@@ -326,7 +326,7 @@ def one_trial_train(trial_number, epochs, base_lr, custom_weight_decay, custom_m
         torch.cuda.empty_cache()
         wait_for_cooldown(thresh=75, cool_to=65, interval=5)
     
-    '''
+    
     result = validate_on_device('orca', cfg, RUN_ID)
     print(result)
     for key, val in result.items():
