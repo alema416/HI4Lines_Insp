@@ -51,15 +51,34 @@ Abstract:
 
 ### Data Science Server 
 
-#### Step 1: Setup Data Science Module
+For target hardware: ORCA, Google Coral:
 
-Install virtualenv & download data via:
+install training enviroment:
+```
+docker-compose build train
+```
+
+run optimizatin and spawn logging:
 
 ```
-make create_environment && make requirements && make data
+docker-compose up -d postgres
+docker-compose run -d --rm train
+docker-compose up -d dashboard tensorboard
 ```
 
-#### Step 2: Setup HAILO Quantizer/Emulator
+for DeGirum Orca & Google Coral
+
+```
+docker-compose up -d compiler_api
+```
+
+for ST devices:
+
+```
+docker-compose up -d compiler_api
+```
+
+for HAILO:
 
 * Install HAILO AI SW Suite via the instructions: 
 
