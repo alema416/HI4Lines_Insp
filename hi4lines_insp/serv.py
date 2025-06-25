@@ -33,8 +33,8 @@ from torchvision.models import efficientnet_b0
 import subprocess
 import re
 
-def patch_json(run_id):
-    json_file = '../sample_params.json'
+def patch_json(run_id, dev):
+    json_file = f'../sample_params_{dev}.json'
     
     with open(json_file, 'r') as f:
         data = json.load(f)
@@ -48,13 +48,13 @@ def patch_json(run_id):
     
     print(f"✅ Patched JSON with model_name: model_{run_id}")
     
-def get_quantized_models_dir(run_id: int) -> str:
-    patch_json(run_id)
+def get_quantized_models_dir(run_id: int, dev: str) -> str:
+    patch_json(run_id, dev)
     print('command run start')
     cmd = [
         "python3",
         '/app/orca_src/dg_compiler_api_usage.py',
-        "--json_file", '../sample_params.json',
+        "--json_file", f'../sample_params_{dev}.json',
         "--model_file", f'../models/model_{run_id}.onnx',
         "--class_file", '../labels.yaml',
         '--calib_images_folder', '../data/processed/IDID_cropped_224/val/'
@@ -69,8 +69,10 @@ def get_quantized_models_dir(run_id: int) -> str:
         check=False
     )
     print(proc)
-    return f'/app/models/model_{run_id}--224x224_quant_n2x_orca1_1/model_{run_id}--224x224_quant_n2x_orca1_1.n2x'
-    #return f'./models/model_{run_id}--224x224_quant_tflite_edgetpu_1/model_{run_id}--224x224_quant_tflite_edgetpu_1.tflite'
+    if dev == 'orca':
+        return f'/app/models/model_{run_id}--224x224_quant_n2x_orca1_1/model_{run_id}--224x224_quant_n2x_orca1_1.n2x'
+    elif dev == 'coral':
+        return f'/app/models/model_{run_id}--224x224_quant_tflite_edgetpu_1/model_{run_id}--224x224_quant_tflite_edgetpu_1.tflite'
 def load_checkpoint1(pth_path: str):
     # 1) instantiate the exact torchvision MobileNetV2
     model = mobilenet_v2(num_classes=2) #mobilenet(num_classes=2)
@@ -122,13 +124,13 @@ def export_and_simplify(model: torch.nn.Module, onnx_path: str, opset: int):
     onnx.save(simp, onnx_path)
     print(f"✅ Simplified ONNX saved → {onnx_path}")
 
-def main_onnx(run_id, pth_file, out):
+def main_onnx(run_id, pth_file, out, dev):
     print('main onnx enter')
     model = load_checkpoint1(pth_file)
     export_and_simplify(model, out, opset=13)
     print('pth --> onnx done')
     
-    quant_dir = get_quantized_models_dir(run_id)
+    quant_dir = get_quantized_models_dir(run_id, dev)
     print("Quantized models directory:", quant_dir)
     return quant_dir
 
@@ -136,7 +138,7 @@ def main_onnx(run_id, pth_file, out):
 def send_file(filename, run_id, url=f"http://{cfg.training.orca_dev_ip}:{cfg.training.orca_port}/validate"):
     # Read and encode the file
     print(f'send file enter to {url}')
-
+    print(f'filename={filename}')
     with open(filename, "rb") as f:
         encoded = base64.b64encode(f.read()).decode("utf-8")
     payload = {
@@ -187,7 +189,7 @@ def validate(data):
 
         print(f'received run_id {run_id}')
         # pth --> tflite
-        tflite_path = main_onnx(run_id, file_path, os.path.join('../models', f'model_{run_id}.onnx'))
+        tflite_path = main_onnx(run_id, file_path, os.path.join('../models', f'model_{run_id}.onnx'), data.get('target_dev'))
         print(tflite_path)
         respon = send_file(tflite_path, run_id) #send_file(os.path.join(cfg.training.save_path, str(run_id), 'tflite', 'model.tflite'), run_id)
     except Exception as e:

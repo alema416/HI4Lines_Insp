@@ -327,7 +327,7 @@ def one_trial_train(trial_number, epochs, base_lr, custom_weight_decay, custom_m
         wait_for_cooldown(thresh=75, cool_to=65, interval=5)
     
     
-    result = validate_on_device('orca', cfg, RUN_ID)
+    result = validate_on_device('coral', cfg, RUN_ID)
     print(result)
     for key, val in result.items():
         if isinstance(val, (int, float)):

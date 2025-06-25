@@ -66,10 +66,10 @@ services:
     ports:
       - '6007:6006'                         # Expose TensorBoard UI
     volumes:
-      - ./logs:/app/logs                    # Local logs directory
+      - ./models/:/app/logs                    # Local logs directory
     command:
       - tensorboard
-      - --logdir=/app/models
+      - --logdir=/app/logs/coral_25_06_v2/ #orca_14_06_v2/
       - --host=0.0.0.0
       - --port=6006
     networks:
@@ -84,7 +84,7 @@ services:
       - ./models/:/output_files                    # Local logs directory
     ports:
       - '8535:8535'
-      - '8778:8778'  
+      - '8778:8778'
     networks:
       - ml-net
 
