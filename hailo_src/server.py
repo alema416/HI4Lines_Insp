@@ -25,7 +25,7 @@ def validate(): #run_id_given):
         run_id = run_id_given
         print(f'received run_id {run_id}')
 
-    for j in ['ckpt2onnx', 'parser', 'optimizer']:
+    for j in ['parser', 'optimizer_no_torch']:
         scripts.append({"file": f"{j}.py", "args": ["--run_id", str(run_id)]})
     scripts.append({"file": f"compiler.py", "args": ["--run_id", str(run_id)]})
     
