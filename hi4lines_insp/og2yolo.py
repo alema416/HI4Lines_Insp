@@ -167,7 +167,7 @@ def process_data_det(train_data, val_data, test_data, og_image_dir, yolo_m1_dir)
                     #print(f'ins is: {health_status}')
                     if health_status == 'ERROR':
                         print('ERROR')
-                    CLASS_ID = 0 if health_status == 'broken' else 1
+                    CLASS_ID = 0 if health_status == 'broken' else 0
                     yolo_format = convert_to_yolo_format(CLASS_ID, bbox, original_width, original_height, resized_width, resized_height)
                     yolo_data.append(yolo_format)
 
@@ -273,11 +273,11 @@ def main():
     json_file_path = os.path.join(base_dir_og, 'labels_v1.2.json')   
     og_image_dir = os.path.join(base_dir_og, 'Images')  
     
-    yolo_m1_dir = cfg.data.base_dir_m1 #f'../data/processed/yolo_m1_JOIN_{modal}_debug'
-    yolo_m2_dir = cfg.data.base_dir_m2 #f'../data/processed/IDID_cropped_224'  
+    yolo_m1_dir = cfg.data.base_dir_m1
+    #yolo_m2_dir = cfg.data.base_dir_m2 #f'../data/processed/IDID_cropped_224'  
     
     os.makedirs(yolo_m1_dir, exist_ok=True)
-    os.makedirs(yolo_m2_dir, exist_ok=True)
+    #os.makedirs(yolo_m2_dir, exist_ok=True)
 
     with open(json_file_path, 'r') as f:
         image_data = json.load(f)
@@ -289,21 +289,22 @@ def main():
     val_data = image_data[int(total_images * 0.64):int(total_images * 0.8)]
     test_data = image_data[int(total_images * 0.8):]    
     
-    process_data_class(train_data, val_data, test_data, og_image_dir, yolo_m2_dir)
-    print("M2 Processing complete. Resized images and YOLO labels have been saved.")
+    #process_data_class(train_data, val_data, test_data, og_image_dir, yolo_m2_dir)
+    #print("M2 Processing complete. Resized images and YOLO labels have been saved.")
     process_data_det(train_data, val_data, test_data, og_image_dir, yolo_m1_dir)
     print("M1 processing complete. Resized images and YOLO labels have been saved.")
     
     for mode in ['train', 'val', 'test']:
         print(f"M1 {mode}: {len(os.listdir(os.path.join(yolo_m1_dir, mode, 'images')))}")
-        print(f"M2 {mode}: {len(os.listdir(os.path.join(yolo_m2_dir, mode, 'broken'))) + len(os.listdir(os.path.join(yolo_m2_dir, mode, 'healthy')))} ({len(os.listdir(os.path.join(yolo_m2_dir, mode, 'healthy')))} + {len(os.listdir(os.path.join(yolo_m2_dir, mode, 'broken')))})")
-    
+        #print(f"M2 {mode}: {len(os.listdir(os.path.join(yolo_m2_dir, mode, 'broken'))) + len(os.listdir(os.path.join(yolo_m2_dir, mode, 'healthy')))} ({len(os.listdir(os.path.join(yolo_m2_dir, mode, 'healthy')))} + {len(os.listdir(os.path.join(yolo_m2_dir, mode, 'broken')))})")
+    '''
     for mode in ['train', 'val', 'test']:
         dir_a = os.path.join(yolo_m1_dir, f"{mode}/labels/")
         dir_b = os.path.join(yolo_m2_dir, f"{mode}/broken/")
         dir_c = os.path.join(yolo_m2_dir, f"{mode}/healthy/")
 
         compare_files_in_directories(dir_a, dir_b, dir_c)
+    '''
     print('check completed')
 if __name__ == "__main__":
     main()

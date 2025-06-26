@@ -1,0 +1,65 @@
+## Stage 1: builder
+
+FROM python:3.10-slim AS builder
+
+# Metadata
+LABEL maintainer="amax"
+ARG APP_REPO="https://github.com/STMicroelectronics/stm32ai-modelzoo-services.git"
+
+ARG APP_DIR="/opt/stm32ai"
+
+# Prevent Python from writing .pyc files and buffering stdout/stderr
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    LANG=C.UTF-8
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        git \
+        ca-certificates \
+        && rm -rf /var/lib/apt/lists/*
+
+# Clone your repo into a stable path
+# RUN git clone --single-branch --depth 1 ${APP_REPO} ${APP_DIR}
+WORKDIR ${APP_DIR}
+
+COPY app.py ${APP_DIR}/app.py
+COPY requirements_stm.txt ${APP_DIR}/requirements_stm.txt
+
+RUN python -m venv /opt/venv \
+ && /opt/venv/bin/pip install --upgrade pip \
+ && /opt/venv/bin/pip install --no-cache-dir -r requirements_stm.txt
+
+#RUN git clone --single-branch --depth 1 ${APP_REPO} ${APP_DIR}
+
+RUN mkdir -p /data
+
+## Stage 2: runtime
+FROM python:3.10-slim AS runtime
+ 
+ARG APP_DIR="/opt/stm32ai"
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    LANG=C.UTF-8 \
+    PATH="/opt/venv/bin:${PATH}"
+
+# If your app makes HTTPS calls at runtime
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /opt/venv /opt/venv
+COPY --from=builder ${APP_DIR} ${APP_DIR}
+COPY --from=builder /data           /data
+
+RUN useradd --create-home --shell /bin/bash appuser \
+ && chown -R appuser:appuser /opt/venv ${APP_DIR} /data
+
+
+USER appuser
+WORKDIR ${APP_DIR}
+
+EXPOSE 5000
+VOLUME ["/data"]
+CMD ["python", "app.py"]
+#CMD ["python3", "-m", "uvicorn", "app:app", "--host=0.0.0.0", "--port=8000"]

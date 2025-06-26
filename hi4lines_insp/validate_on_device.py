@@ -2,6 +2,7 @@ import os
 import base64
 import requests
 from .serv import validate
+'''
 from .ckpt2onnx import toONNX
 
 def validate_on_hailo(cfg, RUN_ID):
@@ -22,7 +23,7 @@ def validate_on_hailo(cfg, RUN_ID):
 
     result = response.json()
     return result
-
+'''
 def validate_on_orca(cfg, RUN_ID):
     stmz = cfg.training.ds_device_ip_orca
     ckpt_loc = os.path.join(cfg.training.save_path, str(RUN_ID), 'model_state_dict', 'model.pth')

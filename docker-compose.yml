@@ -88,8 +88,88 @@ services:
     networks:
       - ml-net
 
+  hailo:
+    # 1) The imported suite image
+    image: hailo_ai_sw_suite_2025-04:1
+    container_name: hailo_ai_sw_suite_2025-04_container_custom
+
+    entrypoint: ["bash", "-l"]
+    stdin_open: true   # -i
+    tty: true          # -t
+
+    # 2) Privileges & networking just like your script had
+    privileged: true
+    network_mode: host
+    ipc: host
+    group_add:
+      - 44
+
+    # 3) GPU support (if enabled in your .env)
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: ALL
+              capabilities: [gpu]
+
+    # 4) Environment variables your suite needs
+    environment:
+      DISPLAY: "${DISPLAY}"
+      XDG_RUNTIME_DIR: "${XDG_RUNTIME_DIR}"
+      HAILORT_ENABLE_SERVICE: "${HAILORT_ENABLE_SERVICE:-no}"
+      SERVICE_ENABLE_MONITOR: "${SERVICE_ENABLE_MONITOR:-no}"
+      HAILORT_LOGGER_PATH: "${HAILORT_LOGGER_PATH:-/var/log/hailo}"
+
+    # 5) All those host‐>container mounts
+    volumes:
+      - type: volume
+        source: hailo_data
+        target: /home/amax/HI4Lines_Insp
+        # rw by default
+      - "/tmp/hailo_docker.xauth:/home/hailo/.Xauthority"
+      - "/tmp/.X11-unix:/tmp/.X11-unix"
+      - "/dev:/dev"
+      - "/lib/firmware:/lib/firmware"
+      - "/lib/modules:/lib/modules"
+      - "/lib/udev/rules.d:/lib/udev/rules.d"
+      - "/usr/src:/usr/src"
+      - "/var/run/dbus/system_bus_socket:/var/run/dbus/system_bus_socket"
+      - "/etc/machine-id:/etc/machine-id:ro"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "/etc/timezone:/etc/timezone:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+      # optional host DKMS directory (if you need kernel modules rebuilt):
+      - type: bind
+        source: /var/lib/dkms
+        target: /var/lib/dkms
+
+    # 6) Always restart unless explicitly stopped
+    restart: unless-stopped
+  stm32ai:
+    build:
+      context: .
+      dockerfile: Dockerfile.stm32    # ← your actual Dockerfile name here
+      target: runtime
+    ports:
+      - "5000:5000"
+    volumes:
+      - stm32-data:/data
+  fake_rpi:
+    build:
+      context: .
+      dockerfile: Dockerfile.fake_rpi
+      target: builder
+    # flask requires SIGINT to stop gracefully
+    # (default stop signal from Compose is SIGTERM)
+    stop_signal: SIGINT
+    ports:
+      - '8004:8004'
 volumes:
   pgdata:                                  # Named volume for Postgres data
+  hailo_data:
+    driver: local
+  stm32-data:
 
 networks:
   ml-net:                                  # User-defined bridge network

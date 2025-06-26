@@ -1,0 +1,10 @@
+FROM python:3.9-slim-buster AS builder
+
+WORKDIR /app
+
+COPY requirements_fake_rpi.txt requirements.txt
+COPY fake_rpi_app.py .
+RUN pip install --no-cache-dir -r requirements.txt
+#COPY . .
+EXPOSE 8004
+CMD ["python", "fake_rpi_app.py"]
