@@ -45,7 +45,7 @@ services:
     container_name: hi4lines-gpu
     volumes:
       - .:/app                             # Mount code & configs
-#    gpus: all
+    gpus: all
 #    device_requests:
 #      - driver: nvidia
 #        count: -1          # -1 means “all” GPUs
@@ -175,6 +175,8 @@ services:
     ports:
       - "9000:9000"   # S3 API
       - "9001:9001"   # Web console
+    networks:
+      - ml-net
     environment:
       MINIO_ROOT_USER: minio99
       MINIO_ROOT_PASSWORD: minio123
