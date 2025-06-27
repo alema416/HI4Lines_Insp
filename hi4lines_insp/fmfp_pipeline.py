@@ -124,6 +124,41 @@ import hi4lines_insp.custom_data as custom_data
 from torch.optim.swa_utils import AveragedModel, SWALR
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from hi4lines_insp.utils.sam import SAM
+from dotenv import load_dotenv
+import boto3
+from botocore.client import Config
+
+load_dotenv()  # reads .env into os.environ
+
+AWS_ACCESS_KEY_ID     = os.getenv("S3_ACCESS_KEY", None)
+AWS_SECRET_ACCESS_KEY = os.getenv("S3_SECRET_KEY", None)
+REGION_NAME           = os.getenv("S3_REGION",         None)
+ENDPOINT_URL          = os.getenv("S3_ENDPOINT_URL",       None)
+BUCKET                = os.getenv("S3_BUCKET", None)
+
+# If you leave ENDPOINT_URL as empty string, boto3 will default to AWS.
+s3_client = boto3.client(
+    "s3",
+    endpoint_url=ENDPOINT_URL or None,
+    aws_access_key_id=AWS_ACCESS_KEY_ID,
+    aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+    region_name=REGION_NAME,
+    config=Config(signature_version="s3v4"),  # ensures compatibility
+)
+
+def upload_directory(local_path: str, s3_prefix: str):
+    """
+    Recursively upload all files under local_path to s3://BUCKET/s3_prefix/...
+    """
+    for root, _, files in os.walk(local_path):
+        for fname in files:
+            full_path = os.path.join(root, fname)
+            print(full_path)
+            rel_path = os.path.relpath(full_path, local_path)
+            print(rel_path)
+            s3_key   = f"{s3_prefix.rstrip('/')}/{rel_path}"
+            print(f"Uploading {full_path} → s3://{BUCKET}/{s3_key}")
+            s3_client.upload_file(full_path, BUCKET, s3_key)
 
 
 
@@ -277,6 +312,7 @@ def one_trial_train(trial_number, epochs, base_lr, custom_weight_decay, custom_m
                 'Validation AUGRC: {2})\t'.format(val_loss, val_acc, augrc))
             ac_ep = epoch
             torch.cuda.empty_cache()
+    
     if last_ep > ac_ep:
         epoch = last_ep
     else:
@@ -334,8 +370,8 @@ def one_trial_train(trial_number, epochs, base_lr, custom_weight_decay, custom_m
             writer.add_scalar(key, val)
     
     augrc_hw_val = result.get("augrc_hw_val")
-
-    return augrc_hw_val
+    upload_directory(save_path, f'trial_{str(RUN_ID)}')
+    return 1 #augrc_hw_val
     
 
 def main():

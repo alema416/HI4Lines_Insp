@@ -13,4 +13,6 @@ scikit-learn
 hydra-core
 mlflow
 pandas
+boto3
+python-dotenv
 -e .
