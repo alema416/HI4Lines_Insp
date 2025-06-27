@@ -26,7 +26,7 @@ def main():
     print("Trial #{}: value={}, params={}".format(
         t.number, t.value, t.params
     ))
-    run_baseline(0, t.params)
+    run_baseline(RUN_ID, t.params)
 
 if __name__ == "__main__":
     main()

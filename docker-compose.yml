@@ -45,7 +45,7 @@ services:
     container_name: hi4lines-gpu
     volumes:
       - .:/app                             # Mount code & configs
-    gpus: all
+#    gpus: all
 #    device_requests:
 #      - driver: nvidia
 #        count: -1          # -1 means “all” GPUs
@@ -168,7 +168,28 @@ services:
     stop_signal: SIGINT
     ports:
       - '8004:8004'
+  minio:
+    image: quay.io/minio/minio
+    container_name: minio
+    restart: unless-stopped
+    ports:
+      - "9000:9000"   # S3 API
+      - "9001:9001"   # Web console
+    environment:
+      MINIO_ROOT_USER: minio99
+      MINIO_ROOT_PASSWORD: minio123
+    volumes:
+      - minio_vol:/data
+    command: server /data --console-address ":9001"
 volumes:
+  minio_vol:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      # either an absolute path:
+      device: ./minio_data
+
   pgdata:                                  # Named volume for Postgres data
     driver: local
     driver_opts:

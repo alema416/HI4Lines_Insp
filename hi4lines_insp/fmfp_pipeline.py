@@ -371,7 +371,7 @@ def one_trial_train(trial_number, epochs, base_lr, custom_weight_decay, custom_m
     
     augrc_hw_val = result.get("augrc_hw_val")
     upload_directory(save_path, f'trial_{str(RUN_ID)}')
-    return 1 #augrc_hw_val
+    return augrc_hw_val
     
 
 def main():

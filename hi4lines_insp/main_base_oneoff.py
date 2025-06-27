@@ -120,7 +120,41 @@ from hydra import initialize, compose
 rlimit = resource.getrlimit(resource.RLIMIT_NOFILE)
 resource.setrlimit(resource.RLIMIT_NOFILE, (2048, rlimit[1]))
 
+from dotenv import load_dotenv
+import boto3
+from botocore.client import Config
 
+load_dotenv()  # reads .env into os.environ
+
+AWS_ACCESS_KEY_ID     = os.getenv("S3_ACCESS_KEY", None)
+AWS_SECRET_ACCESS_KEY = os.getenv("S3_SECRET_KEY", None)
+REGION_NAME           = os.getenv("S3_REGION",         None)
+ENDPOINT_URL          = os.getenv("S3_ENDPOINT_URL",       None)
+BUCKET                = os.getenv("S3_BUCKET", None)
+
+# If you leave ENDPOINT_URL as empty string, boto3 will default to AWS.
+s3_client = boto3.client(
+    "s3",
+    endpoint_url=ENDPOINT_URL or None,
+    aws_access_key_id=AWS_ACCESS_KEY_ID,
+    aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+    region_name=REGION_NAME,
+    config=Config(signature_version="s3v4"),  # ensures compatibility
+)
+
+def upload_directory(local_path: str, s3_prefix: str):
+    """
+    Recursively upload all files under local_path to s3://BUCKET/s3_prefix/...
+    """
+    for root, _, files in os.walk(local_path):
+        for fname in files:
+            full_path = os.path.join(root, fname)
+            print(full_path)
+            rel_path = os.path.relpath(full_path, local_path)
+            print(rel_path)
+            s3_key   = f"{s3_prefix.rstrip('/')}/{rel_path}"
+            print(f"Uploading {full_path} → s3://{BUCKET}/{s3_key}")
+            s3_client.upload_file(full_path, BUCKET, s3_key)
 
 
 def validate(loader, model, criterion, device):
@@ -224,7 +258,8 @@ def one_trial_train(trial_number, epochs, base_lr, custom_weight_decay, custom_m
         
         writer.add_scalar('train_loss', train_loss, epoch)
         writer.add_scalar('train_acc', train_acc, epoch)
-        wait_for_cooldown(thresh=75, cool_to=65, interval=5)
+        if gpu:
+            wait_for_cooldown(thresh=75, cool_to=65, interval=5)
 
         # save model
         if epoch == epochs:
@@ -271,8 +306,8 @@ def one_trial_train(trial_number, epochs, base_lr, custom_weight_decay, custom_m
 
     print(f'ckpt test acc: {acc}')
     print(f'ckpt test augrc: {augrc}')
-
-    result = validate_on_device('coral', cfg, RUN_ID)
+    
+    result = validate_on_device('coral', cfg, trial_number)
 
     for key, val in result.items():
         if isinstance(val, (int, float)):
@@ -283,8 +318,10 @@ def one_trial_train(trial_number, epochs, base_lr, custom_weight_decay, custom_m
         torch.cuda.synchronize()                     # finish all kernels
         torch.cuda.empty_cache()
         wait_for_cooldown(thresh=75, cool_to=65, interval=5)
-    writer.close()
     
+    writer.close()
+    upload_directory(save_path, f'trial_{str(trial_number)}')
+
 def main():
     pass
 if __name__ == "__main__":
