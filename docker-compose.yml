@@ -169,6 +169,12 @@ services:
       - '8004:8004'
 volumes:
   pgdata:                                  # Named volume for Postgres data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      # either an absolute path:
+      device: ./pgdata
   hailo_data:
     driver: local
   stm32-data:
