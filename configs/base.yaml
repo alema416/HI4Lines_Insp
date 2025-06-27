@@ -39,8 +39,8 @@ training:
   hailo_port: 5000
   target_dev: 'coral'
 secrets:
-  database_name:  ${env:DTBS_NAME, 'optuna_db'}
-  port:  ${env:PORT, '5432'}
-  network:  ${env:NTWRK, 'optuna-postgres'}
-  pswrd:  ${env:PSSWRD, 'secretpass'}
-  usrnm:  ${env:OPTUNA_USRNM, 'optuna_user'}
+  database_name:  ${oc.env:DTBS_NAME, 'optuna_db'}
+  port:  ${oc.env:PORT, '5432'}
+  network:  ${oc.env:NTWRK, 'optuna-postgres'}
+  pswrd:  ${oc.env:PSSWRD, 'secretpass'}
+  usrnm:  ${oc.env:OPTUNA_USRNM, 'optuna_user'}
