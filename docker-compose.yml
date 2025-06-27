@@ -92,7 +92,8 @@ services:
 
   hailo:
     # 1) The imported suite image
-    image: hailo_ai_sw_suite_2025-04:1
+    image: dockeruser1232/apel-edgeaionplatforms:hailo_ai_sw_suite_2025-04
+    #hailo_ai_sw_suite_2025-04:1
     container_name: hailo_ai_sw_suite_2025-04_container_custom
 
     entrypoint: ["bash", "-l"]

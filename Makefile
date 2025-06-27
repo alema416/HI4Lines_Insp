@@ -32,7 +32,7 @@ clean:
 ## Download and split dataset
 .PHONY: data
 data:
-	mkdir ./data/raw && cd ./data/raw && wget https://publicstorageaccnt.blob.core.windows.net/idid/Train_IDID_V1.2.zip && unzip Train_IDID_V1.2.zip -d ididv12
+	mkdir -p ./data/raw && cd ./data/raw && wget https://publicstorageaccnt.blob.core.windows.net/idid/Train_IDID_V1.2.zip && unzip Train_IDID_V1.2.zip -d ididv12
 	echo 'IDIDv1.2 dataset Downloaded & Extracted !'	
 
 ## Lint using ruff (use `make format` to do formatting)
