@@ -1,5 +1,5 @@
-import utils.crl_utils
-from utils import utils
+import hi4lines_insp.utils.crl_utils
+from hi4lines_insp.utils import utils
 import torch.nn as nn
 from tqdm import tqdm
 import time

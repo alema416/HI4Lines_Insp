@@ -1,12 +1,64 @@
 import torch
-import pynvml
-pynvml.nvmlInit()
-gpu_handle = pynvml.nvmlDeviceGetHandleByIndex(0)  # if you only use GPU 0
+try:
+
+    import pynvml
+    pynvml.nvmlInit()
+    gpu = True
+    gpu_handle = pynvml.nvmlDeviceGetHandleByIndex(0)  # if you only use GPU 0
+    def get_gpu_temps(handle=gpu_handle):
+        """Return (core_temp, mem_temp or None)."""
+        core = pynvml.nvmlDeviceGetTemperature(handle,
+                                            pynvml.NVML_TEMPERATURE_GPU)
+        # Try the named constant, else fall back to sensor ID 1, else None
+        mem = None
+        try:
+            mem = pynvml.nvmlDeviceGetTemperature(handle,
+                                                pynvml.NVML_TEMPERATURE_MEMORY)
+        except AttributeError:
+            try:
+                mem = pynvml.nvmlDeviceGetTemperature(handle, 1)
+            except Exception:
+                # sensor not available
+                mem = None
+        return core, mem
+
+    def wait_for_cooldown(handle=gpu_handle, *, thresh=85, cool_to=75, interval=5):
+        """
+        Pause if either core or memory temps exceed 'thresh',
+        and wait until they drop below 'cool_to'.
+        If mem is None, only watch core.
+        """
+        core, mem = get_gpu_temps(handle)
+        # decide whether to pause
+        over_core = core >= thresh
+        over_mem  = (mem is not None and mem >= thresh)
+        if not (over_core or over_mem):
+            return
+
+        print(f"[GPU COOL] core {core}°C{' and mem '+str(mem)+'°C' if mem is not None else ''} ≥ {thresh}°C; pausing…")
+        # wait loop
+        while True:
+            time.sleep(interval)
+            core, mem = get_gpu_temps(handle)
+            msg = f"[GPU COOL] core {core}°C"
+            if mem is not None:
+                msg += f", mem {mem}°C"
+            print(msg)
+            if core <= cool_to and (mem is None or mem <= cool_to):
+                break
+
+        print("[GPU COOL] temperatures back below threshold; resuming.")
+except Exception:
+    gpu = False
+    print("NVML init failed; continuing without GPU metrics")
+
 import time
 import gc
 from torchvision.models import mobilenet_v2
 from torchvision.models import resnet18
 import distutils
+from hi4lines_insp.validate_on_device import validate_on_device
+
 from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
 try:
     from distutils.version import LooseVersion
@@ -55,15 +107,14 @@ import numpy as np
 import resource
 
 from collections import OrderedDict
-from model import resnet
 import requests
 #from model import resnet18
-from utils import data as dataset
-from utils import crl_utils
-from utils import metrics
-from utils import utils
-import train_base
-import custom_data as custom_data
+from hi4lines_insp.utils import data as dataset
+from hi4lines_insp.utils import crl_utils
+from hi4lines_insp.utils import metrics
+from hi4lines_insp.utils import utils
+import hi4lines_insp.train_base
+import hi4lines_insp.custom_data as custom_data
 from hydra import initialize, compose
 
 rlimit = resource.getrlimit(resource.RLIMIT_NOFILE)
@@ -71,51 +122,8 @@ resource.setrlimit(resource.RLIMIT_NOFILE, (2048, rlimit[1]))
 
 
 
-def get_gpu_temps(handle=gpu_handle):
-    """Return (core_temp, mem_temp or None)."""
-    core = pynvml.nvmlDeviceGetTemperature(handle,
-                                           pynvml.NVML_TEMPERATURE_GPU)
-    # Try the named constant, else fall back to sensor ID 1, else None
-    mem = None
-    try:
-        mem = pynvml.nvmlDeviceGetTemperature(handle,
-                                              pynvml.NVML_TEMPERATURE_MEMORY)
-    except AttributeError:
-        try:
-            mem = pynvml.nvmlDeviceGetTemperature(handle, 1)
-        except Exception:
-            # sensor not available
-            mem = None
-    return core, mem
 
-def wait_for_cooldown(handle=gpu_handle, *, thresh=85, cool_to=75, interval=5):
-    """
-    Pause if either core or memory temps exceed 'thresh',
-    and wait until they drop below 'cool_to'.
-    If mem is None, only watch core.
-    """
-    core, mem = get_gpu_temps(handle)
-    # decide whether to pause
-    over_core = core >= thresh
-    over_mem  = (mem is not None and mem >= thresh)
-    if not (over_core or over_mem):
-        return
-
-    print(f"[GPU COOL] core {core}°C{' and mem '+str(mem)+'°C' if mem is not None else ''} ≥ {thresh}°C; pausing…")
-    # wait loop
-    while True:
-        time.sleep(interval)
-        core, mem = get_gpu_temps(handle)
-        msg = f"[GPU COOL] core {core}°C"
-        if mem is not None:
-            msg += f", mem {mem}°C"
-        print(msg)
-        if core <= cool_to and (mem is None or mem <= cool_to):
-            break
-
-    print("[GPU COOL] temperatures back below threshold; resuming.")
-
-def validate(loader, model, criterion):
+def validate(loader, model, criterion, device):
     model.eval()
     total_loss = 0.0
     total_correct = 0
@@ -149,13 +157,10 @@ def csv_writter(path, dic, start):
 class Counter(dict):
     def __missing__(self, key):
         return None
-with initialize(config_path="../configs/"):
-    cfg = compose(config_name="fmfp")  # exp1.yaml with defaults key
 
-device = cfg.training.device #torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print(f"Using device: {device}")
-
-def objective(trial_number, epochs, base_lr, custom_weight_decay, custom_momentum):
+def one_trial_train(trial_number, epochs, base_lr, custom_weight_decay, custom_momentum, cfg):
+    device = cfg.training.device
+    print(f"Using device: {device}")
 
     server1 = True
     server2 = not server1
@@ -207,7 +212,7 @@ def objective(trial_number, epochs, base_lr, custom_weight_decay, custom_momentu
     # start Train
     for epoch in range(1, epochs + 1):
         
-        train_loss, train_acc = train_base.train(train_loader,
+        train_loss, train_acc = hi4lines_insp.train_base.train(train_loader,
                     model,
                     cls_criterion,
                     ranking_criterion,
@@ -229,7 +234,7 @@ def objective(trial_number, epochs, base_lr, custom_weight_decay, custom_momentu
 
         # calc measure
         if epoch % val_freq == 0:
-            val_loss, val_acc = validate(valid_loader, model, cls_criterion)
+            val_loss, val_acc = validate(valid_loader, model, cls_criterion, device)
             writer.add_scalar('val_loss', val_loss, epoch)
             writer.add_scalar('val_acc', val_acc, epoch)
 
@@ -267,39 +272,20 @@ def objective(trial_number, epochs, base_lr, custom_weight_decay, custom_momentu
     print(f'ckpt test acc: {acc}')
     print(f'ckpt test augrc: {augrc}')
 
-    
-    ccc = 0
-    hailo_ip = cfg.training.ds_device_ip
-    while ccc < 10:
-        try:
-            response = requests.post(f"http://{hailo_ip}:{port}/validate", json={"run_id": trial_number})
-            response.raise_for_status()
-            break
-        except requests.RequestException as e:
-            print(e)
-            print(f"================ERROR #{ccc}================")
-            ccc += 1
-            continue
-
-
-    result = response.json()
+    result = validate_on_device('coral', cfg, RUN_ID)
 
     for key, val in result.items():
         if isinstance(val, (int, float)):
             writer.add_scalar(f'hw_metrics_{key}', val)
      
     gc.collect()
-    torch.cuda.empty_cache()
-    wait_for_cooldown(thresh=75, cool_to=65, interval=5)
+    if gpu:
+        torch.cuda.synchronize()                     # finish all kernels
+        torch.cuda.empty_cache()
+        wait_for_cooldown(thresh=75, cool_to=65, interval=5)
     writer.close()
     
 def main():
-    
-    specs = [[], []]
-    # trial_number, epochs, base_lr, custom_weight_decay, custom_momentum):
-    for spec in specs:
-        print(spec)
-        objective(spec[0], spec[1], spec[2], spec[3], spec[4])
-
+    pass
 if __name__ == "__main__":
     main()
