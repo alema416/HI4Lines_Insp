@@ -340,15 +340,5 @@ def one_trial_train(trial_number, epochs, base_lr, custom_weight_decay, custom_m
 
 def main():
     pass
-    '''
-    device = cfg.training.device #torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"Using device: {device}")
-
-    specs = [[0, 20, 0.01, 1e-6, 0.99], [1, 20, 0.2, 1e-2, 0.92], [2, 20, 0.01, 1e-2, 0.8], [3, 20, 0.001, 1e-4, 0.9]]
-    
-    for spec in specs:
-        print(spec)
-        objective(spec[0], spec[1], spec[2], spec[3], spec[4], 1, 0.1)
-    '''
 if __name__ == "__main__":
     main()

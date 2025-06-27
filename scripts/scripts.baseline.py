@@ -7,21 +7,26 @@ import os
 with initialize(config_path="../configs/"):
     cfg = compose(config_name="base")  # exp1.yaml with defaults key
 
-# {'epochs': 155, 'lr': 0.03769210004835597, 'swa_start': 79, 'weight_decay': 2.266799648737876e-05, 'momentum': 0.9034986413496253, 'swa_lr': 0.001974199005673091}
-
 def run_baseline(id, params):
     return one_trial_train(id, params['epochs'], params['lr'], params['weight_decay'], params['momentum'], cfg)
 
 def main():
-    study_name = 'coral_25_06_v2' #cfg.training.study_name
-    storage = "postgresql+psycopg2://optuna_user:secretpass@localhost:5432/optuna_db"
+    study_name = cfg.training.study_name
+
+    usrnm = cfg.secrets.usrnm
+    pswrd = cfg.secrets.pswrd
+    network = cfg.secrets.network
+    port = cfg.secrets.port
+    database_name = cfg.secrets.database_name
+
+    storage = f"postgresql+psycopg2://{usrnm}:{pswrd}@{network}:{port}/{database_name}"
     study = optuna.load_study(study_name=study_name, storage=storage)
-    t = study.trials[0]
+    RUN_ID = cfg.training.bslnid
+    t = study.trials[RUN_ID]
     print("Trial #{}: value={}, params={}".format(
         t.number, t.value, t.params
     ))
-    
-    print(t.params)
     run_baseline(0, t.params)
+
 if __name__ == "__main__":
     main()
