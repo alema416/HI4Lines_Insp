@@ -48,12 +48,17 @@ RUN apt-get update \
  && apt-get install -y --no-install-recommends ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /opt/venv /opt/venv
-COPY --from=builder ${APP_DIR} ${APP_DIR}
-COPY --from=builder /data           /data
+#COPY --from=builder /opt/venv /opt/venv
+#COPY --from=builder ${APP_DIR} ${APP_DIR}
+#COPY --from=builder /data           /data
 
-RUN useradd --create-home --shell /bin/bash appuser \
- && chown -R appuser:appuser /opt/venv ${APP_DIR} /data
+RUN useradd --create-home --shell /bin/bash appuser
+COPY --from=builder --chown=appuser:appuser /opt/venv    /opt/venv
+COPY --from=builder --chown=appuser:appuser ${APP_DIR}    ${APP_DIR}
+COPY --from=builder --chown=appuser:appuser /data         /data
+
+#RUN useradd --create-home --shell /bin/bash appuser \
+# && chown -R appuser:appuser /opt/venv ${APP_DIR} /data
 
 
 USER appuser
