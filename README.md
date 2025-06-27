@@ -154,3 +154,67 @@ on the bottom right pane ssh to the RPi and attach to the server_rpi session for
 ## Model Zoo 
 
 https://drive.google.com/drive/folders/19vf1JSU2l2wGV99UFSCr1N1evp4B0wyJ?usp=sharing
+
+
+# Installation
+
+## Step 1: Install common
+
+```
+docker compose pull tensorboard dashboard postgres 
+docker compose build train 
+```
+
+## Step 2: Install Hardware-Specific components
+
+### For DeGirum Orca / Google Coral
+
+```
+docker compose pull compiler_api
+```
+
+### For Hailo
+
+manually download hailo_ai_suite.zip from https://hailo.ai/developer-zone/documentation/hailo-sw-suite-2024-07/?sp_referrer=suite%2Fsuite_install.html#docker-installation and run
+https://hailo.ai/developer-zone/sw-downloads/
+
+```
+docker load --input hailo_ai_sw_suite_2025-04.tar.gz
+docker compose build hailo
+```
+
+### For Stm32 Devices
+
+```
+docker compose build stm32
+```
+
+# Execution
+
+Step 1: edit the configs to match your requirements
+
+Step 2: initialize backend and start the optimization process 
+
+```
+docker compose up -d postgres
+docker compose run -d --rm train
+docker compose up -d dashboard tensorboard
+```
+
+Step 3: Depending on target hardware
+
+```
+docker compose up -d < compiler_api | hailo | stm32ai > 
+```
+
+# Monitoring
+
+You can monitor the progress of the optimization in real-time on localhost:6007 and details for each trial on localhost:8080.
+
+# Termination
+
+All the running processes are killed via:
+
+```
+docker compose down
+```
