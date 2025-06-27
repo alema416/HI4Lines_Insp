@@ -5,6 +5,8 @@ services:
   # 1) Postgres for Optuna RDBStorage
   postgres:
     image: postgres:14                     # Official Postgres image
+    ports:
+      - "5432:5432"
     container_name: optuna-postgres        # Easy reference by name
     restart: always
     environment:
