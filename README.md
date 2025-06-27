@@ -46,116 +46,6 @@ Abstract:
 
 --------
 
-## Installation Instructions
-
-
-### Data Science Server 
-
-For target hardware: ORCA, Google Coral:
-
-install training enviroment:
-```
-docker-compose build train
-```
-
-run optimizatin and spawn logging:
-
-```
-docker-compose up -d postgres
-docker-compose run -d --rm train
-docker-compose up -d dashboard tensorboard
-```
-
-for DeGirum Orca & Google Coral
-
-```
-docker-compose up -d compiler_api
-```
-
-for ST devices:
-
-```
-docker-compose up -d compiler_api
-```
-
-for HAILO:
-
-* Install HAILO AI SW Suite via the instructions: 
-
-https://hailo.ai/developer-zone/documentation/hailo-sw-suite-2024-07/?sp_referrer=suite%2Fsuite_install.html#docker-installation
-
-* with one change: in the .sh installer replace this: 
-
-```
-readonly SHARED_DIR=$repo_absolute_dir
-```
-
-(line 16)
-
-And this: 
-
-```
--v ${SHARED_DIR}/:/local/${SHARED_DIR}:rw \
-```
-
-(line 226)
-
-Finally, from inside the docker container run: 
-```
-cd /local/<your_repo_path>/hailo_src
-python3 -m pip install requirements.txt
-```
-
-#### Step 3: Setup ST Quantizer/Emulator
-
-### Raspberry Pi
-
-#### Setup Edge Device
-
-Install virtualenv & download data via:
-
-```
-make create_environment && conda activate HI4Lines_Insp && make requirements_rpi && make data
-cd deploy/rpi/deploy
-python3 run_classifier_optimization.py
-```
-### ST
-
-#### Setup Edge Device
-
-Install STM32 Model Zoo Services & add installation path to st_src corresponding config yaml.
-
-## Execution Instructions
-
-Step 1:
-
-on Rpi activate the installed conda env & run:
-
-```
-tmux new-session -A -s server_rpi
-cd <repo>/deploy/rpi/deploy/
-python3 run_classifier_evaluator_server.py
-```
-
-Step 2:
-
-on STM32MP257F-EV1 run:
-
-Step 3:
-
-on Data-Science Server activate the installed conda env & run:
-
-./START_TRAINING.sh
-on the bottom right pane ssh to the RPi and attach to the server_rpi session for monitoring.
-
-#### Setup Edge Device
-
-
-## Model Zoo 
-
-https://drive.google.com/drive/folders/19vf1JSU2l2wGV99UFSCr1N1evp4B0wyJ?usp=sharing
-
-
 # Installation
 
 ## Step 1: Install common
@@ -196,7 +86,7 @@ Step 1: edit the configs to match your requirements
 Step 2: initialize backend and start the optimization process 
 
 ```
-docker compose up -d postgres
+docker compose up -d postgres minio
 docker compose run -d --rm train
 docker compose up -d dashboard tensorboard
 ```
@@ -209,7 +99,7 @@ docker compose up -d < compiler_api | hailo | stm32ai >
 
 # Monitoring
 
-You can monitor the progress of the optimization in real-time on localhost:6007 and details for each trial on localhost:8080.
+You can monitor the progress of the optimization in real-time on localhost:6007, details for each trial on localhost:8080 and the artifacts are on localhost:9001.
 
 # Termination
 
