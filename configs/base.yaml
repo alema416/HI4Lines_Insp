@@ -37,7 +37,7 @@ training:
   st_dev_ip: '192.168.2.37'
   st_port: 5003
   hailo_port: 5000
-  target_dev: 'coral'
+  target_dev: 'orca'
 secrets:
   database_name:  ${oc.env:DTBS_NAME, 'optuna_db'}
   port:  ${oc.env:PORT, '5432'}

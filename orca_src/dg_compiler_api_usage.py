@@ -3,13 +3,12 @@ import json
 import argparse
 import os
 
-
 def determine_url(model_file, port=8535):
     """Determine the compiler mode URL based on the model file extension."""
     if model_file.endswith('.pt'):
-        return f'http://dg_compiler_api:{port}/yolocompile'
+        return f'http://ml-net:{port}/yolocompile'
     elif model_file.endswith(('.onnx', '.tflite')):
-        return f'http://dg_compiler_api:{port}/generalcompile'
+        return f'http://ml-net:{port}/generalcompile'
     else:
         raise ValueError("Unsupported model file format. Supported formats are '.pt', '.onnx', '.tflite'.")
 
